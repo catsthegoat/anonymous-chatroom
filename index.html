@@ -7,6 +7,11 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+  
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+  
   <style>
     * {
       margin: 0;
@@ -77,6 +82,18 @@
     ::-webkit-scrollbar-thumb:hover {
       background: #ccc;
     }
+
+    .setup-warning {
+      background: #2a1a00;
+      border: 2px solid #ff9900;
+      color: #ffcc66;
+      padding: 20px;
+      border-radius: 15px;
+      margin: 20px;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+    }
   </style>
 </head>
 <body>
@@ -85,7 +102,34 @@
   <script type="text/babel">
     const { useState, useEffect, useRef } = React;
 
-    // Icons as SVG components
+    // ============================================
+    // 🔥 FIREBASE CONFIG
+    // ============================================
+    const firebaseConfig = {
+      apiKey: "AIzaSyCR9UiBA6mg3J5a6WGtPK9F76E_ul1D1_c",
+      authDomain: "chatroom-60410.firebaseapp.com",
+      databaseURL: "https://chatroom-60410-default-rtdb.firebaseio.com",
+      projectId: "chatroom-60410",
+      storageBucket: "chatroom-60410.firebasestorage.app",
+      messagingSenderId: "1074130659134",
+      appId: "1:1074130659134:web:06b77a69a0c1d2ee47ee6f",
+      measurementId: "G-ENN9HEXNDB"
+    };
+
+    // Check if Firebase is configured
+    const isFirebaseConfigured = !firebaseConfig.apiKey.includes('YOUR_');
+
+    // Initialize Firebase only if configured
+    let db = null;
+    if (isFirebaseConfigured) {
+      try {
+        firebase.initializeApp(firebaseConfig);
+        db = firebase.database();
+      } catch (error) {
+        console.error("Firebase initialization error:", error);
+      }
+    }
+
     function MessageCircle() {
       return (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -151,9 +195,59 @@
       );
     }
 
+    function SetupInstructions() {
+      return (
+        <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+          <div className="setup-warning">
+            <h2 style={{ fontSize: '24px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+              ⚠️ Firebase Setup Required
+            </h2>
+            <p style={{ marginBottom: '20px', lineHeight: '1.6' }}>
+              To make this chatroom work across different computers, you need to set up Firebase. Follow these steps:
+            </p>
+            
+            <div style={{ background: '#1a1a1a', padding: '20px', borderRadius: '10px', marginBottom: '20px' }}>
+              <h3 style={{ color: '#ffcc66', marginBottom: '15px' }}>📋 Setup Steps:</h3>
+              
+              <ol style={{ lineHeight: '2', paddingLeft: '20px' }}>
+                <li>Go to <a href="https://console.firebase.google.com" target="_blank" style={{ color: '#66ccff' }}>console.firebase.google.com</a></li>
+                <li>Click "Add project" and create a new project</li>
+                <li>Once created, click "Realtime Database" from the left menu</li>
+                <li>Click "Create Database"</li>
+                <li>Choose "Start in test mode" (for now)</li>
+                <li>Go to Project Settings (gear icon) → General</li>
+                <li>Scroll down to "Your apps" → Click the web icon {"</>"}</li>
+                <li>Register your app with a nickname</li>
+                <li>Copy the firebaseConfig object</li>
+                <li>Replace the firebaseConfig in the code (line 32-39)</li>
+              </ol>
+            </div>
+
+            <div style={{ background: '#0a0a0a', padding: '15px', borderRadius: '10px', fontSize: '14px', fontFamily: 'monospace', marginBottom: '20px', border: '1px solid #333' }}>
+              <div style={{ color: '#888', marginBottom: '10px' }}>// Replace this in your code:</div>
+              <pre style={{ color: '#66ff66', margin: 0, whiteSpace: 'pre-wrap' }}>{`const firebaseConfig = {
+  apiKey: "AIza...",
+  authDomain: "your-app.firebaseapp.com",
+  databaseURL: "https://your-app.firebaseio.com",
+  projectId: "your-project-id",
+  storageBucket: "your-app.appspot.com",
+  messagingSenderId: "123456789",
+  appId: "1:123:web:abc123"
+};`}</pre>
+            </div>
+
+            <p style={{ fontSize: '14px', opacity: 0.8 }}>
+              💡 After setup, redeploy to Vercel and share the URL with your friends!
+            </p>
+          </div>
+        </div>
+      );
+    }
+
     function ChatroomApp() {
-      const [currentView, setCurrentView] = useState('lobby');
+      const [currentView, setCurrentView] = useState('start');
       const [username, setUsername] = useState('');
+      const [tempUsername, setTempUsername] = useState('');
       const [currentRoom, setCurrentRoom] = useState(null);
       const [roomPassword, setRoomPassword] = useState('');
       const [newRoomName, setNewRoomName] = useState('');
@@ -165,87 +259,96 @@
       const [onlineCount, setOnlineCount] = useState(0);
       const messagesEndRef = useRef(null);
 
+      // Show setup instructions if Firebase not configured
+      if (!isFirebaseConfigured) {
+        return <SetupInstructions />;
+      }
+
       useEffect(() => {
-        loadRooms();
-        updateOnlineCount();
-      }, []);
+        if (currentView === 'lobby' || currentView === 'create') {
+          loadRooms();
+          updateOnlineCount();
+        }
+      }, [currentView]);
 
       useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
       }, [messages]);
 
+      // Real-time listener for messages
       useEffect(() => {
-        if (currentRoom) {
-          const interval = setInterval(() => {
-            loadMessages(currentRoom);
-          }, 1500);
-          return () => clearInterval(interval);
+        if (currentRoom && db) {
+          const messagesRef = db.ref(`messages/${currentRoom}`);
+          
+          messagesRef.on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+              const messageList = Object.values(data).sort((a, b) => a.timestamp - b.timestamp);
+              setMessages(messageList);
+            } else {
+              setMessages([]);
+            }
+          });
+
+          return () => messagesRef.off();
         }
       }, [currentRoom]);
 
-      const updateOnlineCount = async () => {
-        try {
-          const result = await window.storage.get('online-users', true);
-          const users = result ? JSON.parse(result.value) : {};
-          const now = Date.now();
-          const activeUsers = Object.values(users).filter(time => now - time < 60000);
-          setOnlineCount(activeUsers.length);
-        } catch {
-          setOnlineCount(0);
+      // Real-time listener for rooms
+      useEffect(() => {
+        if ((currentView === 'lobby' || currentView === 'create') && db) {
+          const roomsRef = db.ref('rooms');
+          
+          roomsRef.on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+              const roomList = Object.values(data).sort((a, b) => b.createdAt - a.createdAt);
+              setRooms(roomList);
+            } else {
+              setRooms([]);
+            }
+          });
+
+          return () => roomsRef.off();
         }
+      }, [currentView]);
+
+      const updateOnlineCount = () => {
+        if (!db) return;
+        
+        const onlineRef = db.ref('online');
+        onlineRef.on('value', (snapshot) => {
+          const data = snapshot.val();
+          if (data) {
+            const now = Date.now();
+            const active = Object.values(data).filter(time => now - time < 60000).length;
+            setOnlineCount(active);
+          } else {
+            setOnlineCount(0);
+          }
+        });
       };
 
-      const markUserOnline = async () => {
-        if (!username) return;
-        try {
-          const result = await window.storage.get('online-users', true);
-          const users = result ? JSON.parse(result.value) : {};
-          users[username] = Date.now();
-          await window.storage.set('online-users', JSON.stringify(users), true);
-          updateOnlineCount();
-        } catch (err) {
-          console.log('Failed to update online status');
-        }
+      const markUserOnline = () => {
+        if (!username || !db) return;
+        
+        const userRef = db.ref(`online/${username}`);
+        userRef.set(Date.now());
+        
+        // Set up disconnect handler
+        userRef.onDisconnect().remove();
       };
 
       useEffect(() => {
-        if (username) {
+        if (username && db) {
           markUserOnline();
           const interval = setInterval(markUserOnline, 30000);
           return () => clearInterval(interval);
         }
       }, [username]);
 
-      const loadRooms = async () => {
-        try {
-          const result = await window.storage.list('room:', true);
-          if (result?.keys) {
-            const roomData = await Promise.all(
-              result.keys.map(async (key) => {
-                try {
-                  const data = await window.storage.get(key, true);
-                  return data ? JSON.parse(data.value) : null;
-                } catch {
-                  return null;
-                }
-              })
-            );
-            setRooms(roomData.filter(Boolean));
-          }
-        } catch (err) {
-          console.log('No rooms yet');
-        }
-      };
-
-      const loadMessages = async (roomId) => {
-        try {
-          const result = await window.storage.get(`messages:${roomId}`, true);
-          if (result) {
-            setMessages(JSON.parse(result.value));
-          }
-        } catch {
-          setMessages([]);
-        }
+      const loadRooms = () => {
+        // Handled by real-time listener
       };
 
       const createRoom = async () => {
@@ -254,6 +357,11 @@
           return;
         }
         
+        if (!db) {
+          setError('Firebase not initialized');
+          return;
+        }
+
         const roomId = Date.now().toString();
         const room = {
           id: roomId,
@@ -263,18 +371,17 @@
         };
 
         try {
-          await window.storage.set(`room:${roomId}`, JSON.stringify(room), true);
-          await window.storage.set(`messages:${roomId}`, JSON.stringify([]), true);
+          await db.ref(`rooms/${roomId}`).set(room);
           setNewRoomName('');
           setNewRoomPassword('');
           setError('');
-          loadRooms();
+          setCurrentView('lobby');
         } catch (err) {
-          setError('Failed to create room');
+          setError('Failed to create room: ' + err.message);
         }
       };
 
-      const joinRoom = async (room) => {
+      const joinRoom = (room) => {
         if (room.password && room.password !== roomPassword) {
           setError('Incorrect password');
           return;
@@ -284,11 +391,10 @@
         setCurrentView('room');
         setRoomPassword('');
         setError('');
-        await loadMessages(room.id);
       };
 
       const sendMessage = async () => {
-        if (!message.trim() || !currentRoom) return;
+        if (!message.trim() || !currentRoom || !db) return;
 
         const newMsg = {
           id: Date.now().toString() + Math.random(),
@@ -298,11 +404,7 @@
         };
 
         try {
-          const result = await window.storage.get(`messages:${currentRoom}`, true);
-          const currentMessages = result ? JSON.parse(result.value) : [];
-          const updatedMessages = [...currentMessages, newMsg];
-          await window.storage.set(`messages:${currentRoom}`, JSON.stringify(updatedMessages), true);
-          setMessages(updatedMessages);
+          await db.ref(`messages/${currentRoom}/${newMsg.id}`).set(newMsg);
           setMessage('');
         } catch (err) {
           setError('Failed to send message');
@@ -317,14 +419,15 @@
 
       const deleteRoom = async (roomId, e) => {
         e.stopPropagation();
-        if (confirm('Delete this room and all messages?')) {
-          try {
-            await window.storage.delete(`room:${roomId}`, true);
-            await window.storage.delete(`messages:${roomId}`, true);
-            loadRooms();
-          } catch (err) {
-            setError('Failed to delete room');
-          }
+        if (!confirm('Delete this room and all messages?')) return;
+        
+        if (!db) return;
+
+        try {
+          await db.ref(`rooms/${roomId}`).remove();
+          await db.ref(`messages/${roomId}`).remove();
+        } catch (err) {
+          setError('Failed to delete room');
         }
       };
 
@@ -333,7 +436,15 @@
         return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
       };
 
-      if (!username) {
+      const handleUsernameSubmit = () => {
+        if (tempUsername.trim()) {
+          setUsername(tempUsername.trim());
+          setCurrentView('lobby');
+        }
+      };
+
+      // Start screen
+      if (currentView === 'start') {
         return (
           <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
             <div className="glow-border" style={{ background: '#0a0a0a', borderRadius: '20px', padding: '40px', width: '100%', maxWidth: '400px', border: '1px solid #333' }}>
@@ -342,26 +453,116 @@
                 <h1 className="glow-text" style={{ fontSize: '32px', fontWeight: 'bold', marginTop: '20px', marginBottom: '10px' }}>CHATROOMS</h1>
                 <p style={{ color: '#999' }}>Enter the void</p>
               </div>
+              
               <input
                 type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && username.trim() && setCurrentView('lobby')}
+                value={tempUsername}
+                onChange={(e) => setTempUsername(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleUsernameSubmit();
+                  }
+                }}
                 placeholder="Choose username..."
                 style={{ width: '100%', padding: '15px', background: '#1a1a1a', border: '1px solid #333', borderRadius: '10px', color: '#fff', fontSize: '16px', marginBottom: '20px' }}
               />
-              <button
-                onClick={() => username.trim() && setCurrentView('lobby')}
-                className="glow-button"
-                style={{ width: '100%', background: '#fff', color: '#000', padding: '15px', borderRadius: '10px', border: 'none', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}
-              >
-                ENTER
-              </button>
+
+              <div style={{ display: 'grid', gap: '10px' }}>
+                <button
+                  onClick={() => {
+                    if (tempUsername.trim()) {
+                      setUsername(tempUsername.trim());
+                      setCurrentView('lobby');
+                    } else {
+                      setError('Please enter a username');
+                    }
+                  }}
+                  className="glow-button"
+                  style={{ width: '100%', background: '#fff', color: '#000', padding: '15px', borderRadius: '10px', border: 'none', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}
+                >
+                  JOIN ROOM
+                </button>
+                <button
+                  onClick={() => {
+                    if (tempUsername.trim()) {
+                      setUsername(tempUsername.trim());
+                      setCurrentView('create');
+                    } else {
+                      setError('Please enter a username');
+                    }
+                  }}
+                  className="glow-button"
+                  style={{ width: '100%', background: '#1a1a1a', color: '#fff', padding: '15px', borderRadius: '10px', border: '1px solid #333', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}
+                >
+                  CREATE ROOM
+                </button>
+              </div>
+
+              {error && (
+                <div style={{ background: '#2a0000', border: '1px solid #ff0000', color: '#ff6666', padding: '10px', borderRadius: '10px', marginTop: '15px', fontSize: '14px' }}>
+                  {error}
+                </div>
+              )}
             </div>
           </div>
         );
       }
 
+      // Create Room View
+      if (currentView === 'create') {
+        return (
+          <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+            <div className="glow-border" style={{ background: '#0a0a0a', borderRadius: '20px', padding: '40px', width: '100%', maxWidth: '500px', border: '1px solid #333' }}>
+              <div style={{ textAlign: 'center', marginBottom: '30px' }}>
+                <div className="glow" style={{ display: 'inline-block' }}><Plus /></div>
+                <h1 className="glow-text" style={{ fontSize: '28px', fontWeight: 'bold', marginTop: '20px', marginBottom: '10px' }}>CREATE ROOM</h1>
+                <p style={{ color: '#999' }}>User: {username}</p>
+              </div>
+
+              <input
+                type="text"
+                value={newRoomName}
+                onChange={(e) => setNewRoomName(e.target.value)}
+                placeholder="Room name..."
+                style={{ width: '100%', padding: '15px', background: '#1a1a1a', border: '1px solid #333', borderRadius: '10px', color: '#fff', fontSize: '16px', marginBottom: '15px' }}
+              />
+
+              <input
+                type="password"
+                value={newRoomPassword}
+                onChange={(e) => setNewRoomPassword(e.target.value)}
+                placeholder="Password (optional)..."
+                style={{ width: '100%', padding: '15px', background: '#1a1a1a', border: '1px solid #333', borderRadius: '10px', color: '#fff', fontSize: '16px', marginBottom: '20px' }}
+              />
+
+              <div style={{ display: 'grid', gap: '10px' }}>
+                <button
+                  onClick={createRoom}
+                  className="glow-button"
+                  style={{ width: '100%', background: '#fff', color: '#000', padding: '15px', borderRadius: '10px', border: 'none', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}
+                >
+                  CREATE & ENTER
+                </button>
+                <button
+                  onClick={() => setCurrentView('start')}
+                  style={{ width: '100%', background: '#1a1a1a', color: '#fff', padding: '15px', borderRadius: '10px', border: '1px solid #333', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}
+                >
+                  BACK
+                </button>
+              </div>
+
+              {error && (
+                <div style={{ background: '#2a0000', border: '1px solid #ff0000', color: '#ff6666', padding: '15px', borderRadius: '10px', marginTop: '15px' }}>
+                  {error}
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      }
+
+      // Lobby View
       if (currentView === 'lobby') {
         return (
           <div style={{ minHeight: '100vh', padding: '20px' }}>
@@ -381,46 +582,27 @@
                   </div>
                 </div>
 
-                <div style={{ background: '#1a1a1a', borderRadius: '15px', padding: '25px', marginBottom: '25px', border: '1px solid #2a2a2a' }}>
-                  <h2 style={{ fontWeight: 'bold', marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <Plus /> CREATE ROOM
-                  </h2>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px' }}>
-                    <input
-                      type="text"
-                      value={newRoomName}
-                      onChange={(e) => setNewRoomName(e.target.value)}
-                      placeholder="Room name..."
-                      style={{ padding: '12px', background: '#0a0a0a', border: '1px solid #333', borderRadius: '8px', color: '#fff' }}
-                    />
-                    <input
-                      type="password"
-                      value={newRoomPassword}
-                      onChange={(e) => setNewRoomPassword(e.target.value)}
-                      placeholder="Password (optional)..."
-                      style={{ padding: '12px', background: '#0a0a0a', border: '1px solid #333', borderRadius: '8px', color: '#fff' }}
-                    />
-                    <button
-                      onClick={createRoom}
-                      className="glow-button"
-                      style={{ background: '#fff', color: '#000', padding: '12px', borderRadius: '8px', border: 'none', fontWeight: 'bold', cursor: 'pointer' }}
-                    >
-                      CREATE
-                    </button>
-                  </div>
-                </div>
-
                 {error && (
                   <div style={{ background: '#2a0000', border: '1px solid #ff0000', color: '#ff6666', padding: '15px', borderRadius: '10px', marginBottom: '20px' }}>
                     {error}
                   </div>
                 )}
 
+                <div style={{ marginBottom: '20px' }}>
+                  <button
+                    onClick={() => setCurrentView('create')}
+                    className="glow-button"
+                    style={{ background: '#fff', color: '#000', padding: '12px 24px', borderRadius: '8px', border: 'none', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+                  >
+                    <Plus /> CREATE NEW ROOM
+                  </button>
+                </div>
+
                 <div>
                   {rooms.length === 0 ? (
                     <div style={{ textAlign: 'center', padding: '60px 20px', color: '#666' }}>
                       <div className="glow" style={{ display: 'inline-block', marginBottom: '15px' }}><Users /></div>
-                      <p>No rooms yet. Create the first one!</p>
+                      <p>No rooms available. Create one!</p>
                     </div>
                   ) : (
                     <div style={{ display: 'grid', gap: '10px' }}>
@@ -467,6 +649,7 @@
         );
       }
 
+      // Chat Room View
       const currentRoomData = rooms.find(r => r.id === currentRoom);
       
       return (
@@ -532,7 +715,12 @@
                   type="text"
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      sendMessage();
+                    }
+                  }}
                   placeholder="Type a message..."
                   style={{ flex: 1, padding: '15px', background: '#1a1a1a', border: '1px solid #333', borderRadius: '10px', color: '#fff', fontSize: '16px' }}
                 />
