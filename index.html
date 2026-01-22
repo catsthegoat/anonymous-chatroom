@@ -381,16 +381,19 @@
         }
       };
 
-      const joinRoom = (room) => {
-        if (room.password && room.password !== roomPassword) {
+      const joinRoom = (room, pwd = null) => {
+        const passwordToCheck = pwd || roomPassword;
+        
+        if (room.password && room.password !== passwordToCheck) {
           setError('Incorrect password');
-          return;
+          return false;
         }
         
         setCurrentRoom(room.id);
         setCurrentView('room');
         setRoomPassword('');
         setError('');
+        return true;
       };
 
       const sendMessage = async () => {
@@ -400,14 +403,17 @@
           id: Date.now().toString() + Math.random(),
           username,
           text: message.trim(),
-          timestamp: Date.now()
+          timestamp: Date.now(),
+          reactions: {}
         };
 
         try {
           await db.ref(`messages/${currentRoom}/${newMsg.id}`).set(newMsg);
           setMessage('');
+          setError('');
         } catch (err) {
-          setError('Failed to send message');
+          setError('Failed to send message: ' + err.message);
+          console.error('Send error:', err);
         }
       };
 
@@ -428,6 +434,25 @@
           await db.ref(`messages/${roomId}`).remove();
         } catch (err) {
           setError('Failed to delete room');
+        }
+      };
+
+      const addReaction = async (messageId, emoji) => {
+        if (!currentRoom || !db || !username) return;
+        
+        try {
+          const reactionRef = db.ref(`messages/${currentRoom}/${messageId}/reactions/${username}`);
+          await reactionRef.set(emoji);
+        } catch (err) {
+          console.error('Failed to add reaction:', err);
+        }
+      };
+
+      const showReactionPicker = (messageId) => {
+        const emojis = ['👍', '❤️', '😂', '😮', '😢', '🔥', '🎉', '👏'];
+        const emoji = prompt(`Pick a reaction:\n${emojis.join(' ')}\n\nType one emoji:`);
+        if (emoji && emoji.trim()) {
+          addReaction(messageId, emoji.trim());
         }
       };
 
@@ -614,8 +639,7 @@
                             if (room.password) {
                               const pwd = prompt('Enter room password:');
                               if (pwd) {
-                                setRoomPassword(pwd);
-                                joinRoom(room);
+                                joinRoom(room, pwd);
                               }
                             } else {
                               joinRoom(room);
@@ -680,30 +704,64 @@
                 </div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                  {messages.map((msg) => (
-                    <div
-                      key={msg.id}
-                      style={{ display: 'flex', justifyContent: msg.username === username ? 'flex-end' : 'flex-start' }}
-                    >
+                  {messages.map((msg) => {
+                    const reactions = msg.reactions || {};
+                    const reactionCounts = {};
+                    Object.values(reactions).forEach(emoji => {
+                      reactionCounts[emoji] = (reactionCounts[emoji] || 0) + 1;
+                    });
+                    
+                    return (
                       <div
-                        className="message-bubble"
-                        style={{
-                          maxWidth: '70%',
-                          borderRadius: '15px',
-                          padding: '12px 18px',
-                          background: msg.username === username ? '#fff' : '#1a1a1a',
-                          color: msg.username === username ? '#000' : '#fff',
-                          border: msg.username === username ? 'none' : '1px solid #2a2a2a'
-                        }}
+                        key={msg.id}
+                        style={{ display: 'flex', justifyContent: msg.username === username ? 'flex-end' : 'flex-start' }}
                       >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '5px' }}>
-                          <span style={{ fontWeight: 'bold', fontSize: '14px' }}>{msg.username}</span>
-                          <span style={{ fontSize: '12px', opacity: 0.6 }}>{formatTime(msg.timestamp)}</span>
+                        <div style={{ maxWidth: '70%' }}>
+                          <div
+                            className="message-bubble"
+                            onClick={() => showReactionPicker(msg.id)}
+                            style={{
+                              borderRadius: '15px',
+                              padding: '12px 18px',
+                              background: msg.username === username ? '#fff' : '#1a1a1a',
+                              color: msg.username === username ? '#000' : '#fff',
+                              border: msg.username === username ? 'none' : '1px solid #2a2a2a',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '5px' }}>
+                              <span style={{ fontWeight: 'bold', fontSize: '14px' }}>{msg.username}</span>
+                              <span style={{ fontSize: '12px', opacity: 0.6 }}>{formatTime(msg.timestamp)}</span>
+                            </div>
+                            <p style={{ wordBreak: 'break-word', margin: 0 }}>{msg.text}</p>
+                          </div>
+                          
+                          {Object.keys(reactionCounts).length > 0 && (
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', marginTop: '5px', justifyContent: msg.username === username ? 'flex-end' : 'flex-start' }}>
+                              {Object.entries(reactionCounts).map(([emoji, count]) => (
+                                <div
+                                  key={emoji}
+                                  style={{
+                                    background: '#1a1a1a',
+                                    border: '1px solid #333',
+                                    borderRadius: '12px',
+                                    padding: '4px 10px',
+                                    fontSize: '14px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '5px'
+                                  }}
+                                >
+                                  <span>{emoji}</span>
+                                  <span style={{ fontSize: '12px', color: '#999' }}>{count}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </div>
-                        <p style={{ wordBreak: 'break-word' }}>{msg.text}</p>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                   <div ref={messagesEndRef} />
                 </div>
               )}
