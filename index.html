@@ -125,6 +125,7 @@
       try {
         firebase.initializeApp(firebaseConfig);
         db = firebase.database();
+        console.log('Firebase initialized successfully');
       } catch (error) {
         console.error("Firebase initialization error:", error);
       }
@@ -278,10 +279,12 @@
       // Real-time listener for messages
       useEffect(() => {
         if (currentRoom && db) {
+          console.log('Setting up message listener for room:', currentRoom);
           const messagesRef = db.ref(`messages/${currentRoom}`);
           
           messagesRef.on('value', (snapshot) => {
             const data = snapshot.val();
+            console.log('Messages received:', data);
             if (data) {
               const messageList = Object.values(data).sort((a, b) => a.timestamp - b.timestamp);
               setMessages(messageList);
@@ -290,7 +293,10 @@
             }
           });
 
-          return () => messagesRef.off();
+          return () => {
+            console.log('Cleaning up message listener');
+            messagesRef.off();
+          };
         }
       }, [currentRoom]);
 
@@ -382,38 +388,64 @@
       };
 
       const joinRoom = (room, pwd = null) => {
-        const passwordToCheck = pwd || roomPassword;
+        // Clear any previous errors
+        setError('');
         
-        if (room.password && room.password !== passwordToCheck) {
-          setError('Incorrect password');
-          return false;
+        // Check password if room is protected
+        if (room.password) {
+          if (!pwd || room.password !== pwd) {
+            setError('Incorrect password');
+            return false;
+          }
         }
         
+        // Join the room
+        console.log('Joining room:', room.id);
         setCurrentRoom(room.id);
         setCurrentView('room');
         setRoomPassword('');
-        setError('');
         return true;
       };
 
       const sendMessage = async () => {
-        if (!message.trim() || !currentRoom || !db) return;
+        // Validation
+        if (!message.trim()) {
+          console.log('Message is empty');
+          return;
+        }
+        
+        if (!currentRoom) {
+          console.log('No current room');
+          setError('Not in a room');
+          return;
+        }
+        
+        if (!db) {
+          console.log('Database not initialized');
+          setError('Database error');
+          return;
+        }
 
+        console.log('Sending message:', message);
+
+        const msgId = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         const newMsg = {
-          id: Date.now().toString() + Math.random(),
-          username,
+          id: msgId,
+          username: username,
           text: message.trim(),
           timestamp: Date.now(),
           reactions: {}
         };
 
         try {
-          await db.ref(`messages/${currentRoom}/${newMsg.id}`).set(newMsg);
+          const msgRef = db.ref(`messages/${currentRoom}/${msgId}`);
+          await msgRef.set(newMsg);
+          console.log('Message sent successfully');
           setMessage('');
           setError('');
         } catch (err) {
-          setError('Failed to send message: ' + err.message);
           console.error('Send error:', err);
+          setError('Failed to send: ' + err.message);
         }
       };
 
@@ -638,8 +670,11 @@
                           onClick={() => {
                             if (room.password) {
                               const pwd = prompt('Enter room password:');
-                              if (pwd) {
-                                joinRoom(room, pwd);
+                              if (pwd !== null) {  // User didn't cancel
+                                const success = joinRoom(room, pwd);
+                                if (!success) {
+                                  alert('Incorrect password. Please try again.');
+                                }
                               }
                             } else {
                               joinRoom(room);
@@ -768,13 +803,18 @@
             </div>
 
             <div className="glow-border" style={{ background: '#0a0a0a', borderRadius: '0 0 20px 20px', padding: '20px', border: '1px solid #333', borderTop: 'none' }}>
+              {error && (
+                <div style={{ background: '#2a0000', border: '1px solid #ff0000', color: '#ff6666', padding: '10px', borderRadius: '10px', marginBottom: '10px', fontSize: '14px' }}>
+                  {error}
+                </div>
+              )}
               <div style={{ display: 'flex', gap: '10px' }}>
                 <input
                   type="text"
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
+                    if (e.key === 'Enter' && !e.shiftKey) {
                       e.preventDefault();
                       sendMessage();
                     }
