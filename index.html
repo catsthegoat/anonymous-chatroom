@@ -1094,8 +1094,8 @@ const drawOnCanvas = async (e) => {
     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#999', fontSize: '13px' }}>
       <span>{roomUsers.length} {roomUsers.length === 1 ? 'user' : 'users'} in room</span>
       {isOwner && <span style={{ background: '#1a1a1a', padding: '4px 10px', borderRadius: '6px', border: '1px solid #333' }}>👑 Owner</span>}
-    </div>
-                  <div style={{ display: 'flex', gap: '10px' }}>
+</div>
+  <div style={{ display: 'flex', gap: '10px' }}>
                     {isOwner && (
                       <button onClick={clearAllMessages} style={{ background: '#2a0000', border: '1px solid #ff0000', color: '#ff6666', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <Trash /> Clear All
@@ -1106,7 +1106,7 @@ const drawOnCanvas = async (e) => {
                     </button>
                     <button onClick={leaveRoom} className="glow-button" style={{ background: '#1a1a1a', color: '#fff', padding: '10px 20px', borderRadius: '8px', border: '1px solid #333', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <LogOut /> Leave
-                    </button>
+</button>
                   </div>
                 </div>
               </div>
@@ -1340,6 +1340,7 @@ if (msg.type === 'snap') {
   </script>
 </body>
 </html>
+
 
 
 
