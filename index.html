@@ -1147,24 +1147,5 @@ if (msg.type === 'snap') {
 
     ReactDOM.render(<ChatroomApp />, document.getElementById('root'));
   </script>
-<script>
-  // Only run the redirect once using sessionStorage flag
-  if (window.location.href !== 'about:blank' && !sessionStorage.getItem('redirected')) {
-    sessionStorage.setItem('redirected', 'true');
-    const newWindow = window.open('about:blank', '_blank');
-    if (newWindow) {
-      const htmlContent = document.documentElement.outerHTML.replace(
-        '<script>',
-        '<script>sessionStorage.setItem("redirected", "true");'
-      );
-      newWindow.document.write(htmlContent);
-      newWindow.document.close();
-    }
-    window.close();
-  }
-</script>
-    }
-  }
-</script>
 </body>
 </html>
