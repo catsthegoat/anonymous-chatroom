@@ -1176,6 +1176,45 @@ const drawOnCanvas = async (e) => {
     </div>
   </div>
 )}
+
+{activeGame === 'impostor' && gameState && (
+  <div className="glow-border" style={{ background: '#0a0a0a', padding: '20px', marginBottom: '20px', borderRadius: '15px' }}>
+    <h3 style={{ fontSize: '18px', marginBottom: '15px' }}>🕵️ Impostor Game - Category: {gameState.category}</h3>
+    <p style={{ marginBottom: '10px' }}>Your word: <strong>{gameState.impostor === username ? 'You are the IMPOSTOR!' : gameState.word}</strong></p>
+    <button onClick={() => window.GameUtils.endGame(db, currentRoom, addDebugLog)} style={{ background: '#2a0000', border: '1px solid #ff0000', color: '#ff6666', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer' }}>
+      End Game
+    </button>
+  </div>
+)}
+
+{activeGame === 'drawing' && gameState && (
+  <div className="glow-border" style={{ background: '#0a0a0a', padding: '20px', marginBottom: '20px', borderRadius: '15px' }}>
+    <h3 style={{ fontSize: '18px', marginBottom: '15px' }}>🎨 Drawing Game</h3>
+    <p>Word to draw: <strong>{gameState.drawer === username ? gameState.word : '???'}</strong></p>
+    <canvas ref={drawCanvasRef} width={600} height={400} onMouseDown={startDrawing} onMouseUp={stopDrawing} onMouseMove={drawOnCanvas} style={{ border: '2px solid #333', borderRadius: '10px', cursor: 'crosshair', marginTop: '10px', width: '100%', maxWidth: '600px', background: '#fff' }} />
+    <button onClick={() => window.GameUtils.endGame(db, currentRoom, addDebugLog)} style={{ background: '#2a0000', border: '1px solid #ff0000', color: '#ff6666', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', marginTop: '10px' }}>
+      End Game
+    </button>
+  </div>
+)}
+
+{activeGame === 'trivia' && gameState && (
+  <div className="glow-border" style={{ background: '#0a0a0a', padding: '20px', marginBottom: '20px', borderRadius: '15px' }}>
+    <h3 style={{ fontSize: '18px', marginBottom: '15px' }}>🧠 Trivia Battle</h3>
+    <p style={{ marginBottom: '15px' }}><strong>{gameState.question}</strong></p>
+    <div style={{ display: 'grid', gap: '10px' }}>
+      {gameState.options.map(option => (
+        <button key={option} onClick={() => window.GameUtils.submitTriviaAnswer(db, currentRoom, username, option, addDebugLog)} style={{ background: '#1a1a1a', color: '#fff', padding: '12px', borderRadius: '8px', border: '1px solid #333', cursor: 'pointer' }}>
+          {option}
+        </button>
+      ))}
+    </div>
+    <button onClick={() => window.GameUtils.endGame(db, currentRoom, addDebugLog)} style={{ background: '#2a0000', border: '1px solid #ff0000', color: '#ff6666', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', marginTop: '15px' }}>
+      End Game
+    </button>
+  </div>
+)}
+    
     {messages.map((msg) => {
 
 if (msg.type === 'system') {
@@ -1334,6 +1373,7 @@ if (msg.type === 'snap') {
   </script>
 </body>
 </html>
+
 
 
 
