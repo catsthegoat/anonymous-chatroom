@@ -518,26 +518,33 @@ useEffect(() => {
 // Listen for game invites
 useEffect(() => {
   if (currentRoom && username && db) {
+    addDebugLog(`🔧 Setting up invite listener for room ${currentRoom}`, 'info');
     const inviteRef = db.ref(`gameInvites/${currentRoom}`);
-    inviteRef.on('value', (snapshot) => {
+    
+    const listener = inviteRef.on('value', (snapshot) => {
       const data = snapshot.val();
       addDebugLog(`📨 Invite snapshot received: ${JSON.stringify(data)}`, 'info');
       addDebugLog(`👤 My username: ${username}, Sender: ${data?.sender}`, 'info');
       
       if (data && data.sender !== username) {
+        addDebugLog(`✅ CALLING setGameInvite with data from ${data.sender}`, 'success');
         setGameInvite(data);
-        addDebugLog(`✅ SHOWING game invite from ${data.sender} for ${data.gameType}`, 'success');
       } else {
-        setGameInvite(null);
         if (data) {
-          addDebugLog(`⚠️ Not showing invite (it's from me)`, 'warning');
+          addDebugLog(`⚠️ Not showing invite (it's from me: ${data.sender === username})`, 'warning');
+        } else {
+          addDebugLog(`ℹ️ No invite data in database`, 'info');
         }
+        setGameInvite(null);
       }
     });
+    
     return () => {
       addDebugLog('🔌 Disconnecting invite listener', 'info');
-      inviteRef.off();
+      inviteRef.off('value', listener);
     };
+  } else {
+    addDebugLog(`⚠️ Can't set up listener - room: ${currentRoom}, user: ${username}, db: ${!!db}`, 'warning');
   }
 }, [currentRoom, username]);
 // Sync drawing canvas
@@ -1395,6 +1402,7 @@ if (msg.type === 'snap') {
   </script>
 </body>
 </html>
+
 
 
 
