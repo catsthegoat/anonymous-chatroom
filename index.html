@@ -482,15 +482,7 @@ function ChatroomApp() {
     }
   }, [currentRoom]);
 
-  return (
-    <div>
-      Chat app loading…
-    </div>
-  );
-}
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(<ChatroomApp />);
 
 // Listen for active game
 useEffect(() => {
@@ -1343,7 +1335,7 @@ if (msg.type === 'snap') {
           </>
         );
       }
-
+  ReactDOM.render(<ChatroomApp />, document.getElementById('root'));
       return null;
     }
 
@@ -1351,6 +1343,7 @@ if (msg.type === 'snap') {
   </script>
 </body>
 </html>
+
 
 
 
