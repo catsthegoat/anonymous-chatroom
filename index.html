@@ -58,10 +58,133 @@
 
     .message-bubble {
       transition: all 0.3s ease;
+      position: relative;
     }
 
-    .message-bubble:hover {
-      box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    .message-bubble:hover .message-actions {
+      opacity: 1;
+    }
+
+    .message-actions {
+      opacity: 0;
+      transition: opacity 0.2s;
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      display: flex;
+      gap: 5px;
+    }
+
+    .action-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      padding: 4px 8px;
+      border-radius: 5px;
+      cursor: pointer;
+      color: #fff;
+      font-size: 12px;
+      transition: all 0.2s;
+    }
+
+    .action-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .emoji-picker {
+      position: absolute;
+      bottom: 100%;
+      right: 0;
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 10px;
+      padding: 10px;
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 5px;
+      margin-bottom: 5px;
+    }
+
+    .emoji-btn {
+      background: transparent;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      padding: 5px;
+      border-radius: 5px;
+      transition: all 0.2s;
+    }
+
+    .emoji-btn:hover {
+      background: #2a2a2a;
+      transform: scale(1.2);
+    }
+
+    .reaction-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 5px;
+    }
+
+    .reaction {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid #333;
+      border-radius: 12px;
+      padding: 2px 8px;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .reaction:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .reaction.active {
+      background: rgba(255, 255, 255, 0.3);
+      border-color: #fff;
+    }
+
+    .typing-indicator {
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 10px;
+      padding: 8px 15px;
+      margin-bottom: 10px;
+      font-size: 14px;
+      color: #999;
+      font-style: italic;
+    }
+
+    .system-message {
+      text-align: center;
+      color: #666;
+      font-size: 14px;
+      font-style: italic;
+      padding: 10px;
+      margin: 10px 0;
+    }
+
+    .reply-preview {
+      background: rgba(255, 255, 255, 0.05);
+      border-left: 3px solid #666;
+      padding: 8px 12px;
+      margin-bottom: 5px;
+      border-radius: 5px;
+      font-size: 13px;
+    }
+
+    .reply-to {
+      background: rgba(255, 255, 255, 0.05);
+      border-left: 3px solid #666;
+      padding: 5px 10px;
+      margin-bottom: 8px;
+      border-radius: 3px;
+      font-size: 12px;
+      opacity: 0.7;
     }
 
     ::-webkit-scrollbar {
@@ -112,6 +235,8 @@
       console.error("Firebase error:", error);
       alert("Firebase connection failed: " + error.message);
     }
+
+    const EMOJIS = ['😀', '😂', '❤️', '👍', '🔥', '🎉', '😍', '🤔', '👀', '💯', '✨', '🚀'];
 
     function MessageCircle() {
       return (
@@ -178,6 +303,37 @@
       );
     }
 
+    function Reply() {
+      return (
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <polyline points="9 14 4 9 9 4"/>
+          <path d="M20 20v-7a4 4 0 0 0-4-4H4"/>
+        </svg>
+      );
+    }
+
+    function Smile() {
+      return (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
+          <line x1="9" y1="9" x2="9.01" y2="9"/>
+          <line x1="15" y1="9" x2="15.01" y2="9"/>
+        </svg>
+      );
+    }
+
+    function UserX() {
+      return (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="8.5" cy="7" r="4"/>
+          <line x1="18" y1="8" x2="23" y2="13"/>
+          <line x1="23" y1="8" x2="18" y2="13"/>
+        </svg>
+      );
+    }
+
     function ChatroomApp() {
       const [currentView, setCurrentView] = useState('start');
       const [username, setUsername] = useState('');
@@ -190,7 +346,12 @@
       const [messages, setMessages] = useState([]);
       const [error, setError] = useState('');
       const [onlineCount, setOnlineCount] = useState(0);
+      const [replyTo, setReplyTo] = useState(null);
+      const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+      const [typingUsers, setTypingUsers] = useState([]);
+      const [roomUsers, setRoomUsers] = useState([]);
       const messagesEndRef = useRef(null);
+      const typingTimeoutRef = useRef(null);
 
       useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -203,7 +364,9 @@
           messagesRef.on('value', (snapshot) => {
             const data = snapshot.val();
             if (data) {
-              const messageList = Object.values(data).sort((a, b) => a.timestamp - b.timestamp);
+              const messageList = Object.values(data)
+                .filter(msg => msg.text || msg.type === 'system')
+                .sort((a, b) => a.timestamp - b.timestamp);
               setMessages(messageList);
             } else {
               setMessages([]);
@@ -251,6 +414,50 @@
       }, [currentView]);
 
       useEffect(() => {
+        if (currentRoom && username && db) {
+          const roomUserRef = db.ref(`roomUsers/${currentRoom}/${username}`);
+          roomUserRef.set({ username, timestamp: Date.now() });
+          roomUserRef.onDisconnect().remove();
+
+          const roomUsersRef = db.ref(`roomUsers/${currentRoom}`);
+          roomUsersRef.on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+              setRoomUsers(Object.values(data).map(u => u.username));
+            } else {
+              setRoomUsers([]);
+            }
+          });
+
+          return () => {
+            roomUserRef.remove();
+            roomUsersRef.off();
+          };
+        }
+      }, [currentRoom, username]);
+
+      useEffect(() => {
+        if (currentRoom && db) {
+          const typingRef = db.ref(`typing/${currentRoom}`);
+          
+          typingRef.on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+              const now = Date.now();
+              const activeTyping = Object.entries(data)
+                .filter(([user, time]) => user !== username && now - time < 3000)
+                .map(([user]) => user);
+              setTypingUsers(activeTyping);
+            } else {
+              setTypingUsers([]);
+            }
+          });
+
+          return () => typingRef.off();
+        }
+      }, [currentRoom, username]);
+
+      useEffect(() => {
         if (username && db) {
           const userRef = db.ref(`online/${username}`);
           
@@ -266,6 +473,20 @@
         }
       }, [username]);
 
+      const updateTyping = () => {
+        if (!currentRoom || !username || !db) return;
+        
+        db.ref(`typing/${currentRoom}/${username}`).set(Date.now());
+        
+        if (typingTimeoutRef.current) {
+          clearTimeout(typingTimeoutRef.current);
+        }
+        
+        typingTimeoutRef.current = setTimeout(() => {
+          db.ref(`typing/${currentRoom}/${username}`).remove();
+        }, 3000);
+      };
+
       const createRoom = async () => {
         if (!newRoomName.trim()) {
           setError('Room name required');
@@ -274,7 +495,6 @@
 
         if (!db) {
           setError('Database not connected');
-          alert('Database connection error. Please refresh the page.');
           return;
         }
 
@@ -283,22 +503,19 @@
           id: roomId,
           name: newRoomName.trim(),
           password: newRoomPassword,
-          createdAt: Date.now()
+          createdAt: Date.now(),
+          owner: username
         };
 
         try {
-          console.log("Creating room:", room);
           await db.ref(`rooms/${roomId}`).set(room);
           setCurrentRoom(roomId);
           setNewRoomName('');
           setNewRoomPassword('');
           setError('');
           setCurrentView('room');
-          console.log("Room created successfully!");
         } catch (err) {
-          console.error("Create room error:", err);
           setError('Failed to create room: ' + err.message);
-          alert('Failed to create room: ' + err.message);
         }
       };
 
@@ -318,7 +535,6 @@
 
         if (!db) {
           setError('Database not connected');
-          alert('Database connection error. Please refresh the page.');
           return;
         }
 
@@ -327,23 +543,102 @@
           id: msgId,
           username,
           text: message.trim(),
+          timestamp: Date.now(),
+          replyTo: replyTo ? replyTo.id : null,
+          reactions: {}
+        };
+
+        try {
+          await db.ref(`messages/${currentRoom}/${msgId}`).set(newMsg);
+          setMessage('');
+          setReplyTo(null);
+          setError('');
+          db.ref(`typing/${currentRoom}/${username}`).remove();
+        } catch (err) {
+          setError('Failed to send: ' + err.message);
+        }
+      };
+
+      const addReaction = async (messageId, emoji) => {
+        if (!currentRoom || !db) return;
+
+        const reactionPath = `messages/${currentRoom}/${messageId}/reactions/${emoji}`;
+        const reactionRef = db.ref(reactionPath);
+        
+        const snapshot = await reactionRef.once('value');
+        const users = snapshot.val() || [];
+        
+        if (users.includes(username)) {
+          const newUsers = users.filter(u => u !== username);
+          if (newUsers.length === 0) {
+            await reactionRef.remove();
+          } else {
+            await reactionRef.set(newUsers);
+          }
+        } else {
+          await reactionRef.set([...users, username]);
+        }
+      };
+
+      const clearAllMessages = async () => {
+        const currentRoomData = rooms.find(r => r.id === currentRoom);
+        if (!currentRoomData || currentRoomData.owner !== username) {
+          alert('Only the room owner can clear messages!');
+          return;
+        }
+
+        if (!confirm('Clear all messages in this room?')) return;
+
+        try {
+          await db.ref(`messages/${currentRoom}`).remove();
+        } catch (err) {
+          setError('Failed to clear messages');
+        }
+      };
+
+      const kickUser = async (targetUser) => {
+        const currentRoomData = rooms.find(r => r.id === currentRoom);
+        if (!currentRoomData || currentRoomData.owner !== username) {
+          alert('Only the room owner can kick users!');
+          return;
+        }
+
+        if (!confirm(`Kick ${targetUser} from the room?`)) return;
+
+        const msgId = Date.now().toString() + Math.floor(Math.random() * 10000).toString();
+        const systemMsg = {
+          id: msgId,
+          type: 'system',
+          text: `${targetUser} was kicked from the room`,
           timestamp: Date.now()
         };
 
         try {
-          console.log("Sending message:", newMsg);
-          await db.ref(`messages/${currentRoom}/${msgId}`).set(newMsg);
-          setMessage('');
-          setError('');
-          console.log("Message sent successfully!");
+          await db.ref(`messages/${currentRoom}/${msgId}`).set(systemMsg);
+          await db.ref(`roomUsers/${currentRoom}/${targetUser}`).remove();
         } catch (err) {
-          console.error("Send error:", err);
-          setError('Failed to send: ' + err.message);
-          alert('Failed to send message: ' + err.message);
+          setError('Failed to kick user');
         }
       };
 
-      const leaveRoom = () => {
+      const leaveRoom = async () => {
+        if (!currentRoom || !username) return;
+
+        const msgId = Date.now().toString() + Math.floor(Math.random() * 10000).toString();
+        const systemMsg = {
+          id: msgId,
+          type: 'system',
+          text: `${username} left the room`,
+          timestamp: Date.now()
+        };
+
+        try {
+          await db.ref(`messages/${currentRoom}/${msgId}`).set(systemMsg);
+          await db.ref(`roomUsers/${currentRoom}/${username}`).remove();
+        } catch (err) {
+          console.error('Error leaving room:', err);
+        }
+
         setCurrentRoom(null);
         setCurrentView('lobby');
         setMessages([]);
@@ -356,6 +651,8 @@
         try {
           await db.ref(`rooms/${roomId}`).remove();
           await db.ref(`messages/${roomId}`).remove();
+          await db.ref(`roomUsers/${roomId}`).remove();
+          await db.ref(`typing/${roomId}`).remove();
         } catch (err) {
           setError('Failed to delete room');
         }
@@ -364,6 +661,10 @@
       const formatTime = (timestamp) => {
         const date = new Date(timestamp);
         return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+      };
+
+      const getReplyMessage = (replyToId) => {
+        return messages.find(m => m.id === replyToId);
       };
 
       if (currentView === 'start') {
@@ -526,7 +827,7 @@
                             <div>
                               <h3 className="glow-text" style={{ fontWeight: 'bold', marginBottom: '5px' }}>{room.name}</h3>
                               <p style={{ fontSize: '14px', color: '#666' }}>
-                                Created {new Date(room.createdAt).toLocaleDateString()}
+                                Owner: {room.owner} • Created {new Date(room.createdAt).toLocaleDateString()}
                               </p>
                             </div>
                           </div>
@@ -548,25 +849,60 @@
       }
 
       const currentRoomData = rooms.find(r => r.id === currentRoom);
+      const isOwner = currentRoomData?.owner === username;
       
       return (
         <div style={{ minHeight: '100vh', padding: '20px' }}>
           <div style={{ maxWidth: '900px', margin: '0 auto', height: 'calc(100vh - 40px)', display: 'flex', flexDirection: 'column' }}>
-            <div className="glow-border" style={{ background: '#0a0a0a', borderRadius: '20px 20px 0 0', padding: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: '1px solid #333', borderBottom: 'none' }}>
+            <div className="glow-border" style={{ background: '#0a0a0a', borderRadius: '20px 20px 0 0', padding: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: '1px solid #333', borderBottom: 'none', flexWrap: 'wrap', gap: '10px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                 <div className="glow"><MessageCircle /></div>
                 <div>
                   <h2 className="glow-text" style={{ fontWeight: 'bold' }}>{currentRoomData?.name}</h2>
-                  <p style={{ fontSize: '14px', color: '#666' }}>as {username}</p>
+                  <p style={{ fontSize: '14px', color: '#666' }}>as {username} • {roomUsers.length} in room</p>
                 </div>
               </div>
-              <button
-                onClick={leaveRoom}
-                className="glow-button"
-                style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 20px', background: '#1a1a1a', border: '1px solid #333', borderRadius: '8px', color: '#fff', cursor: 'pointer' }}
-              >
-                <LogOut /> LEAVE
-              </button>
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                {isOwner && (
+                  <>
+                    <button
+                      onClick={clearAllMessages}
+                      className="glow-button"
+                      title="Clear all messages (Owner only)"
+                      style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 15px', background: '#2a0000', border: '1px solid #ff0000', borderRadius: '8px', color: '#ff6666', cursor: 'pointer', fontSize: '14px' }}
+                    >
+                      <Trash /> CLEAR
+                    </button>
+                    <div style={{ position: 'relative', group: 'users' }}>
+                      <button
+                        onClick={() => {
+                          const userList = roomUsers.filter(u => u !== username).join(', ');
+                          if (userList) {
+                            const targetUser = prompt(`Kick user (${userList}):`);
+                            if (targetUser && roomUsers.includes(targetUser)) {
+                              kickUser(targetUser);
+                            }
+                          } else {
+                            alert('No other users in room');
+                          }
+                        }}
+                        className="glow-button"
+                        title="Kick user (Owner only)"
+                        style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 15px', background: '#2a1a00', border: '1px solid #ff9900', borderRadius: '8px', color: '#ffcc66', cursor: 'pointer', fontSize: '14px' }}
+                      >
+                        <UserX /> KICK
+                      </button>
+                    </div>
+                  </>
+                )}
+                <button
+                  onClick={leaveRoom}
+                  className="glow-button"
+                  style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 20px', background: '#1a1a1a', border: '1px solid #333', borderRadius: '8px', color: '#fff', cursor: 'pointer' }}
+                >
+                  <LogOut /> LEAVE
+                </button>
+              </div>
             </div>
 
             <div className="glow-border" style={{ background: '#0a0a0a', flex: 1, overflowY: 'auto', padding: '20px', border: '1px solid #333', borderTop: 'none', borderBottom: 'none' }}>
@@ -577,45 +913,145 @@
                 </div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                  {messages.map((msg) => (
-                    <div
-                      key={msg.id}
-                      style={{ display: 'flex', justifyContent: msg.username === username ? 'flex-end' : 'flex-start' }}
-                    >
-                      <div
-                        className="message-bubble"
-                        style={{
-                          maxWidth: '70%',
-                          borderRadius: '15px',
-                          padding: '12px 18px',
-                          background: msg.username === username ? '#fff' : '#1a1a1a',
-                          color: msg.username === username ? '#000' : '#fff',
-                          border: msg.username === username ? 'none' : '1px solid #2a2a2a'
-                        }}
-                      >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '5px' }}>
-                          <span style={{ fontWeight: 'bold', fontSize: '14px' }}>{msg.username}</span>
-                          <span style={{ fontSize: '12px', opacity: 0.6 }}>{formatTime(msg.timestamp)}</span>
+                  {messages.map((msg) => {
+                    if (msg.type === 'system') {
+                      return (
+                        <div key={msg.id} className="system-message">
+                          {msg.text}
                         </div>
-                        <p style={{ wordBreak: 'break-word' }}>{msg.text}</p>
+                      );
+                    }
+
+                    const replyMsg = msg.replyTo ? getReplyMessage(msg.replyTo) : null;
+                    const reactions = msg.reactions || {};
+                    const hasReactions = Object.keys(reactions).length > 0;
+
+                    return (
+                      <div
+                        key={msg.id}
+                        style={{ display: 'flex', justifyContent: msg.username === username ? 'flex-end' : 'flex-start' }}
+                      >
+                        <div
+                          className="message-bubble"
+                          style={{
+                            maxWidth: '70%',
+                            borderRadius: '15px',
+                            padding: '12px 18px',
+                            background: msg.username === username ? '#fff' : '#1a1a1a',
+                            color: msg.username === username ? '#000' : '#fff',
+                            border: msg.username === username ? 'none' : '1px solid #2a2a2a',
+                            position: 'relative'
+                          }}
+                        >
+                          <div className="message-actions">
+                            <button
+                              onClick={() => setReplyTo(msg)}
+                              className="action-btn"
+                              title="Reply"
+                            >
+                              <Reply />
+                            </button>
+                            <button
+                              onClick={() => {
+                                const emoji = prompt('Enter emoji: ' + EMOJIS.join(' '));
+                                if (emoji) addReaction(msg.id, emoji);
+                              }}
+                              className="action-btn"
+                              title="React"
+                            >
+                              😀
+                            </button>
+                          </div>
+
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '5px' }}>
+                            <span style={{ fontWeight: 'bold', fontSize: '14px' }}>{msg.username}</span>
+                            <span style={{ fontSize: '12px', opacity: 0.6 }}>{formatTime(msg.timestamp)}</span>
+                          </div>
+
+                          {replyMsg && (
+                            <div className="reply-to" style={{ borderColor: msg.username === username ? '#666' : '#999' }}>
+                              <div style={{ fontSize: '11px', fontWeight: 'bold', marginBottom: '2px' }}>
+                                Replying to {replyMsg.username}
+                              </div>
+                              <div style={{ fontSize: '12px' }}>
+                                {replyMsg.text?.substring(0, 50)}{replyMsg.text?.length > 50 ? '...' : ''}
+                              </div>
+                            </div>
+                          )}
+
+                          <p style={{ wordBreak: 'break-word' }}>{msg.text}</p>
+
+                          {hasReactions && (
+                            <div className="reaction-container">
+                              {Object.entries(reactions).map(([emoji, users]) => (
+                                <div
+                                  key={emoji}
+                                  className={`reaction ${users.includes(username) ? 'active' : ''}`}
+                                  onClick={() => addReaction(msg.id, emoji)}
+                                  title={users.join(', ')}
+                                >
+                                  <span>{emoji}</span>
+                                  <span style={{ fontSize: '12px' }}>{users.length}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                   <div ref={messagesEndRef} />
                 </div>
               )}
             </div>
 
             <div className="glow-border" style={{ background: '#0a0a0a', borderRadius: '0 0 20px 20px', padding: '20px', border: '1px solid #333', borderTop: 'none' }}>
-              <div style={{ display: 'flex', gap: '10px' }}>
+              {typingUsers.length > 0 && (
+                <div className="typing-indicator">
+                  {typingUsers.length > 3 
+                    ? 'Several people are typing...' 
+                    : `${typingUsers.join(', ')} ${typingUsers.length === 1 ? 'is' : 'are'} typing...`}
+                </div>
+              )}
+
+              {replyTo && (
+                <div className="reply-preview">
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '5px' }}>
+                    <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#999' }}>
+                      Replying to {replyTo.username}
+                    </div>
+                    <button
+                      onClick={() => setReplyTo(null)}
+                      style={{ background: 'transparent', border: 'none', color: '#999', cursor: 'pointer', padding: '0 5px' }}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                  <div style={{ fontSize: '13px', color: '#ccc' }}>
+                    {replyTo.text?.substring(0, 100)}{replyTo.text?.length > 100 ? '...' : ''}
+                  </div>
+                </div>
+              )}
+
+              <div style={{ display: 'flex', gap: '10px', position: 'relative' }}>
                 <input
                   type="text"
                   value={message}
-                  onChange={(e) => setMessage(e.target.value)}
+                  onChange={(e) => {
+                    setMessage(e.target.value);
+                    updateTyping();
+                  }}
                   onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
                   placeholder="Type a message..."
                   style={{ flex: 1, padding: '15px', background: '#1a1a1a', border: '1px solid #333', borderRadius: '10px', color: '#fff', fontSize: '16px' }}
                 />
+                <button
+                  onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                  className="glow-button"
+                  style={{ background: '#1a1a1a', color: '#fff', padding: '15px', borderRadius: '10px', border: '1px solid #333', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                >
+                  <Smile />
+                </button>
                 <button
                   onClick={sendMessage}
                   className="glow-button"
@@ -623,6 +1059,23 @@
                 >
                   <Send /> SEND
                 </button>
+
+                {showEmojiPicker && (
+                  <div className="emoji-picker">
+                    {EMOJIS.map(emoji => (
+                      <button
+                        key={emoji}
+                        className="emoji-btn"
+                        onClick={() => {
+                          setMessage(message + emoji);
+                          setShowEmojiPicker(false);
+                        }}
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>
