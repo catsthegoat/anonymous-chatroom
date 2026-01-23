@@ -521,18 +521,25 @@ useEffect(() => {
     const inviteRef = db.ref(`gameInvites/${currentRoom}`);
     inviteRef.on('value', (snapshot) => {
       const data = snapshot.val();
-      addDebugLog(`Invite data: ${JSON.stringify(data)}`, 'info');
+      addDebugLog(`📨 Invite snapshot received: ${JSON.stringify(data)}`, 'info');
+      addDebugLog(`👤 My username: ${username}, Sender: ${data?.sender}`, 'info');
+      
       if (data && data.sender !== username) {
         setGameInvite(data);
-        addDebugLog(`Game invite received from ${data.sender} for ${data.gameType}`, 'success');
+        addDebugLog(`✅ SHOWING game invite from ${data.sender} for ${data.gameType}`, 'success');
       } else {
         setGameInvite(null);
+        if (data) {
+          addDebugLog(`⚠️ Not showing invite (it's from me)`, 'warning');
+        }
       }
     });
-    return () => inviteRef.off();
+    return () => {
+      addDebugLog('🔌 Disconnecting invite listener', 'info');
+      inviteRef.off();
+    };
   }
 }, [currentRoom, username]);
-
 // Sync drawing canvas
 useEffect(() => {
   if (activeGame === 'drawing' && gameState?.canvas && drawCanvasRef.current) {
@@ -1388,6 +1395,7 @@ if (msg.type === 'snap') {
   </script>
 </body>
 </html>
+
 
 
 
