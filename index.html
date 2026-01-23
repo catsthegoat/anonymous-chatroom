@@ -125,7 +125,6 @@
       try {
         firebase.initializeApp(firebaseConfig);
         db = firebase.database();
-        console.log('Firebase initialized successfully');
       } catch (error) {
         console.error("Firebase initialization error:", error);
       }
@@ -279,12 +278,10 @@
       // Real-time listener for messages
       useEffect(() => {
         if (currentRoom && db) {
-          console.log('Setting up message listener for room:', currentRoom);
           const messagesRef = db.ref(`messages/${currentRoom}`);
           
           messagesRef.on('value', (snapshot) => {
             const data = snapshot.val();
-            console.log('Messages received:', data);
             if (data) {
               const messageList = Object.values(data).sort((a, b) => a.timestamp - b.timestamp);
               setMessages(messageList);
@@ -293,10 +290,7 @@
             }
           });
 
-          return () => {
-            console.log('Cleaning up message listener');
-            messagesRef.off();
-          };
+          return () => messagesRef.off();
         }
       }, [currentRoom]);
 
@@ -387,65 +381,33 @@
         }
       };
 
-      const joinRoom = (room, pwd = null) => {
-        // Clear any previous errors
-        setError('');
-        
-        // Check password if room is protected
-        if (room.password) {
-          if (!pwd || room.password !== pwd) {
-            setError('Incorrect password');
-            return false;
-          }
+      const joinRoom = (room) => {
+        if (room.password && room.password !== roomPassword) {
+          setError('Incorrect password');
+          return;
         }
         
-        // Join the room
-        console.log('Joining room:', room.id);
         setCurrentRoom(room.id);
         setCurrentView('room');
         setRoomPassword('');
-        return true;
+        setError('');
       };
 
       const sendMessage = async () => {
-        // Validation
-        if (!message.trim()) {
-          console.log('Message is empty');
-          return;
-        }
-        
-        if (!currentRoom) {
-          console.log('No current room');
-          setError('Not in a room');
-          return;
-        }
-        
-        if (!db) {
-          console.log('Database not initialized');
-          setError('Database error');
-          return;
-        }
+        if (!message.trim() || !currentRoom || !db) return;
 
-        console.log('Sending message:', message);
-
-        const msgId = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         const newMsg = {
-          id: msgId,
-          username: username,
+          id: Date.now().toString() + Math.random(),
+          username,
           text: message.trim(),
-          timestamp: Date.now(),
-          reactions: {}
+          timestamp: Date.now()
         };
 
         try {
-          const msgRef = db.ref(`messages/${currentRoom}/${msgId}`);
-          await msgRef.set(newMsg);
-          console.log('Message sent successfully');
+          await db.ref(`messages/${currentRoom}/${newMsg.id}`).set(newMsg);
           setMessage('');
-          setError('');
         } catch (err) {
-          console.error('Send error:', err);
-          setError('Failed to send: ' + err.message);
+          setError('Failed to send message');
         }
       };
 
@@ -466,25 +428,6 @@
           await db.ref(`messages/${roomId}`).remove();
         } catch (err) {
           setError('Failed to delete room');
-        }
-      };
-
-      const addReaction = async (messageId, emoji) => {
-        if (!currentRoom || !db || !username) return;
-        
-        try {
-          const reactionRef = db.ref(`messages/${currentRoom}/${messageId}/reactions/${username}`);
-          await reactionRef.set(emoji);
-        } catch (err) {
-          console.error('Failed to add reaction:', err);
-        }
-      };
-
-      const showReactionPicker = (messageId) => {
-        const emojis = ['👍', '❤️', '😂', '😮', '😢', '🔥', '🎉', '👏'];
-        const emoji = prompt(`Pick a reaction:\n${emojis.join(' ')}\n\nType one emoji:`);
-        if (emoji && emoji.trim()) {
-          addReaction(messageId, emoji.trim());
         }
       };
 
@@ -670,11 +613,9 @@
                           onClick={() => {
                             if (room.password) {
                               const pwd = prompt('Enter room password:');
-                              if (pwd !== null) {  // User didn't cancel
-                                const success = joinRoom(room, pwd);
-                                if (!success) {
-                                  alert('Incorrect password. Please try again.');
-                                }
+                              if (pwd) {
+                                setRoomPassword(pwd);
+                                joinRoom(room);
                               }
                             } else {
                               joinRoom(room);
@@ -739,82 +680,43 @@
                 </div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                  {messages.map((msg) => {
-                    const reactions = msg.reactions || {};
-                    const reactionCounts = {};
-                    Object.values(reactions).forEach(emoji => {
-                      reactionCounts[emoji] = (reactionCounts[emoji] || 0) + 1;
-                    });
-                    
-                    return (
+                  {messages.map((msg) => (
+                    <div
+                      key={msg.id}
+                      style={{ display: 'flex', justifyContent: msg.username === username ? 'flex-end' : 'flex-start' }}
+                    >
                       <div
-                        key={msg.id}
-                        style={{ display: 'flex', justifyContent: msg.username === username ? 'flex-end' : 'flex-start' }}
+                        className="message-bubble"
+                        style={{
+                          maxWidth: '70%',
+                          borderRadius: '15px',
+                          padding: '12px 18px',
+                          background: msg.username === username ? '#fff' : '#1a1a1a',
+                          color: msg.username === username ? '#000' : '#fff',
+                          border: msg.username === username ? 'none' : '1px solid #2a2a2a'
+                        }}
                       >
-                        <div style={{ maxWidth: '70%' }}>
-                          <div
-                            className="message-bubble"
-                            onClick={() => showReactionPicker(msg.id)}
-                            style={{
-                              borderRadius: '15px',
-                              padding: '12px 18px',
-                              background: msg.username === username ? '#fff' : '#1a1a1a',
-                              color: msg.username === username ? '#000' : '#fff',
-                              border: msg.username === username ? 'none' : '1px solid #2a2a2a',
-                              cursor: 'pointer'
-                            }}
-                          >
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '5px' }}>
-                              <span style={{ fontWeight: 'bold', fontSize: '14px' }}>{msg.username}</span>
-                              <span style={{ fontSize: '12px', opacity: 0.6 }}>{formatTime(msg.timestamp)}</span>
-                            </div>
-                            <p style={{ wordBreak: 'break-word', margin: 0 }}>{msg.text}</p>
-                          </div>
-                          
-                          {Object.keys(reactionCounts).length > 0 && (
-                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', marginTop: '5px', justifyContent: msg.username === username ? 'flex-end' : 'flex-start' }}>
-                              {Object.entries(reactionCounts).map(([emoji, count]) => (
-                                <div
-                                  key={emoji}
-                                  style={{
-                                    background: '#1a1a1a',
-                                    border: '1px solid #333',
-                                    borderRadius: '12px',
-                                    padding: '4px 10px',
-                                    fontSize: '14px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '5px'
-                                  }}
-                                >
-                                  <span>{emoji}</span>
-                                  <span style={{ fontSize: '12px', color: '#999' }}>{count}</span>
-                                </div>
-                              ))}
-                            </div>
-                          )}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '5px' }}>
+                          <span style={{ fontWeight: 'bold', fontSize: '14px' }}>{msg.username}</span>
+                          <span style={{ fontSize: '12px', opacity: 0.6 }}>{formatTime(msg.timestamp)}</span>
                         </div>
+                        <p style={{ wordBreak: 'break-word' }}>{msg.text}</p>
                       </div>
-                    );
-                  })}
+                    </div>
+                  ))}
                   <div ref={messagesEndRef} />
                 </div>
               )}
             </div>
 
             <div className="glow-border" style={{ background: '#0a0a0a', borderRadius: '0 0 20px 20px', padding: '20px', border: '1px solid #333', borderTop: 'none' }}>
-              {error && (
-                <div style={{ background: '#2a0000', border: '1px solid #ff0000', color: '#ff6666', padding: '10px', borderRadius: '10px', marginBottom: '10px', fontSize: '14px' }}>
-                  {error}
-                </div>
-              )}
               <div style={{ display: 'flex', gap: '10px' }}>
                 <input
                   type="text"
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
+                    if (e.key === 'Enter') {
                       e.preventDefault();
                       sendMessage();
                     }
