@@ -458,6 +458,20 @@ function ChatroomApp() {
     return () => clearInterval(interval);
   }, []);
 
+useEffect(() => {
+  if (db) {
+    const connectedRef = db.ref('.info/connected');
+    connectedRef.on('value', (snap) => {
+      if (snap.val() === true) {
+        addDebugLog('Firebase connected', 'success');
+      } else {
+        addDebugLog('Firebase disconnected', 'error');
+      }
+    });
+    return () => connectedRef.off();
+  }
+}, []);
+  
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
@@ -1373,6 +1387,7 @@ if (msg.type === 'snap') {
   </script>
 </body>
 </html>
+
 
 
 
