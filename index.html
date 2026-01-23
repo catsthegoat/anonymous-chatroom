@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="port" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Anonymous Chatrooms</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
@@ -416,19 +416,19 @@
     const EMOJIS = ['😀', '😂', '❤️', '👍', '🔥', '🎉', '😍', '🤔', '👀', '💯', '✨', '🚀'];
 
     function MessageCircle() {
-      return <svg width="24" height="24" Box="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>;
+      return <svg width="24" height="24" ="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>;
     }
 
     function Send() {
-      return <svg width="20" height="20" Box="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>;
+      return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>;
     }
 
     function Users() {
-      return <svg width="24" height="24" Box="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>;
+      return <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>;
     }
 
     function Plus() {
-      return <svg width="20" height="20" Box="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>;
+      return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>;
     }
 
     function Lock() {
@@ -920,7 +920,7 @@
         return messages.find(m => m.id === replyToId);
       };
 
-      if (current === 'start') {
+      if (currentView === 'start') {
         return (
           <>
             <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
@@ -934,13 +934,13 @@
                   type="text"
                   value={tempUsername}
                   onChange={(e) => setTempUsername(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && tempUsername.trim() && (setUsername(tempUsername.trim()), setCurrent('lobby'))}
+                  onKeyDown={(e) => e.key === 'Enter' && tempUsername.trim() && (setUsername(tempUsername.trim()), setCurrentView('lobby'))}
                   placeholder="Choose username..."
                   style={{ width: '100%', padding: '15px', background: '#1a1a1a', border: '1px solid #333', borderRadius: '10px', color: '#fff', fontSize: '16px', marginBottom: '20px' }}
                 />
                 <div style={{ display: 'grid', gap: '10px' }}>
-                  <button onClick={() => tempUsername.trim() ? (setUsername(tempUsername.trim()), setCurrent('lobby')) : setError('Enter a username')} className="glow-button" style={{ width: '100%', background: '#fff', color: '#000', padding: '15px', borderRadius: '10px', border: 'none', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>JOIN ROOM</button>
-                  <button onClick={() => tempUsername.trim() ? (setUsername(tempUsername.trim()), setCurrent('create')) : setError('Enter a username')} className="glow-button" style={{ width: '100%', background: '#1a1a1a', color: '#fff', padding: '15px', borderRadius: '10px', border: '1px solid #333', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>CREATE ROOM</button>
+                  <button onClick={() => tempUsername.trim() ? (setUsername(tempUsername.trim()), setCurrentView('lobby')) : setError('Enter a username')} className="glow-button" style={{ width: '100%', background: '#fff', color: '#000', padding: '15px', borderRadius: '10px', border: 'none', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>JOIN ROOM</button>
+                  <button onClick={() => tempUsername.trim() ? (setUsername(tempUsername.trim()), setCurrentView('create')) : setError('Enter a username')} className="glow-button" style={{ width: '100%', background: '#1a1a1a', color: '#fff', padding: '15px', borderRadius: '10px', border: '1px solid #333', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>CREATE ROOM</button>
                 </div>
                 {error && <div style={{ background: '#2a0000', border: '1px solid #ff0000', color: '#ff6666', padding: '15px', borderRadius: '10px', marginTop: '15px' }}>{error}</div>}
               </div>
@@ -955,7 +955,7 @@
         );
       }
 
-      if (current === 'create') {
+      if (currentView === 'create') {
         return (
           <>
             <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
@@ -969,7 +969,7 @@
                 <input type="password" value={newRoomPassword} onChange={(e) => setNewRoomPassword(e.target.value)} placeholder="Password (optional)..." style={{ width: '100%', padding: '15px', background: '#1a1a1a', border: '1px solid #333', borderRadius: '10px', color: '#fff', fontSize: '16px', marginBottom: '20px' }} />
                 <div style={{ display: 'grid', gap: '10px' }}>
                   <button onClick={createRoom} className="glow-button" style={{ width: '100%', background: '#fff', color: '#000', padding: '15px', borderRadius: '10px', border: 'none', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>CREATE & ENTER</button>
-                  <button onClick={() => setCurrent('lobby')} style={{ width: '100%', background: '#1a1a1a', color: '#fff', padding: '15px', borderRadius: '10px', border: '1px solid #333', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>BACK</button>
+                  <button onClick={() => setCurrentView('lobby')} style={{ width: '100%', background: '#1a1a1a', color: '#fff', padding: '15px', borderRadius: '10px', border: '1px solid #333', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>BACK</button>
                 </div>
                 {error && <div style={{ background: '#2a0000', border: '1px solid #ff0000', color: '#ff6666', padding: '15px', borderRadius: '10px', marginTop: '15px' }}>{error}</div>}
               </div>
@@ -984,7 +984,7 @@
         );
       }
 
-      if (current === 'lobby') {
+      if (currentView === 'lobby') {
         return (
           <>
             <div style={{ minHeight: '100vh', padding: '20px' }}>
@@ -1000,7 +1000,7 @@
                         <Users />
                         <span>{onlineCount} online</span>
                       </div>
-                      <button onClick={() => setCurrent('create')} className="glow-button" style={{ background: '#fff', color: '#000', padding: '12px 24px', borderRadius: '10px', border: 'none', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <button onClick={() => setCurrentView('create')} className="glow-button" style={{ background: '#fff', color: '#000', padding: '12px 24px', borderRadius: '10px', border: 'none', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <Plus /> CREATE
                       </button>
                     </div>
@@ -1094,7 +1094,7 @@
       }
             
      )
-      if (current === 'room') {
+      if (currentView === 'room') {
         const currentRoomData = rooms.find(r => r.id === currentRoom);
         const isOwner = currentRoomData && currentRoomData.owner === username;
 
@@ -1264,4 +1264,5 @@
   </script>
 </body>
 </html>
+
 
