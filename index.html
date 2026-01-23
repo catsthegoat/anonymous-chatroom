@@ -521,9 +521,10 @@ useEffect(() => {
     const inviteRef = db.ref(`gameInvites/${currentRoom}`);
     inviteRef.on('value', (snapshot) => {
       const data = snapshot.val();
+      addDebugLog(`Invite data: ${JSON.stringify(data)}`, 'info');
       if (data && data.sender !== username) {
         setGameInvite(data);
-        addDebugLog(`Game invite from ${data.sender}`, 'info');
+        addDebugLog(`Game invite received from ${data.sender} for ${data.gameType}`, 'success');
       } else {
         setGameInvite(null);
       }
@@ -1387,6 +1388,7 @@ if (msg.type === 'snap') {
   </script>
 </body>
 </html>
+
 
 
 
