@@ -322,8 +322,9 @@
           return;
         }
 
+        const msgId = Date.now().toString() + Math.floor(Math.random() * 10000).toString();
         const newMsg = {
-          id: Date.now().toString() + Math.random(),
+          id: msgId,
           username,
           text: message.trim(),
           timestamp: Date.now()
@@ -331,7 +332,7 @@
 
         try {
           console.log("Sending message:", newMsg);
-          await db.ref(`messages/${currentRoom}/${newMsg.id}`).set(newMsg);
+          await db.ref(`messages/${currentRoom}/${msgId}`).set(newMsg);
           setMessage('');
           setError('');
           console.log("Message sent successfully!");
