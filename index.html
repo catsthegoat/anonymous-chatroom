@@ -288,7 +288,7 @@
 
   <script type="text/babel">
     const { useState, useEffect, useRef } = React;
-
+    
     // Game data
 const WORD_CATEGORIES = {
   animals: ['Dog', 'Cat', 'Elephant', 'Lion', 'Tiger', 'Bear'],
@@ -421,66 +421,76 @@ window.GameUtils = {
       );
     }
 
-    function ChatroomApp() {
-      const [currentView, setCurrentView] = useState('start');
-      const [username, setUsername] = useState('');
-      const [tempUsername, setTempUsername] = useState('');
-      const [currentRoom, setCurrentRoom] = useState(null);
-      const [newRoomName, setNewRoomName] = useState('');
-      const [newRoomPassword, setNewRoomPassword] = useState('');
-      const [message, setMessage] = useState('');
-      const [rooms, setRooms] = useState([]);
-      const [messages, setMessages] = useState([]);
-      const [error, setError] = useState('');
-      const [onlineCount, setOnlineCount] = useState(0);
-      const [replyTo, setReplyTo] = useState(null);
-      const [showEmojiPicker, setShowEmojiPicker] = useState(null);
-      const [typingUsers, setTypingUsers] = useState([]);
-      const [roomUsers, setRoomUsers] = useState([]);
-      const [showDebug, setShowDebug] = useState(false);
-      const [logs, setLogs] = useState([]);
-      const messagesEndRef = useRef(null);
-      const typingTimeoutRef = useRef(null);
-      const [showCamera, setShowCamera] = useState(false);
-      const [stream, setStream] = useState(null);
-      const videoRef = useRef(null);
-      const canvasRef = useRef(null);
-      const [showGamesMenu, setShowGamesMenu] = useState(false);
-      const [activeGame, setActiveGame] = useState(null);
-      const [gameState, setGameState] = useState(null);
-      const [gameInvite, setGameInvite] = useState(null);
-      const drawCanvasRef = useRef(null);
-      const [drawing, setDrawing] = useState(false);
-      const [drawColor, setDrawColor] = useState('#ffffff');
+function ChatroomApp() {
+  const [currentView, setCurrentView] = useState('start');
+  const [username, setUsername] = useState('');
+  const [tempUsername, setTempUsername] = useState('');
+  const [currentRoom, setCurrentRoom] = useState(null);
+  const [newRoomName, setNewRoomName] = useState('');
+  const [newRoomPassword, setNewRoomPassword] = useState('');
+  const [message, setMessage] = useState('');
+  const [rooms, setRooms] = useState([]);
+  const [messages, setMessages] = useState([]);
+  const [error, setError] = useState('');
+  const [onlineCount, setOnlineCount] = useState(0);
+  const [replyTo, setReplyTo] = useState(null);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(null);
+  const [typingUsers, setTypingUsers] = useState([]);
+  const [roomUsers, setRoomUsers] = useState([]);
+  const [showDebug, setShowDebug] = useState(false);
+  const [logs, setLogs] = useState([]);
+  const messagesEndRef = useRef(null);
+  const typingTimeoutRef = useRef(null);
+  const [showCamera, setShowCamera] = useState(false);
+  const [stream, setStream] = useState(null);
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
+  const [showGamesMenu, setShowGamesMenu] = useState(false);
+  const [activeGame, setActiveGame] = useState(null);
+  const [gameState, setGameState] = useState(null);
+  const [gameInvite, setGameInvite] = useState(null);
+  const drawCanvasRef = useRef(null);
+  const [drawing, setDrawing] = useState(false);
+  const [drawColor, setDrawColor] = useState('#ffffff');
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setLogs([...debugLogs]);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
-      useEffect(() => {
-        const interval = setInterval(() => {
-          setLogs([...debugLogs]);
-        }, 1000);
-        return () => clearInterval(interval);
-      }, []);
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
-      useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-      }, [messages]);
+  useEffect(() => {
+    if (currentRoom && db) {
+      const messagesRef = db.ref(`messages/${currentRoom}`);
+      messagesRef.on('value', (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          const msgList = Object.values(data).sort(
+            (a, b) => a.timestamp - b.timestamp
+          );
+          setMessages(msgList);
+        } else {
+          setMessages([]);
+        }
+      });
+      return () => messagesRef.off();
+    }
+  }, [currentRoom]);
 
-      // Listen for messages
-useEffect(() => {
-  if (currentRoom && db) {
-    const messagesRef = db.ref(`messages/${currentRoom}`);
-    messagesRef.on('value', (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        const msgList = Object.values(data).sort((a, b) => a.timestamp - b.timestamp);
-        setMessages(msgList);
-      } else {
-        setMessages([]);
-      }
-    });
-    return () => messagesRef.off();
-  }
-}, [currentRoom]);
+  return (
+    <div>
+      Chat app loading…
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<ChatroomApp />);
 
 // Listen for active game
 useEffect(() => {
@@ -1341,6 +1351,7 @@ if (msg.type === 'snap') {
   </script>
 </body>
 </html>
+
 
 
 
