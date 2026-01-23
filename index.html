@@ -289,6 +289,40 @@
   <script type="text/babel">
     const { useState, useEffect, useRef } = React;
 
+    // Game data
+const WORD_CATEGORIES = {
+  animals: ['Dog', 'Cat', 'Elephant', 'Lion', 'Tiger', 'Bear'],
+  food: ['Pizza', 'Burger', 'Sushi', 'Pasta', 'Tacos'],
+  places: ['Beach', 'Mountain', 'City', 'Forest', 'Desert']
+};
+const DRAWING_WORDS = ['House', 'Tree', 'Car', 'Sun', 'Moon', 'Star'];
+const TRIVIA_QUESTIONS = [
+  { question: 'Capital of France?', options: ['London', 'Berlin', 'Paris', 'Madrid'], correct: 'Paris' },
+  { question: 'Red Planet?', options: ['Venus', 'Mars', 'Jupiter', 'Saturn'], correct: 'Mars' }
+];
+
+window.GameUtils = {
+  sendGameInvite: async (db, room, user, type, log) => {
+    await db.ref(`gameInvites/${room}`).set({ sender: user, gameType: type, timestamp: Date.now() });
+    log(`Sent ${type} invite`, 'success');
+  },
+  startImpostorGame: async (db, room, user, users, log) => {
+    const cat = Object.keys(WORD_CATEGORIES)[Math.floor(Math.random() * 3)];
+    const word = WORD_CATEGORIES[cat][Math.floor(Math.random() * WORD_CATEGORIES[cat].length)];
+    await db.ref(`games/${room}`).set({ type: 'impostor', category: cat, word, impostor: users[Math.floor(Math.random() * users.length)], players: users, votes: {}, revealed: false });
+  },
+  startDrawingGame: async (db, room, user, users, log) => {
+    await db.ref(`games/${room}`).set({ type: 'drawing', word: DRAWING_WORDS[0], drawer: users[0], players: users, guesses: {}, canvas: null });
+  },
+  startTriviaGame: async (db, room, user, users, log) => {
+    const q = TRIVIA_QUESTIONS[0];
+    await db.ref(`games/${room}`).set({ type: 'trivia', question: q.question, options: q.options, correctAnswer: q.correct, answers: {}, revealed: false });
+  },
+  endGame: async (db, room, log) => await db.ref(`games/${room}`).remove(),
+  updateCanvas: async (db, room, data, log) => await db.ref(`games/${room}/canvas`).set(data),
+  submitTriviaAnswer: async (db, room, user, answer, log) => await db.ref(`games/${room}/answers/${user}`).set(answer)
+};
+
     const firebaseConfig = {
       apiKey: "AIzaSyCR9UiBA6mg3J5a6WGtPK9F76E_ul1D1_c",
       authDomain: "chatroom-60410.firebaseapp.com",
@@ -430,6 +464,23 @@
       useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
       }, [messages]);
+
+      // Listen for messages
+useEffect(() => {
+  if (currentRoom && db) {
+    const messagesRef = db.ref(`messages/${currentRoom}`);
+    messagesRef.on('value', (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        const msgList = Object.values(data).sort((a, b) => a.timestamp - b.timestamp);
+        setMessages(msgList);
+      } else {
+        setMessages([]);
+      }
+    });
+    return () => messagesRef.off();
+  }
+}, [currentRoom]);
 
 // Listen for active game
 useEffect(() => {
@@ -1045,12 +1096,16 @@ const drawOnCanvas = async (e) => {
                       {isOwner && <span style={{ background: '#1a1a1a', padding: '4px 10px', borderRadius: '6px', border: '1px solid #333' }}>👑 Owner</span>}
                     </div>
                   </div>
+                  </div>
                   <div style={{ display: 'flex', gap: '10px' }}>
                     {isOwner && (
                       <button onClick={clearAllMessages} style={{ background: '#2a0000', border: '1px solid #ff0000', color: '#ff6666', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <Trash /> Clear All
                       </button>
                     )}
+                    <button onClick={() => setShowGamesMenu(!showGamesMenu)} className="glow-button" style={{ background: '#1a1a1a', color: '#fff', padding: '10px 20px', borderRadius: '8px', border: '1px solid #333', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Gamepad /> Games
+                    </button>
                     <button onClick={leaveRoom} className="glow-button" style={{ background: '#1a1a1a', color: '#fff', padding: '10px 20px', borderRadius: '8px', border: '1px solid #333', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <LogOut /> Leave
                     </button>
@@ -1084,23 +1139,62 @@ const drawOnCanvas = async (e) => {
                   {/* Game Invite Notification */}
 {gameInvite && (
   <div className="glow-border" style={{ background: '#0a0a0a', padding: '20px', marginBottom: '20px', borderRadius: '15px', border: '2px solid #4a9eff', animation: 'glow 2s ease-in-out infinite' }}>
-    <div style={{ textAlign: 'center' }}>
-      <div style={{ fontSize: '24px', marginBottom: '10px' }}>🎮</div>
-      <div style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '10px' }}>
-        {gameInvite.sender} wants to play {gameInvite.gameType}!
-      </div>
-      <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
-        <button onClick={acceptGameInvite} className="glow-button" style={{ background: '#00ff00', color: '#000', padding: '12px 24px', borderRadius: '8px', border: 'none', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer' }}>
-          ✓ Accept
-        </button>
-        <button onClick={declineGameInvite} style={{ background: '#2a0000', border: '1px solid #ff0000', color: '#ff6666', padding: '12px 24px', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: 'bold' }}>
-          ✕ Decline
-        </button>
-      </div>
-    </div>
+    {/* ... game invite content ... */}
   </div>
 )}
-                  {messages.map((msg) => {
+
+{showGamesMenu && (
+  <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={() => setShowGamesMenu(false)}>
+    {/* ... games menu content ... */}
+  </div>
+)}
+
+{activeGame && (
+  <div className="glow-border" style={{ background: '#0a0a0a', padding: '20px', marginBottom: '20px', borderRadius: '15px', border: '2px solid #4ade80' }}>
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+      <h3 style={{ fontSize: '18px', fontWeight: 'bold' }}>
+        {activeGame === 'impostor' && '🕵️ Impostor Game'}
+        {activeGame === 'drawing' && '🎨 Drawing Game'}
+        {activeGame === 'trivia' && '🧠 Trivia Battle'}
+      </h3>
+      <button onClick={() => window.GameUtils.endGame(db, currentRoom, addDebugLog)} style={{ background: '#2a0000', border: '1px solid #ff0000', color: '#ff6666', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontSize: '14px' }}>
+        End Game
+      </button>
+    </div>
+    {activeGame === 'impostor' && gameState && (
+      <div>
+        <p style={{ marginBottom: '10px' }}>Category: <strong>{gameState.category}</strong></p>
+        <p style={{ marginBottom: '10px' }}>Your word: <strong>{gameState.impostor === username ? 'You are the IMPOSTOR!' : gameState.word}</strong></p>
+      </div>
+    )}
+    {activeGame === 'drawing' && gameState && (
+      <div>
+        <p style={{ marginBottom: '10px' }}>{gameState.drawer === username ? `Draw: ${gameState.word}` : 'Guess what is being drawn!'}</p>
+        {gameState.drawer === username && (
+          <canvas ref={drawCanvasRef} width="400" height="300" onMouseDown={startDrawing} onMouseUp={stopDrawing} onMouseMove={drawOnCanvas} style={{ width: '100%', border: '1px solid #333', borderRadius: '10px', background: '#fff', cursor: 'crosshair' }} />
+        )}
+        {gameState.drawer !== username && gameState.canvas && (
+          <img src={gameState.canvas} alt="Drawing" style={{ width: '100%', border: '1px solid #333', borderRadius: '10px' }} />
+        )}
+      </div>
+    )}
+    {activeGame === 'trivia' && gameState && (
+      <div>
+        <p style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '15px' }}>{gameState.question}</p>
+        <div style={{ display: 'grid', gap: '10px' }}>
+          {gameState.options.map(opt => (
+            <button key={opt} onClick={() => window.GameUtils.submitTriviaAnswer(db, currentRoom, username, opt, addDebugLog)} style={{ padding: '12px', background: '#1a1a1a', border: '1px solid #333', borderRadius: '8px', color: '#fff', cursor: 'pointer', fontSize: '14px' }}>
+              {opt}
+            </button>
+          ))}
+        </div>
+      </div>
+    )}
+  </div>
+)}
+
+{messages.map((msg) => {
+  // ... rest of your messages code ...
                     // Inside the messages.map, after line 680, replace the message rendering section with:
 if (msg.type === 'system') {
   return <div key={msg.id} className="system-message">{msg.text}</div>;
@@ -1258,4 +1352,5 @@ if (msg.type === 'snap') {
   </script>
 </body>
 </html>
+
 
