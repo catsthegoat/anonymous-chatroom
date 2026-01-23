@@ -1087,14 +1087,15 @@ const drawOnCanvas = async (e) => {
             <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
               <div className="glow-border" style={{ background: '#0a0a0a', padding: '20px', borderBottom: '1px solid #333' }}>
             <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '15px' }}>
-  <div>
+<div>
     <h2 className="glow-text" style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '5px' }}>
       {currentRoomData?.name || 'Room'}
     </h2>
     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#999', fontSize: '13px' }}>
       <span>{roomUsers.length} {roomUsers.length === 1 ? 'user' : 'users'} in room</span>
       {isOwner && <span style={{ background: '#1a1a1a', padding: '4px 10px', borderRadius: '6px', border: '1px solid #333' }}>👑 Owner</span>}
-</div>
+    </div>
+  </div>
   <div style={{ display: 'flex', gap: '10px' }}>
                     {isOwner && (
                       <button onClick={clearAllMessages} style={{ background: '#2a0000', border: '1px solid #ff0000', color: '#ff6666', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -1340,6 +1341,7 @@ if (msg.type === 'snap') {
   </script>
 </body>
 </html>
+
 
 
 
