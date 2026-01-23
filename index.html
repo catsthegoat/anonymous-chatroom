@@ -83,7 +83,7 @@
     }
 
     .action-btn {
-      background: rgba(0, 0, 0, 0.8);
+      background: rgba(0, 0, 0, 0.9);
       border: 1px solid rgba(255, 255, 255, 0.3);
       padding: 6px 10px;
       border-radius: 8px;
@@ -95,7 +95,7 @@
     }
 
     .action-btn:hover {
-      background: rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.3);
       border-color: #fff;
       transform: scale(1.1);
     }
@@ -203,6 +203,67 @@
       opacity: 0.8;
     }
 
+    .debug-console {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(0, 0, 0, 0.95);
+      border: 1px solid #333;
+      border-radius: 10px;
+      padding: 15px;
+      max-width: 400px;
+      max-height: 300px;
+      overflow-y: auto;
+      font-size: 12px;
+      font-family: monospace;
+      z-index: 9999;
+    }
+
+    .debug-log {
+      margin-bottom: 5px;
+      padding: 5px;
+      border-radius: 3px;
+    }
+
+    .debug-log.info {
+      color: #4a9eff;
+    }
+
+    .debug-log.success {
+      color: #4ade80;
+    }
+
+    .debug-log.error {
+      color: #f87171;
+      background: rgba(248, 113, 113, 0.1);
+    }
+
+    .debug-log.warning {
+      color: #fbbf24;
+    }
+
+    .debug-toggle {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 9998;
+      transition: all 0.3s;
+    }
+
+    .debug-toggle:hover {
+      background: #2a2a2a;
+      transform: scale(1.1);
+    }
+
     ::-webkit-scrollbar {
       width: 10px;
     }
@@ -239,105 +300,85 @@
     };
 
     let db = null;
-    let firebaseInitialized = false;
+    const debugLogs = [];
+    
+    const addDebugLog = (message, type = 'info') => {
+      const timestamp = new Date().toLocaleTimeString();
+      debugLogs.push({ message, type, timestamp });
+      if (debugLogs.length > 50) debugLogs.shift();
+      console.log(`[${type.toUpperCase()}] ${message}`);
+    };
+
     try {
       if (!firebase.apps.length) {
         firebase.initializeApp(firebaseConfig);
+        addDebugLog('Firebase initialized', 'success');
       }
       db = firebase.database();
-      firebaseInitialized = true;
-      console.log("Firebase connected successfully!");
+      addDebugLog('Database connection established', 'success');
     } catch (error) {
-      console.error("Firebase error:", error);
-      alert("Firebase connection failed: " + error.message);
+      addDebugLog(`Firebase error: ${error.message}`, 'error');
     }
 
     const EMOJIS = ['😀', '😂', '❤️', '👍', '🔥', '🎉', '😍', '🤔', '👀', '💯', '✨', '🚀'];
 
     function MessageCircle() {
-      return (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-        </svg>
-      );
+      return <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>;
     }
 
     function Send() {
-      return (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <line x1="22" y1="2" x2="11" y2="13"></line>
-          <polygon points="22 2 15 22 11 13 2 9 22 2"/>
-        </svg>
-      );
+      return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>;
     }
 
     function Users() {
-      return (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-          <circle cx="9" cy="7" r="4"/>
-          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-        </svg>
-      );
+      return <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>;
     }
 
     function Plus() {
-      return (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <line x1="12" y1="5" x2="12" y2="19"></line>
-          <line x1="5" y1="12" x2="19" y2="12"></line>
-        </svg>
-      );
+      return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>;
     }
 
     function Lock() {
-      return (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-        </svg>
-      );
+      return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>;
     }
 
     function LogOut() {
-      return (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-          <polyline points="16 17 21 12 16 7"/>
-          <line x1="21" y1="12" x2="9" y2="12"></line>
-        </svg>
-      );
+      return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"></line></svg>;
     }
 
     function Trash() {
-      return (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <polyline points="3 6 5 6 21 6"/>
-          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-        </svg>
-      );
+      return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>;
     }
 
     function Smile() {
-      return (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <circle cx="12" cy="12" r="10"/>
-          <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
-          <line x1="9" y1="9" x2="9.01" y2="9"/>
-          <line x1="15" y1="9" x2="15.01" y2="9"/>
-        </svg>
-      );
+      return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>;
     }
 
     function UserX() {
+      return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="18" y1="8" x2="23" y2="13"/><line x1="23" y1="8" x2="18" y2="13"/></svg>;
+    }
+
+    function Bug() {
+      return <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="8" y="6" width="8" height="14" rx="4"/><path d="M6 12h12M8 18v-2M16 18v-2M8 6V4M16 6V4M19 9l2-2M5 9L3 7M19 15l2 2M5 15l-2 2"/></svg>;
+    }
+
+    function DebugConsole({ logs, onClose }) {
       return (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-          <circle cx="8.5" cy="7" r="4"/>
-          <line x1="18" y1="8" x2="23" y2="13"/>
-          <line x1="23" y1="8" x2="18" y2="13"/>
-        </svg>
+        <div className="debug-console">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', borderBottom: '1px solid #333', paddingBottom: '10px' }}>
+            <div style={{ fontWeight: 'bold', color: '#fff' }}>🐛 Debug Console</div>
+            <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: '#999', cursor: 'pointer', fontSize: '18px' }}>×</button>
+          </div>
+          {logs.length === 0 ? (
+            <div style={{ color: '#666', textAlign: 'center', padding: '20px' }}>No logs yet...</div>
+          ) : (
+            logs.map((log, index) => (
+              <div key={index} className={`debug-log ${log.type}`}>
+                <span style={{ color: '#666' }}>[{log.timestamp}]</span> {log.message}
+              </div>
+            ))
+          )}
+        </div>
       );
     }
 
@@ -354,11 +395,20 @@
       const [error, setError] = useState('');
       const [onlineCount, setOnlineCount] = useState(0);
       const [replyTo, setReplyTo] = useState(null);
-      const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+      const [showEmojiPicker, setShowEmojiPicker] = useState(null);
       const [typingUsers, setTypingUsers] = useState([]);
       const [roomUsers, setRoomUsers] = useState([]);
+      const [showDebug, setShowDebug] = useState(false);
+      const [logs, setLogs] = useState([]);
       const messagesEndRef = useRef(null);
       const typingTimeoutRef = useRef(null);
+
+      useEffect(() => {
+        const interval = setInterval(() => {
+          setLogs([...debugLogs]);
+        }, 1000);
+        return () => clearInterval(interval);
+      }, []);
 
       useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -366,8 +416,8 @@
 
       useEffect(() => {
         if (currentRoom && db) {
+          addDebugLog(`Listening to messages in room: ${currentRoom}`, 'info');
           const messagesRef = db.ref(`messages/${currentRoom}`);
-          
           messagesRef.on('value', (snapshot) => {
             const data = snapshot.val();
             if (data) {
@@ -375,30 +425,38 @@
                 .filter(msg => msg.text || msg.type === 'system')
                 .sort((a, b) => a.timestamp - b.timestamp);
               setMessages(messageList);
+              addDebugLog(`Loaded ${messageList.length} messages`, 'success');
             } else {
               setMessages([]);
+              addDebugLog('No messages in room', 'info');
             }
           });
-
-          return () => messagesRef.off();
+          return () => {
+            messagesRef.off();
+            addDebugLog('Stopped listening to messages', 'info');
+          };
         }
       }, [currentRoom]);
 
       useEffect(() => {
-        if ((currentView === 'lobby' || currentView === 'create') && db) {
+        if ((currentView === 'lobby' || currentView === 'create' || currentView === 'room') && db) {
+          addDebugLog('Listening to rooms', 'info');
           const roomsRef = db.ref('rooms');
-          
           roomsRef.on('value', (snapshot) => {
             const data = snapshot.val();
             if (data) {
               const roomList = Object.values(data).sort((a, b) => b.createdAt - a.createdAt);
               setRooms(roomList);
+              addDebugLog(`Found ${roomList.length} rooms`, 'success');
             } else {
               setRooms([]);
+              addDebugLog('No rooms available', 'info');
             }
           });
-
-          return () => roomsRef.off();
+          return () => {
+            roomsRef.off();
+            addDebugLog('Stopped listening to rooms', 'info');
+          };
         }
       }, [currentView]);
 
@@ -415,13 +473,13 @@
               setOnlineCount(0);
             }
           });
-
           return () => onlineRef.off();
         }
       }, [currentView]);
 
       useEffect(() => {
         if (currentRoom && username && db) {
+          addDebugLog(`Joining room as ${username}`, 'info');
           const roomUserRef = db.ref(`roomUsers/${currentRoom}/${username}`);
           roomUserRef.set({ username, timestamp: Date.now() });
           roomUserRef.onDisconnect().remove();
@@ -430,7 +488,9 @@
           roomUsersRef.on('value', (snapshot) => {
             const data = snapshot.val();
             if (data) {
-              setRoomUsers(Object.values(data).map(u => u.username));
+              const users = Object.values(data).map(u => u.username);
+              setRoomUsers(users);
+              addDebugLog(`Room users: ${users.join(', ')}`, 'info');
             } else {
               setRoomUsers([]);
             }
@@ -446,7 +506,6 @@
       useEffect(() => {
         if (currentRoom && db) {
           const typingRef = db.ref(`typing/${currentRoom}`);
-          
           typingRef.on('value', (snapshot) => {
             const data = snapshot.val();
             if (data) {
@@ -459,7 +518,6 @@
               setTypingUsers([]);
             }
           });
-
           return () => typingRef.off();
         }
       }, [currentRoom, username]);
@@ -467,28 +525,23 @@
       useEffect(() => {
         if (username && db) {
           const userRef = db.ref(`online/${username}`);
-          
           const updatePresence = () => {
             userRef.set(Date.now());
           };
-          
           updatePresence();
           userRef.onDisconnect().remove();
-          
           const interval = setInterval(updatePresence, 30000);
+          addDebugLog(`User ${username} set as online`, 'success');
           return () => clearInterval(interval);
         }
       }, [username]);
 
       const updateTyping = () => {
         if (!currentRoom || !username || !db) return;
-        
         db.ref(`typing/${currentRoom}/${username}`).set(Date.now());
-        
         if (typingTimeoutRef.current) {
           clearTimeout(typingTimeoutRef.current);
         }
-        
         typingTimeoutRef.current = setTimeout(() => {
           db.ref(`typing/${currentRoom}/${username}`).remove();
         }, 3000);
@@ -497,14 +550,9 @@
       const createRoom = async () => {
         if (!newRoomName.trim()) {
           setError('Room name required');
+          addDebugLog('Room creation failed: name required', 'error');
           return;
         }
-
-        if (!db) {
-          setError('Database not connected');
-          return;
-        }
-
         const roomId = Date.now().toString();
         const room = {
           id: roomId,
@@ -513,39 +561,35 @@
           createdAt: Date.now(),
           owner: username
         };
-
         try {
           await db.ref(`rooms/${roomId}`).set(room);
+          addDebugLog(`Room created: ${newRoomName}`, 'success');
           setCurrentRoom(roomId);
           setNewRoomName('');
           setNewRoomPassword('');
           setError('');
           setCurrentView('room');
         } catch (err) {
-          setError('Failed to create room: ' + err.message);
+          setError('Failed to create room');
+          addDebugLog(`Room creation error: ${err.message}`, 'error');
         }
       };
 
       const joinRoom = (room, password = '') => {
         if (room.password && room.password !== password) {
           setError('Incorrect password');
+          addDebugLog(`Failed to join ${room.name}: wrong password`, 'error');
           return;
         }
-        
         setCurrentRoom(room.id);
         setCurrentView('room');
         setError('');
+        addDebugLog(`Joined room: ${room.name}`, 'success');
       };
 
       const sendMessage = async () => {
         if (!message.trim() || !currentRoom) return;
-
-        if (!db) {
-          setError('Database not connected');
-          return;
-        }
-
-        const msgId = Date.now().toString() + Math.floor(Math.random() * 10000).toString();
+        const msgId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
         const newMsg = {
           id: msgId,
           username,
@@ -554,98 +598,100 @@
           replyTo: replyTo ? replyTo.id : null,
           reactions: {}
         };
-
         try {
           await db.ref(`messages/${currentRoom}/${msgId}`).set(newMsg);
+          addDebugLog(`Message sent: "${message.trim().substring(0, 30)}..."`, 'success');
           setMessage('');
           setReplyTo(null);
-          setError('');
           db.ref(`typing/${currentRoom}/${username}`).remove();
         } catch (err) {
-          setError('Failed to send: ' + err.message);
+          setError('Failed to send message');
+          addDebugLog(`Message send error: ${err.message}`, 'error');
         }
       };
 
       const addReaction = async (messageId, emoji) => {
         if (!currentRoom || !db) return;
-
-        const reactionPath = `messages/${currentRoom}/${messageId}/reactions/${emoji}`;
-        const reactionRef = db.ref(reactionPath);
-        
-        const snapshot = await reactionRef.once('value');
-        const users = snapshot.val() || [];
-        
-        if (users.includes(username)) {
-          const newUsers = users.filter(u => u !== username);
-          if (newUsers.length === 0) {
-            await reactionRef.remove();
+        try {
+          const reactionPath = `messages/${currentRoom}/${messageId}/reactions/${emoji}`;
+          const reactionRef = db.ref(reactionPath);
+          const snapshot = await reactionRef.once('value');
+          const users = snapshot.val() || [];
+          if (users.includes(username)) {
+            const newUsers = users.filter(u => u !== username);
+            if (newUsers.length === 0) {
+              await reactionRef.remove();
+            } else {
+              await reactionRef.set(newUsers);
+            }
+            addDebugLog(`Removed reaction ${emoji}`, 'info');
           } else {
-            await reactionRef.set(newUsers);
+            await reactionRef.set([...users, username]);
+            addDebugLog(`Added reaction ${emoji}`, 'success');
           }
-        } else {
-          await reactionRef.set([...users, username]);
+        } catch (err) {
+          addDebugLog(`Reaction error: ${err.message}`, 'error');
         }
       };
 
       const clearAllMessages = async () => {
         const currentRoomData = rooms.find(r => r.id === currentRoom);
         if (!currentRoomData || currentRoomData.owner !== username) {
-          alert('Only the room owner can clear messages!');
+          alert('❌ Only the room owner can clear messages!');
+          addDebugLog('Clear messages denied: not owner', 'warning');
           return;
         }
-
-        if (!confirm('Clear all messages in this room?')) return;
-
+        if (!confirm('⚠️ Clear all messages in this room?')) return;
         try {
           await db.ref(`messages/${currentRoom}`).remove();
+          addDebugLog('All messages cleared', 'success');
         } catch (err) {
           setError('Failed to clear messages');
+          addDebugLog(`Clear messages error: ${err.message}`, 'error');
         }
       };
 
       const kickUser = async (targetUser) => {
         const currentRoomData = rooms.find(r => r.id === currentRoom);
         if (!currentRoomData || currentRoomData.owner !== username) {
-          alert('Only the room owner can kick users!');
+          alert('❌ Only the room owner can kick users!');
+          addDebugLog('Kick denied: not owner', 'warning');
           return;
         }
-
-        if (!confirm(`Kick ${targetUser} from the room?`)) return;
-
-        const msgId = Date.now().toString() + Math.floor(Math.random() * 10000).toString();
+        if (!confirm(`⚠️ Kick ${targetUser} from the room?`)) return;
+        const msgId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
         const systemMsg = {
           id: msgId,
           type: 'system',
           text: `${targetUser} was kicked from the room`,
           timestamp: Date.now()
         };
-
         try {
           await db.ref(`messages/${currentRoom}/${msgId}`).set(systemMsg);
           await db.ref(`roomUsers/${currentRoom}/${targetUser}`).remove();
+          addDebugLog(`Kicked user: ${targetUser}`, 'success');
         } catch (err) {
           setError('Failed to kick user');
+          addDebugLog(`Kick error: ${err.message}`, 'error');
         }
       };
 
       const leaveRoom = async () => {
         if (!currentRoom || !username) return;
-
-        const msgId = Date.now().toString() + Math.floor(Math.random() * 10000).toString();
+        const msgId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
         const systemMsg = {
           id: msgId,
           type: 'system',
           text: `${username} left the room`,
           timestamp: Date.now()
         };
-
         try {
           await db.ref(`messages/${currentRoom}/${msgId}`).set(systemMsg);
           await db.ref(`roomUsers/${currentRoom}/${username}`).remove();
+          addDebugLog('Left room', 'info');
         } catch (err) {
-          console.error('Error leaving room:', err);
+          addDebugLog(`Leave room error: ${err.message}`, 'error');
         }
-
         setCurrentRoom(null);
         setCurrentView('lobby');
         setMessages([]);
@@ -653,15 +699,22 @@
 
       const deleteRoom = async (roomId, e) => {
         e.stopPropagation();
-        if (!confirm('Delete this room and all messages?')) return;
-
+        const room = rooms.find(r => r.id === roomId);
+        if (room && room.owner !== username) {
+          alert('❌ Only the room owner can delete this room!');
+          addDebugLog('Delete denied: not owner', 'warning');
+          return;
+        }
+        if (!confirm('⚠️ Delete this room and all messages?')) return;
         try {
           await db.ref(`rooms/${roomId}`).remove();
           await db.ref(`messages/${roomId}`).remove();
           await db.ref(`roomUsers/${roomId}`).remove();
           await db.ref(`typing/${roomId}`).remove();
+          addDebugLog(`Room deleted: ${room.name}`, 'success');
         } catch (err) {
           setError('Failed to delete room');
+          addDebugLog(`Delete room error: ${err.message}`, 'error');
         }
       };
 
@@ -676,376 +729,305 @@
 
       if (currentView === 'start') {
         return (
-          <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-            <div className="glow-border" style={{ background: '#0a0a0a', borderRadius: '20px', padding: '40px', width: '100%', maxWidth: '400px', border: '1px solid #333' }}>
-              <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-                <div className="glow" style={{ display: 'inline-block' }}><MessageCircle /></div>
-                <h1 className="glow-text" style={{ fontSize: '32px', fontWeight: 'bold', marginTop: '20px', marginBottom: '10px' }}>CHATROOMS</h1>
-                <p style={{ color: '#999' }}>Enter the void</p>
-              </div>
-              
-              <input
-                type="text"
-                value={tempUsername}
-                onChange={(e) => setTempUsername(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && tempUsername.trim() && (setUsername(tempUsername.trim()), setCurrentView('lobby'))}
-                placeholder="Choose username..."
-                style={{ width: '100%', padding: '15px', background: '#1a1a1a', border: '1px solid #333', borderRadius: '10px', color: '#fff', fontSize: '16px', marginBottom: '20px' }}
-              />
-
-              <div style={{ display: 'grid', gap: '10px' }}>
-                <button
-                  onClick={() => tempUsername.trim() ? (setUsername(tempUsername.trim()), setCurrentView('lobby')) : setError('Enter a username')}
-                  className="glow-button"
-                  style={{ width: '100%', background: '#fff', color: '#000', padding: '15px', borderRadius: '10px', border: 'none', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}
-                >
-                  JOIN ROOM
-                </button>
-                <button
-                  onClick={() => tempUsername.trim() ? (setUsername(tempUsername.trim()), setCurrentView('create')) : setError('Enter a username')}
-                  className="glow-button"
-                  style={{ width: '100%', background: '#1a1a1a', color: '#fff', padding: '15px', borderRadius: '10px', border: '1px solid #333', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}
-                >
-                  CREATE ROOM
-                </button>
-              </div>
-
-              {error && (
-                <div style={{ background: '#2a0000', border: '1px solid #ff0000', color: '#ff6666', padding: '15px', borderRadius: '10px', marginTop: '15px' }}>
-                  {error}
+          <>
+            <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+              <div className="glow-border" style={{ background: '#0a0a0a', borderRadius: '20px', padding: '40px', width: '100%', maxWidth: '400px', border: '1px solid #333' }}>
+                <div style={{ textAlign: 'center', marginBottom: '30px' }}>
+                  <div className="glow" style={{ display: 'inline-block' }}><MessageCircle /></div>
+                  <h1 className="glow-text" style={{ fontSize: '32px', fontWeight: 'bold', marginTop: '20px', marginBottom: '10px' }}>CHATROOMS</h1>
+                  <p style={{ color: '#999' }}>Enter the void</p>
                 </div>
-              )}
+                <input
+                  type="text"
+                  value={tempUsername}
+                  onChange={(e) => setTempUsername(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && tempUsername.trim() && (setUsername(tempUsername.trim()), setCurrentView('lobby'))}
+                  placeholder="Choose username..."
+                  style={{ width: '100%', padding: '15px', background: '#1a1a1a', border: '1px solid #333', borderRadius: '10px', color: '#fff', fontSize: '16px', marginBottom: '20px' }}
+                />
+                <div style={{ display: 'grid', gap: '10px' }}>
+                  <button onClick={() => tempUsername.trim() ? (setUsername(tempUsername.trim()), setCurrentView('lobby')) : setError('Enter a username')} className="glow-button" style={{ width: '100%', background: '#fff', color: '#000', padding: '15px', borderRadius: '10px', border: 'none', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>JOIN ROOM</button>
+                  <button onClick={() => tempUsername.trim() ? (setUsername(tempUsername.trim()), setCurrentView('create')) : setError('Enter a username')} className="glow-button" style={{ width: '100%', background: '#1a1a1a', color: '#fff', padding: '15px', borderRadius: '10px', border: '1px solid #333', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>CREATE ROOM</button>
+                </div>
+                {error && <div style={{ background: '#2a0000', border: '1px solid #ff0000', color: '#ff6666', padding: '15px', borderRadius: '10px', marginTop: '15px' }}>{error}</div>}
+              </div>
             </div>
-          </div>
+            {!showDebug && (
+              <div className="debug-toggle" onClick={() => setShowDebug(true)}>
+                <Bug />
+              </div>
+            )}
+            {showDebug && <DebugConsole logs={logs} onClose={() => setShowDebug(false)} />}
+          </>
+        );
+      }
+
+      if (currentView === 'create') {
+        return (
+          <>
+            <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+              <div className="glow-border" style={{ background: '#0a0a0a', borderRadius: '20px', padding: '40px', width: '100%', maxWidth: '500px', border: '1px solid #333' }}>
+                <div style={{ textAlign: 'center', marginBottom: '30px' }}>
+                  <div className="glow" style={{ display: 'inline-block' }}><Plus /></div>
+                  <h1 className="glow-text" style={{ fontSize: '28px', fontWeight: 'bold', marginTop: '20px', marginBottom: '10px' }}>CREATE ROOM</h1>
+                  <p style={{ color: '#999' }}>User: {username}</p>
+                </div>
+                <input type="text" value={newRoomName} onChange={(e) => setNewRoomName(e.target.value)} placeholder="Room name..." style={{ width: '100%', padding: '15px', background: '#1a1a1a', border: '1px solid #333', borderRadius: '10px', color: '#fff', fontSize: '16px', marginBottom: '15px' }} />
+                <input type="password" value={newRoomPassword} onChange={(e) => setNewRoomPassword(e.target.value)} placeholder="Password (optional)..." style={{ width: '100%', padding: '15px', background: '#1a1a1a', border: '1px solid #333', borderRadius: '10px', color: '#fff', fontSize: '16px', marginBottom: '20px' }} />
+                <div style={{ display: 'grid', gap: '10px' }}>
+                  <button onClick={createRoom} className="glow-button" style={{ width: '100%', background: '#fff', color: '#000', padding: '15px', borderRadius: '10px', border: 'none', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>CREATE & ENTER</button>
+                  <button onClick={() => setCurrentView('lobby')} style={{ width: '100%', background: '#1a1a1a', color: '#fff', padding: '15px', borderRadius: '10px', border: '1px solid #333', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>BACK</button>
+                </div>
+                {error && <div style={{ background: '#2a0000', border: '1px solid #ff0000', color: '#ff6666', padding: '15px', borderRadius: '10px', marginTop: '15px' }}>{error}</div>}
+              </div>
+            </div>
+            {!showDebug && (
+              <div className="debug-toggle" onClick={() => setShowDebug(true)}>
+                <Bug />
+              </div>
+            )}
+            {showDebug && <DebugConsole logs={logs} onClose={() => setShowDebug(false)} />}
+          </>
         );
       }
 
       if (currentView === 'lobby') {
         return (
-          <div style={{ minHeight: '100vh', padding: '20px' }}>
-            <div style={{ maxWidth: '900px', margin: '0 auto' }}>
-              <div className="glow-border" style={{ background: '#0a0a0a', borderRadius: '20px', padding: '30px', marginBottom: '30px', border: '1px solid #333' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '30px', flexWrap: 'wrap', gap: '15px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                    <div className="glow"><MessageCircle /></div>
-                    <h1 className="glow-text" style={{ fontSize: '28px', fontWeight: 'bold' }}>ROOMS</h1>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '20px', fontSize: '14px', color: '#999' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <Users />
-                      <span>{onlineCount} online</span>
+          <>
+            <div style={{ minHeight: '100vh', padding: '20px' }}>
+              <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+                <div className="glow-border" style={{ background: '#0a0a0a', borderRadius: '20px', padding: '30px', marginBottom: '30px', border: '1px solid #333' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '15px' }}>
+                    <div>
+                      <h1 className="glow-text" style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '5px' }}>LOBBY</h1>
+                      <p style={{ color: '#999' }}>Logged in as {username}</p>
                     </div>
-                    <div>User: <span className="glow-text" style={{ color: '#fff', fontWeight: 'bold' }}>{username}</span></div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#1a1a1a', padding: '10px 20px', borderRadius: '10px', border: '1px solid #333' }}>
+                        <Users />
+                        <span>{onlineCount} online</span>
+                      </div>
+                      <button onClick={() => setCurrentView('create')} className="glow-button" style={{ background: '#fff', color: '#000', padding: '12px 24px', borderRadius: '10px', border: 'none', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Plus /> CREATE
+                      </button>
+                    </div>
                   </div>
                 </div>
 
-                {error && (
-                  <div style={{ background: '#2a0000', border: '1px solid #ff0000', color: '#ff6666', padding: '15px', borderRadius: '10px', marginBottom: '20px' }}>
-                    {error}
-                  </div>
-                )}
-
-                <div style={{ marginBottom: '20px' }}>
-                  <button
-                    onClick={() => setCurrentView('create')}
-                    className="glow-button"
-                    style={{ background: '#fff', color: '#000', padding: '12px 24px', borderRadius: '8px', border: 'none', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
-                  >
-                    <Plus /> CREATE NEW ROOM
-                  </button>
-                </div>
-
-                <div>
+                <div style={{ display: 'grid', gap: '15px' }}>
                   {rooms.length === 0 ? (
-                    <div style={{ textAlign: 'center', padding: '60px 20px', color: '#666' }}>
-                      <div className="glow" style={{ display: 'inline-block', marginBottom: '15px' }}><Users /></div>
-                      <p>No rooms available. Create one!</p>
+                    <div className="glow-border" style={{ background: '#0a0a0a', borderRadius: '15px', padding: '60px 20px', textAlign: 'center', border: '1px solid #333' }}>
+                      <div className="glow" style={{ display: 'inline-block', marginBottom: '15px' }}><MessageCircle /></div>
+                      <p style={{ color: '#666', fontSize: '16px' }}>No rooms yet. Create one!</p>
                     </div>
                   ) : (
-                    <div style={{ display: 'grid', gap: '10px' }}>
-                      {rooms.map((room) => (
-                        <div
-                          key={room.id}
-                          className="glow-border"
-                          onClick={() => {
-                            if (room.password) {
-                              const pwd = prompt('Enter room password:');
-                              if (pwd) joinRoom(room, pwd);
-                            } else {
-                              joinRoom(room);
-                            }
-                          }}
-                          style={{ background: '#1a1a1a', borderRadius: '10px', padding: '20px', border: '1px solid #2a2a2a', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
-                        >
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                            {room.password && <Lock />}
-                            <div>
-                              <h3 className="glow-text" style={{ fontWeight: 'bold', marginBottom: '5px' }}>{room.name}</h3>
-                              <p style={{ fontSize: '14px', color: '#666' }}>
-                                Owner: {room.owner} • Created {new Date(room.createdAt).toLocaleDateString()}
-                              </p>
+                    rooms.map(room => (
+                      <div key={room.id} onClick={() => {
+                        if (room.password) {
+                          const pwd = prompt('🔒 Enter room password:');
+                          if (pwd !== null) joinRoom(room, pwd);
+                        } else {
+                          joinRoom(room);
+                        }
+                      }} className="glow-border" style={{ background: '#0a0a0a', borderRadius: '15px', padding: '20px', border: '1px solid #333', cursor: 'pointer', transition: 'all 0.3s', position: 'relative' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '15px' }}>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+                              <h3 style={{ fontSize: '18px', fontWeight: 'bold' }}>{room.name}</h3>
+                              {room.password && <Lock />}
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '15px', color: '#666', fontSize: '13px' }}>
+                              <span>Owner: {room.owner}</span>
+                              <span>•</span>
+                              <span>Created {new Date(room.createdAt).toLocaleDateString()}</span>
                             </div>
                           </div>
-                          <button
-                            onClick={(e) => deleteRoom(room.id, e)}
-                            style={{ padding: '10px', background: 'transparent', border: 'none', color: '#ff4444', cursor: 'pointer' }}
-                          >
-                            <Trash />
-                          </button>
+                          {room.owner === username && (
+                            <button onClick={(e) => deleteRoom(room.id, e)} style={{ background: '#2a0000', border: '1px solid #ff0000', color: '#ff6666', padding: '10px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                              <Trash /> Delete
+                            </button>
+                          )}
                         </div>
-                      ))}
-                    </div>
+                      </div>
+                    ))
                   )}
                 </div>
               </div>
             </div>
-          </div>
+            {!showDebug && (
+              <div className="debug-toggle" onClick={() => setShowDebug(true)}>
+                <Bug />
+              </div>
+            )}
+            {showDebug && <DebugConsole logs={logs} onClose={() => setShowDebug(false)} />}
+          </>
         );
       }
 
-      const currentRoomData = rooms.find(r => r.id === currentRoom);
-      const isOwner = currentRoomData?.owner === username;
-      
-      return (
-        <div style={{ minHeight: '100vh', padding: '20px' }}>
-          <div style={{ maxWidth: '900px', margin: '0 auto', height: 'calc(100vh - 40px)', display: 'flex', flexDirection: 'column' }}>
-            <div className="glow-border" style={{ background: '#0a0a0a', borderRadius: '20px 20px 0 0', padding: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: '1px solid #333', borderBottom: 'none', flexWrap: 'wrap', gap: '10px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                <div className="glow"><MessageCircle /></div>
-                <div>
-                  <h2 className="glow-text" style={{ fontWeight: 'bold' }}>{currentRoomData?.name}</h2>
-                  <p style={{ fontSize: '14px', color: '#666' }}>as {username} • {roomUsers.length} in room {isOwner && '• 👑 Owner'}</p>
-                </div>
-              </div>
-              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                {isOwner && (
-                  <>
-                    <button
-                      onClick={clearAllMessages}
-                      className="glow-button"
-                      title="Clear all messages (Owner only)"
-                      style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 15px', background: '#2a0000', border: '1px solid #ff0000', borderRadius: '8px', color: '#ff6666', cursor: 'pointer', fontSize: '14px', fontWeight: 'bold' }}
-                    >
-                      <Trash /> CLEAR
-                    </button>
-                    <button
-                      onClick={() => {
-                        const userList = roomUsers.filter(u => u !== username).join(', ');
-                        if (userList) {
-                          const targetUser = prompt(`Enter username to kick (${userList}):`);
-                          if (targetUser && roomUsers.includes(targetUser)) {
-                            kickUser(targetUser);
-                          } else if (targetUser) {
-                            alert('User not found in room');
-                          }
-                        } else {
-                          alert('No other users in room');
-                        }
-                      }}
-                      className="glow-button"
-                      title="Kick user (Owner only)"
-                      style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 15px', background: '#2a1a00', border: '1px solid #ff9900', borderRadius: '8px', color: '#ffcc66', cursor: 'pointer', fontSize: '14px', fontWeight: 'bold' }}
-                    >
-                      <UserX /> KICK
-                    </button>
-                  </>
-                )}
-                <button
-                  onClick={leaveRoom}
-                  className="glow-button"
-                  style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 20px', background: '#1a1a1a', border: '1px solid #333', borderRadius: '8px', color: '#fff', cursor: 'pointer', fontWeight: 'bold' }}
-                >
-                  <LogOut /> LEAVE
-                </button>
-              </div>
-            </div>
+      if (currentView === 'room') {
+        const currentRoomData = rooms.find(r => r.id === currentRoom);
+        const isOwner = currentRoomData && currentRoomData.owner === username;
 
-            <div className="glow-border" style={{ background: '#0a0a0a', flex: 1, overflowY: 'auto', padding: '20px', border: '1px solid #333', borderTop: 'none', borderBottom: 'none' }}>
-              {messages.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '60px 20px', color: '#666' }}>
-                  <div className="glow" style={{ display: 'inline-block', marginBottom: '15px' }}><MessageCircle /></div>
-                  <p>No messages yet. Start the conversation!</p>
+        return (
+          <>
+            <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+              <div className="glow-border" style={{ background: '#0a0a0a', padding: '20px', borderBottom: '1px solid #333' }}>
+                <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '15px' }}>
+                  <div>
+                    <h2 className="glow-text" style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '5px' }}>
+                      {currentRoomData?.name || 'Room'}
+                    </h2>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#999', fontSize: '13px' }}>
+                      <span>{roomUsers.length} {roomUsers.length === 1 ? 'user' : 'users'} in room</span>
+                      {isOwner && <span style={{ background: '#1a1a1a', padding: '4px 10px', borderRadius: '6px', border: '1px solid #333' }}>👑 Owner</span>}
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    {isOwner && (
+                      <button onClick={clearAllMessages} style={{ background: '#2a0000', border: '1px solid #ff0000', color: '#ff6666', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Trash /> Clear All
+                      </button>
+                    )}
+                    <button onClick={leaveRoom} className="glow-button" style={{ background: '#1a1a1a', color: '#fff', padding: '10px 20px', borderRadius: '8px', border: '1px solid #333', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <LogOut /> Leave
+                    </button>
+                  </div>
                 </div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+              </div>
+
+              {roomUsers.length > 1 && (
+                <div style={{ background: '#0a0a0a', padding: '10px 20px', borderBottom: '1px solid #333' }}>
+                  <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                    <Users style={{ width: '16px', height: '16px' }} />
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                      {roomUsers.map(user => (
+                        <div key={user} style={{ background: '#1a1a1a', padding: '6px 12px', borderRadius: '8px', border: '1px solid #333', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span>{user}</span>
+                          {user === currentRoomData?.owner && <span>👑</span>}
+                          {isOwner && user !== username && (
+                            <button onClick={() => kickUser(user)} style={{ background: 'transparent', border: 'none', color: '#ff6666', cursor: 'pointer', padding: '0 5px' }}>
+                              <UserX style={{ width: '14px', height: '14px' }} />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div style={{ flex: 1, overflow: 'auto', background: '#000', padding: '20px' }}>
+                <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
                   {messages.map((msg) => {
                     if (msg.type === 'system') {
-                      return (
-                        <div key={msg.id} className="system-message">
-                          {msg.text}
-                        </div>
-                      );
+                      return <div key={msg.id} className="system-message">{msg.text}</div>;
                     }
 
                     const replyMsg = msg.replyTo ? getReplyMessage(msg.replyTo) : null;
-                    const reactions = msg.reactions || {};
-                    const hasReactions = Object.keys(reactions).length > 0;
+                    const userColor = `hsl(${msg.username.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % 360}, 70%, 60%)`;
 
                     return (
-                      <div
-                        key={msg.id}
-                        style={{ display: 'flex', justifyContent: msg.username === username ? 'flex-end' : 'flex-start' }}
-                      >
-                        <div
-                          className="message-bubble"
-                          style={{
-                            maxWidth: '70%',
-                            borderRadius: '15px',
-                            padding: '12px 18px',
-                            paddingTop: '20px',
-                            background: msg.username === username ? '#fff' : '#1a1a1a',
-                            color: msg.username === username ? '#000' : '#fff',
-                            border: msg.username === username ? 'none' : '1px solid #2a2a2a',
-                            position: 'relative'
-                          }}
-                        >
-                          <div className="message-actions">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setReplyTo(msg);
-                              }}
-                              className="action-btn"
-                              title="Reply to this message"
-                            >
-                              ↩️
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                const emoji = prompt('Choose an emoji:\n\n' + EMOJIS.join('  '));
-                                if (emoji && emoji.trim()) {
-                                  addReaction(msg.id, emoji.trim());
-                                }
-                              }}
-                              className="action-btn"
-                              title="React with emoji"
-                            >
-                              😊
-                            </button>
-                          </div>
-
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '5px' }}>
-                            <span style={{ fontWeight: 'bold', fontSize: '14px' }}>{msg.username}</span>
-                            <span style={{ fontSize: '12px', opacity: 0.6 }}>{formatTime(msg.timestamp)}</span>
-                          </div>
-
-                          {replyMsg && (
-                            <div className="reply-to" style={{ borderColor: msg.username === username ? '#666' : '#999' }}>
-                              <div style={{ fontSize: '11px', fontWeight: 'bold', marginBottom: '2px', opacity: 0.7 }}>
-                                ↩️ Replying to {replyMsg.username}
-                              </div>
-                              <div style={{ fontSize: '12px', opacity: 0.8 }}>
-                                {replyMsg.text?.substring(0, 50)}{replyMsg.text?.length > 50 ? '...' : ''}
-                              </div>
-                            </div>
-                          )}
-
-                          <p style={{ wordBreak: 'break-word', lineHeight: '1.5' }}>{msg.text}</p>
-
-                          {hasReactions && (
-                            <div className="reaction-container">
-                              {Object.entries(reactions).map(([emoji, users]) => (
-                                <div
-                                  key={emoji}
-                                  className={`reaction ${users.includes(username) ? 'active' : ''}`}
-                                  onClick={() => addReaction(msg.id, emoji)}
-                                  title={`Reacted by: ${users.join(', ')}`}
-                                >
-                                  <span>{emoji}</span>
-                                  <span style={{ fontSize: '12px', fontWeight: 'bold' }}>{users.length}</span>
-                                </div>
-                              ))}
-                            </div>
-                          )}
+                      <div key={msg.id} className="message-bubble" style={{ marginBottom: '15px', background: msg.username === username ? '#1a1a1a' : '#0a0a0a', padding: '15px', borderRadius: '15px', border: '1px solid #333' }}>
+                        <div className="message-actions">
+                          <button onClick={() => setReplyTo(msg)} className="action-btn">Reply</button>
+                          <button onClick={() => setShowEmojiPicker(showEmojiPicker === msg.id ? null : msg.id)} className="action-btn">
+                            <Smile />
+                          </button>
                         </div>
+
+                        {showEmojiPicker === msg.id && (
+                          <div className="emoji-picker">
+                            {EMOJIS.map(emoji => (
+                              <button key={emoji} onClick={() => {
+                                addReaction(msg.id, emoji);
+                                setShowEmojiPicker(null);
+                              }} className="emoji-btn">
+                                {emoji}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', marginBottom: '8px' }}>
+                          <span style={{ color: userColor, fontWeight: 'bold', fontSize: '14px' }}>{msg.username}</span>
+                          <span style={{ color: '#666', fontSize: '12px' }}>{formatTime(msg.timestamp)}</span>
+                        </div>
+
+                        {replyMsg && (
+                          <div className="reply-to" style={{ borderColor: userColor }}>
+                            <div style={{ fontSize: '11px', color: '#999', marginBottom: '4px' }}>Replying to {replyMsg.username}</div>
+                            <div style={{ fontSize: '12px', opacity: 0.7 }}>{replyMsg.text.substring(0, 50)}{replyMsg.text.length > 50 ? '...' : ''}</div>
+                          </div>
+                        )}
+
+                        <div style={{ fontSize: '15px', lineHeight: '1.5', wordBreak: 'break-word' }}>{msg.text}</div>
+
+                        {msg.reactions && Object.keys(msg.reactions).length > 0 && (
+                          <div className="reaction-container">
+                            {Object.entries(msg.reactions).map(([emoji, users]) => (
+                              <div key={emoji} onClick={() => addReaction(msg.id, emoji)} className={`reaction ${users.includes(username) ? 'active' : ''}`}>
+                                <span>{emoji}</span>
+                                <span>{users.length}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     );
                   })}
+
+                  {typingUsers.length > 0 && (
+                    <div className="typing-indicator">
+                      {typingUsers.join(', ')} {typingUsers.length === 1 ? 'is' : 'are'} typing...
+                    </div>
+                  )}
+
                   <div ref={messagesEndRef} />
                 </div>
-              )}
-            </div>
+              </div>
 
-            <div className="glow-border" style={{ background: '#0a0a0a', borderRadius: '0 0 20px 20px', padding: '20px', border: '1px solid #333', borderTop: 'none' }}>
-              {typingUsers.length > 0 && (
-                <div className="typing-indicator">
-                  {typingUsers.length > 3 
-                    ? '✍️ Several people are typing...' 
-                    : `✍️ ${typingUsers.join(', ')} ${typingUsers.length === 1 ? 'is' : 'are'} typing...`}
-                </div>
-              )}
-
-              {replyTo && (
-                <div className="reply-preview">
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '5px' }}>
-                    <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#999' }}>
-                      ↩️ Replying to {replyTo.username}
+              <div className="glow-border" style={{ background: '#0a0a0a', padding: '20px', borderTop: '1px solid #333' }}>
+                <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+                  {replyTo && (
+                    <div className="reply-preview">
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '5px' }}>
+                        <span style={{ fontSize: '12px', color: '#999' }}>Replying to {replyTo.username}</span>
+                        <button onClick={() => setReplyTo(null)} style={{ background: 'transparent', border: 'none', color: '#666', cursor: 'pointer', fontSize: '18px', lineHeight: 1 }}>×</button>
+                      </div>
+                      <div style={{ fontSize: '13px', opacity: 0.8 }}>{replyTo.text.substring(0, 80)}{replyTo.text.length > 80 ? '...' : ''}</div>
                     </div>
-                    <button
-                      onClick={() => setReplyTo(null)}
-                      style={{ background: 'transparent', border: 'none', color: '#999', cursor: 'pointer', padding: '0 5px', fontSize: '18px' }}
-                      title="Cancel reply"
-                    >
-                      ✕
+                  )}
+
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <input
+                      type="text"
+                      value={message}
+                      onChange={(e) => {
+                        setMessage(e.target.value);
+                        updateTyping();
+                      }}
+                      onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
+                      placeholder="Type a message..."
+                      style={{ flex: 1, padding: '15px', background: '#1a1a1a', border: '1px solid #333', borderRadius: '10px', color: '#fff', fontSize: '15px' }}
+                    />
+                    <button onClick={sendMessage} className="glow-button" style={{ background: '#fff', color: '#000', padding: '15px 30px', borderRadius: '10px', border: 'none', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Send /> Send
                     </button>
                   </div>
-                  <div style={{ fontSize: '13px', color: '#ccc' }}>
-                    {replyTo.text?.substring(0, 100)}{replyTo.text?.length > 100 ? '...' : ''}
-                  </div>
                 </div>
-              )}
-
-              <div style={{ display: 'flex', gap: '10px', position: 'relative' }}>
-                <input
-                  type="text"
-                  value={message}
-                  onChange={(e) => {
-                    setMessage(e.target.value);
-                    updateTyping();
-                  }}
-                  onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-                  placeholder="Type a message..."
-                  style={{ flex: 1, padding: '15px', background: '#1a1a1a', border: '1px solid #333', borderRadius: '10px', color: '#fff', fontSize: '16px' }}
-                />
-                <button
-                  onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                  className="glow-button"
-                  title="Pick an emoji"
-                  style={{ background: '#1a1a1a', color: '#fff', padding: '15px', borderRadius: '10px', border: '1px solid #333', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
-                >
-                  <Smile />
-                </button>
-                <button
-                  onClick={sendMessage}
-                  className="glow-button"
-                  style={{ background: '#fff', color: '#000', padding: '15px 30px', borderRadius: '10px', border: 'none', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}
-                >
-                  <Send /> SEND
-                </button>
-
-                {showEmojiPicker && (
-                  <div className="emoji-picker">
-                    {EMOJIS.map(emoji => (
-                      <button
-                        key={emoji}
-                        className="emoji-btn"
-                        onClick={() => {
-                          setMessage(message + emoji);
-                          setShowEmojiPicker(false);
-                        }}
-                        title={`Add ${emoji}`}
-                      >
-                        {emoji}
-                      </button>
-                    ))}
-                  </div>
-                )}
               </div>
             </div>
-          </div>
-        </div>
-      );
+            {!showDebug && (
+              <div className="debug-toggle" onClick={() => setShowDebug(true)}>
+                <Bug />
+              </div>
+            )}
+            {showDebug && <DebugConsole logs={logs} onClose={() => setShowDebug(false)} />}
+          </>
+        );
+      }
+
+      return null;
     }
 
     ReactDOM.render(<ChatroomApp />, document.getElementById('root'));
