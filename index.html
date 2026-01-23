@@ -100,13 +100,17 @@
     };
 
     let db = null;
+    let firebaseInitialized = false;
     try {
       if (!firebase.apps.length) {
         firebase.initializeApp(firebaseConfig);
       }
       db = firebase.database();
+      firebaseInitialized = true;
+      console.log("Firebase connected successfully!");
     } catch (error) {
       console.error("Firebase error:", error);
+      alert("Firebase connection failed: " + error.message);
     }
 
     function MessageCircle() {
@@ -268,6 +272,12 @@
           return;
         }
 
+        if (!db) {
+          setError('Database not connected');
+          alert('Database connection error. Please refresh the page.');
+          return;
+        }
+
         const roomId = Date.now().toString();
         const room = {
           id: roomId,
@@ -277,14 +287,18 @@
         };
 
         try {
+          console.log("Creating room:", room);
           await db.ref(`rooms/${roomId}`).set(room);
           setCurrentRoom(roomId);
           setNewRoomName('');
           setNewRoomPassword('');
           setError('');
           setCurrentView('room');
+          console.log("Room created successfully!");
         } catch (err) {
-          setError('Failed to create room');
+          console.error("Create room error:", err);
+          setError('Failed to create room: ' + err.message);
+          alert('Failed to create room: ' + err.message);
         }
       };
 
@@ -302,6 +316,12 @@
       const sendMessage = async () => {
         if (!message.trim() || !currentRoom) return;
 
+        if (!db) {
+          setError('Database not connected');
+          alert('Database connection error. Please refresh the page.');
+          return;
+        }
+
         const newMsg = {
           id: Date.now().toString() + Math.random(),
           username,
@@ -310,10 +330,15 @@
         };
 
         try {
+          console.log("Sending message:", newMsg);
           await db.ref(`messages/${currentRoom}/${newMsg.id}`).set(newMsg);
           setMessage('');
+          setError('');
+          console.log("Message sent successfully!");
         } catch (err) {
-          setError('Failed to send message');
+          console.error("Send error:", err);
+          setError('Failed to send: ' + err.message);
+          alert('Failed to send message: ' + err.message);
         }
       };
 
