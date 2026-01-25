@@ -793,33 +793,28 @@ const declineGameInvite = async () => {
 };
 
 // Drawing game handlers
+// Drawing game handlers
 const startDrawing = (e) => {
   if (gameState?.drawer !== username) return;
   setDrawing(true);
-  drawOnCanvas(e);
-};
-
-const stopDrawing = () => setDrawing(false);
-
-const drawOnCanvas = async (e) => {
-  if (!drawing || gameState?.drawer !== username || !drawCanvasRef.current) return;
   const canvas = drawCanvasRef.current;
+  const ctx = canvas.getContext('2d');
   const rect = canvas.getBoundingClientRect();
   const x = e.clientX - rect.left;
   const y = e.clientY - rect.top;
-  
-  const ctx = canvas.getContext('2d');
-  ctx.strokeStyle = drawColor;
-  ctx.lineWidth = 3;
-  ctx.lineCap = 'round';
-  ctx.lineTo(x, y);
-  ctx.stroke();
   ctx.beginPath();
   ctx.moveTo(x, y);
-
-  const dataUrl = canvas.toDataURL();
-  await window.GameUtils.updateCanvas(db, currentRoom, dataUrl, addDebugLog);
 };
+
+const stopDrawing = () => {
+  if (!drawing) return;
+  setDrawing(false);
+  const canvas = drawCanvasRef.current;
+  const ctx = canvas.getContext('2d');
+  ctx.beginPath();
+};
+
+const drawOnCanvas = async (e) => {
 
       const joinRoom = (room, password = '') => {
         if (room.password && room.password !== password) {
@@ -1406,6 +1401,7 @@ if (msg.type === 'snap') {
   </script>
 </body>
 </html>
+
 
 
 
