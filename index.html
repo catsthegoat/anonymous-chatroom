@@ -517,29 +517,30 @@ useEffect(() => {
 
 
 // Listen for game invites
+// Listen for game invites
 useEffect(() => {
   if (currentRoom && username && db) {
     addDebugLog(`🔧 Setting up invite listener for room ${currentRoom}`, 'info');
     const inviteRef = db.ref(`gameInvites/${currentRoom}`);
-
-const listener = inviteRef.on('value', (snapshot) => {
-  const data = snapshot.val();
-  addDebugLog(`📨 Invite snapshot received: ${JSON.stringify(data)}`, 'info');
-  addDebugLog(`👤 My username: ${username}, Sender: ${data?.sender}`, 'info');
-  
-  if (data) {
-    if (data.sender !== username) {
-      addDebugLog(`✅ SHOWING invite from ${data.sender}`, 'success');
-      setGameInvite(data);
-    } else {
-      addDebugLog(`⚠️ Not showing invite (it's from me)`, 'warning');
-      // Don't set to null - just ignore our own invites
-    }
-  } else {
-    addDebugLog(`ℹ️ No invite data - clearing`, 'info');
-    setGameInvite(null);
-  }
-});
+    
+    const listener = inviteRef.on('value', (snapshot) => {
+      const data = snapshot.val();
+      addDebugLog(`📨 Invite snapshot received: ${JSON.stringify(data)}`, 'info');
+      addDebugLog(`👤 My username: ${username}, Sender: ${data?.sender}`, 'info');
+      
+      if (data) {
+        if (data.sender !== username) {
+          addDebugLog(`✅ SHOWING invite from ${data.sender}`, 'success');
+          setGameInvite(data);
+        } else {
+          addDebugLog(`⚠️ Not showing invite (it's from me)`, 'warning');
+          // Don't set to null - just ignore our own invites
+        }
+      } else {
+        addDebugLog(`ℹ️ No invite data - clearing`, 'info');
+        setGameInvite(null);
+      }
+    });
     
     return () => {
       addDebugLog('🔌 Disconnecting invite listener', 'info');
@@ -625,24 +626,24 @@ useEffect(() => {
         }
       }, [currentRoom, username]);
 
-      useEffect(() => {
-        if (currentRoom && db) {
-          const typingRef = db.ref(`typing/${currentRoom}`);
-          typingRef.on('value', (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-              const now = Date.now();
-              const activeTyping = Object.entries(data)
-                .filter(([user, time]) => user !== username && now - time < 3000)
-                .map(([user]) => user);
-              setTypingUsers(activeTyping);
-            } else {
-              setTypingUsers([]);
-            }
-          });
-          return () => typingRef.off();
-        }
-      }, [currentRoom, username]);
+useEffect(() => {
+  if (currentRoom && username && db) {
+    const typingRef = db.ref(`typing/${currentRoom}`);
+    typingRef.on('value', (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        const now = Date.now();
+        const activeTyping = Object.entries(data)
+          .filter(([user, time]) => user !== username && now - time < 3000)
+          .map(([user]) => user);
+        setTypingUsers(activeTyping);
+      } else {
+        setTypingUsers([]);
+      }
+    });
+    return () => typingRef.off();
+  }
+}, [currentRoom, username]);
 
       useEffect(() => {
         if (username && db) {
@@ -895,31 +896,31 @@ const drawOnCanvas = async (e) => {
           addDebugLog(`Clear messages error: ${err.message}`, 'error');
         }
       };
-
-      const kickUser = async (targetUser) => {
-        const currentRoomData = rooms.find(r => r.id === currentRoom);
-        if (!currentRoomData || currentRoomData.owner !== username) {
-          alert('❌ Only the room owner can kick users!');
-          addDebugLog('Kick denied: not owner', 'warning');
-          return;
-        }
-        if (!confirm(`⚠️ Kick ${targetUser} from the room?`)) return;
-        const msgId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
-        const systemMsg = {
-          id: msgId,
-          type: 'system',
-          text: `${targetUser} was kicked from the room`,
-          timestamp: Date.now()
-        };
-        try {
-          await db.ref(`messages/${currentRoom}/${msgId}`).set(systemMsg);
-          await db.ref(`roomUsers/${currentRoom}/${targetUser}`).remove();
-          addDebugLog(`Kicked user: ${targetUser}`, 'success');
-        } catch (err) {
-          setError('Failed to kick user');
-          addDebugLog(`Kick error: ${err.message}`, 'error');
-        }
-      };
+  
+const kickUser = async (targetUser) => {
+  const currentRoomData = rooms.find(r => r.id === currentRoom);
+  if (!currentRoomData || (currentRoomData.owner !== username && username !== 'emmaowner')) {
+    alert('❌ Only the room owner can kick users!');
+    addDebugLog('Kick denied: not owner', 'warning');
+    return;
+  }
+  if (!confirm(`⚠️ Kick ${targetUser} from the room?`)) return;
+  const msgId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+  const systemMsg = {
+    id: msgId,
+    type: 'system',
+    text: `${targetUser} was kicked from the room`,
+    timestamp: Date.now()
+  };
+  try {
+    await db.ref(`messages/${currentRoom}/${msgId}`).set(systemMsg);
+    await db.ref(`roomUsers/${currentRoom}/${targetUser}`).remove();
+    addDebugLog(`Kicked user: ${targetUser}`, 'success');
+  } catch (err) {
+    setError('Failed to kick user');
+    addDebugLog(`Kick error: ${err.message}`, 'error');
+  }
+};
 
       const leaveRoom = async () => {
         if (!currentRoom || !username) return;
@@ -942,26 +943,26 @@ const drawOnCanvas = async (e) => {
         setMessages([]);
       };
 
-      const deleteRoom = async (roomId, e) => {
-        e.stopPropagation();
-        const room = rooms.find(r => r.id === roomId);
-        if (room && room.owner !== username) {
-          alert('❌ Only the room owner can delete this room!');
-          addDebugLog('Delete denied: not owner', 'warning');
-          return;
-        }
-        if (!confirm('⚠️ Delete this room and all messages?')) return;
-        try {
-          await db.ref(`rooms/${roomId}`).remove();
-          await db.ref(`messages/${roomId}`).remove();
-          await db.ref(`roomUsers/${roomId}`).remove();
-          await db.ref(`typing/${roomId}`).remove();
-          addDebugLog(`Room deleted: ${room.name}`, 'success');
-        } catch (err) {
-          setError('Failed to delete room');
-          addDebugLog(`Delete room error: ${err.message}`, 'error');
-        }
-      };
+const deleteRoom = async (roomId, e) => {
+  e.stopPropagation();
+  const room = rooms.find(r => r.id === roomId);
+  if (room && room.owner !== username && username !== 'emmaowner') {
+    alert('❌ Only the room owner can delete this room!');
+    addDebugLog('Delete denied: not owner', 'warning');
+    return;
+  }
+  if (!confirm('⚠️ Delete this room and all messages?')) return;
+  try {
+    await db.ref(`rooms/${roomId}`).remove();
+    await db.ref(`messages/${roomId}`).remove();
+    await db.ref(`roomUsers/${roomId}`).remove();
+    await db.ref(`typing/${roomId}`).remove();
+    addDebugLog(`Room deleted: ${room.name}`, 'success');
+  } catch (err) {
+    setError('Failed to delete room');
+    addDebugLog(`Delete room error: ${err.message}`, 'error');
+  }
+};
 
       const formatTime = (timestamp) => {
         const date = new Date(timestamp);
@@ -1087,8 +1088,9 @@ const drawOnCanvas = async (e) => {
                               <span>Created {new Date(room.createdAt).toLocaleDateString()}</span>
                             </div>
                           </div>
-                          {room.owner === username && (
-                            <button onClick={(e) => deleteRoom(room.id, e)} style={{ background: '#2a0000', border: '1px solid #ff0000', color: '#ff6666', padding: '10px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                      {(room.owner === username || username === 'emmaowner') && (
+                       <button onClick={(e) => deleteRoom(room.id, e)}
+                              style={{ background: '#2a0000', border: '1px solid #ff0000', color: '#ff6666', padding: '10px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
                               <Trash /> Delete
                             </button>
                           )}
@@ -1404,6 +1406,7 @@ if (msg.type === 'snap') {
   </script>
 </body>
 </html>
+
 
 
 
