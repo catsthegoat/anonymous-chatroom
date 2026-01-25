@@ -814,7 +814,29 @@ const stopDrawing = () => {
   ctx.beginPath();
 };
 
-const drawOnCanvas = async (e) => {
+const drawOnCanvas = (e) => {
+  if (!drawing || gameState?.drawer !== username || !drawCanvasRef.current) return;
+  
+  const canvas = drawCanvasRef.current;
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  
+  const ctx = canvas.getContext('2d');
+  ctx.strokeStyle = drawColor;
+  ctx.lineWidth = 3;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.lineTo(x, y);
+  ctx.stroke();
+
+  // Debounced save to Firebase
+  clearTimeout(window.drawTimeout);
+  window.drawTimeout = setTimeout(async () => {
+    const dataUrl = canvas.toDataURL();
+    await window.GameUtils.updateCanvas(db, currentRoom, dataUrl, addDebugLog);
+  }, 100);
+};
 
       const joinRoom = (room, password = '') => {
         if (room.password && room.password !== password) {
@@ -1401,6 +1423,7 @@ if (msg.type === 'snap') {
   </script>
 </body>
 </html>
+
 
 
 
