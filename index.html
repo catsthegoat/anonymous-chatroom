@@ -450,7 +450,8 @@ function ChatroomApp() {
   const drawCanvasRef = useRef(null);
   const [drawing, setDrawing] = useState(false);
   const [drawColor, setDrawColor] = useState('#ffffff');
-
+  const [showInstructions, setShowInstructions] = useState(false);
+  
   useEffect(() => {
     const interval = setInterval(() => {
       setLogs([...debugLogs]);
@@ -824,7 +825,6 @@ const drawOnCanvas = (e) => {
   
   const ctx = canvas.getContext('2d');
   ctx.strokeStyle = drawColor;
-  const [showInstructions, setShowInstructions] = useState(false);
   ctx.lineWidth = 3;
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
@@ -1471,6 +1471,7 @@ if (msg.type === 'snap') {
   </script>
 </body>
 </html>
+
 
 
 
