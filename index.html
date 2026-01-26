@@ -453,7 +453,7 @@ function ChatroomApp() {
   const [showInstructions, setShowInstructions] = useState(false);
   
   useEffect(() => {
-    const interval = setInterval(() => {f
+    const interval = setInterval(() => {
       setLogs([...debugLogs]);
     }, 1000);
     return () => clearInterval(interval);
@@ -793,27 +793,6 @@ const declineGameInvite = async () => {
   setGameInvite(null);
 };
 
-// Drawing game handlers
-// Drawing game handlers
-const startDrawing = (e) => {
-  if (gameState?.drawer !== username) return;
-  setDrawing(true);
-  const canvas = drawCanvasRef.current;
-  const ctx = canvas.getContext('2d');
-  const rect = canvas.getBoundingClientRect();
-  const x = e.clientX - rect.left;
-  const y = e.clientY - rect.top;
-  ctx.beginPath();
-  ctx.moveTo(x, y);
-};
-
-const stopDrawing = () => {
-  if (!drawing) return;
-  setDrawing(false);
-  const canvas = drawCanvasRef.current;
-  const ctx = canvas.getContext('2d');
-  ctx.beginPath();
-};
 
 const drawOnCanvas = (e) => {
   console.log('🎨 drawOnCanvas called');
@@ -1583,6 +1562,7 @@ if (msg.type === 'snap') {
   </script>
 </body>
 </html>
+
 
 
 
