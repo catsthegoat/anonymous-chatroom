@@ -1032,21 +1032,6 @@ const deleteRoom = async (roomId, e) => {
 )}
 
 
-{showGarticGame && (
-    <div style={{ width: '50%', minWidth: '400px' }}>
-      <div className="glow-border" style={{ background: '#0a0a0a', padding: '20px', borderRadius: '15px', border: '2px solid #ff6b35', height: '100%' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-          <h3 style={{ fontSize: '18px', fontWeight: 'bold' }}>🎨 Garlic Phone</h3>
-          <button onClick={() => setShowGarticGame(false)} style={{ background: 'transparent', border: 'none', color: '#999', cursor: 'pointer', fontSize: '24px' }}>×</button>
-        </div>
-        <iframe 
-          src="https://garlicphone.vercel.app/" 
-          style={{ width: '100%', height: 'calc(100% - 50px)', border: 'none', borderRadius: '10px', background: '#000' }}
-          title="Garlic Phone"
-        />
-      </div>
-    </div>
-  )}
 
               
     
@@ -1382,6 +1367,7 @@ if (msg.type === 'snap') {
   </script>
 </body>
 </html>
+
 
 
 
