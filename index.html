@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -283,119 +282,10 @@
   </style>
 </head>
 <body>
-  <!-- EMERGENCY DEBUG PANEL - ALWAYS VISIBLE -->
-  <div id="emergency-debug" style="position: fixed; top: 10px; right: 10px; background: rgba(0,0,0,0.95); color: #fff; padding: 20px; border: 2px solid #ff0000; border-radius: 10px; z-index: 99999; max-width: 400px; max-height: 90vh; overflow-y: auto; font-family: monospace; font-size: 11px;">
-    <h3 style="margin: 0 0 10px 0; color: #ff6666;">🚨 EMERGENCY DEBUG</h3>
-    <div id="debug-status"></div>
-  </div>
-  
-  <script>
-    // Immediate debug output
-    const debugPanel = document.getElementById('debug-status');
-    const debugOutput = [];
-    
-    function addDebugOutput(msg, color = '#fff') {
-      const time = new Date().toLocaleTimeString();
-      debugOutput.push(`<div style="color: ${color}; margin: 5px 0; padding: 5px; background: rgba(255,255,255,0.05); border-radius: 3px;"><strong>[${time}]</strong> ${msg}</div>`);
-      if (debugOutput.length > 20) debugOutput.shift();
-      debugPanel.innerHTML = debugOutput.join('');
-      debugPanel.scrollTop = debugPanel.scrollHeight;
-    }
-    
-    addDebugOutput('🚀 Page loaded', '#4ade80');
-    addDebugOutput(`Document ready: ${document.readyState}`, '#4a9eff');
-    addDebugOutput(`Root exists: ${!!document.getElementById('root')}`, '#4a9eff');
-    
-    // Monitor for React/Firebase loading
-    let checkInterval = setInterval(() => {
-      if (typeof React !== 'undefined' && !window.reactLogged) {
-        window.reactLogged = true;
-        addDebugOutput('✅ React loaded v' + React.version, '#4ade80');
-      }
-      if (typeof firebase !== 'undefined' && !window.firebaseLogged) {
-        window.firebaseLogged = true;
-        addDebugOutput('✅ Firebase loaded', '#4ade80');
-      }
-      if (typeof ReactDOM !== 'undefined' && !window.reactDOMLogged) {
-        window.reactDOMLogged = true;
-        addDebugOutput('✅ ReactDOM loaded', '#4ade80');
-      }
-      if (window.reactLogged && window.firebaseLogged && window.reactDOMLogged) {
-        clearInterval(checkInterval);
-        addDebugOutput('🎯 All dependencies loaded', '#4ade80');
-      }
-    }, 100);
-    
-    // Error catching
-    window.addEventListener('error', (e) => {
-      addDebugOutput(`❌ ERROR: ${e.message}`, '#ff6666');
-      console.error('Caught by emergency handler:', e);
-    });
-    
-    window.addEventListener('unhandledrejection', (e) => {
-      addDebugOutput(`❌ PROMISE REJECTION: ${e.reason}`, '#ff6666');
-    });
-    
-    // Export for later use
-    window.addEmergencyDebug = addDebugOutput;
-  </script>
-  
   <div id="root"></div>
 
   <script type="text/babel">
-    // ============================================
-    // HEAVY DEBUGGING INITIALIZATION
-    // ============================================
-    window.addEmergencyDebug?.('🎬 Babel script executing...', '#fbbf24');
-    
-    console.log('🚀 ==================== SCRIPT STARTED ====================');
-    console.log('⏰ Timestamp:', new Date().toISOString());
-    console.log('🌐 User Agent:', navigator.userAgent);
-    console.log('📦 React loaded:', typeof React !== 'undefined', 'Version:', React?.version);
-    console.log('🔥 Firebase loaded:', typeof firebase !== 'undefined');
-    console.log('🎨 Document ready state:', document.readyState);
-    console.log('📍 Root element exists:', !!document.getElementById('root'));
-    
-    window.addEmergencyDebug?.('📦 Checking dependencies...', '#4a9eff');
-    
-    // Intercept all console methods
-    const originalLog = console.log;
-    const originalError = console.error;
-    const originalWarn = console.warn;
-    
-    window.debugHistory = [];
-    
-    console.log = function(...args) {
-      window.debugHistory.push({ type: 'log', time: Date.now(), args });
-      originalLog.apply(console, args);
-    };
-    
-    console.error = function(...args) {
-      window.debugHistory.push({ type: 'error', time: Date.now(), args });
-      window.addEmergencyDebug?.(`ERROR: ${args.join(' ')}`, '#ff6666');
-      originalError.apply(console, ['❌ ERROR:', ...args]);
-    };
-    
-    console.warn = function(...args) {
-      window.debugHistory.push({ type: 'warn', time: Date.now(), args });
-      originalWarn.apply(console, ['⚠️ WARNING:', ...args]);
-    };
-    
-    // Global error handler
-    window.addEventListener('error', (e) => {
-      console.error('UNCAUGHT ERROR:', e.error?.message || e.message, e.error?.stack);
-    });
-    
-    window.addEventListener('unhandledrejection', (e) => {
-      console.error('UNHANDLED PROMISE REJECTION:', e.reason);
-    });
-    
-    console.log('✅ Debug interceptors installed');
-    window.addEmergencyDebug?.('✅ Debug interceptors installed', '#4ade80');
-    
     const { useState, useEffect, useRef } = React;
-    console.log('✅ React hooks extracted:', { useState: typeof useState, useEffect: typeof useEffect, useRef: typeof useRef });
-    window.addEmergencyDebug?.('✅ React hooks extracted', '#4ade80');
     
     // Icon Components
     const MessageCircle = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>;
@@ -420,11 +310,6 @@
       measurementId: "G-ENN9HEXNDB"
     };
 
-    console.log('🔥 Firebase config:', firebaseConfig);
-    console.log('🔥 Firebase object:', firebase);
-    console.log('🔥 Firebase apps before init:', firebase?.apps?.length || 0);
-    window.addEmergencyDebug?.('🔥 Initializing Firebase...', '#fbbf24');
-
     let db = null;
     const debugLogs = [];
     
@@ -432,55 +317,17 @@
       const timestamp = new Date().toLocaleTimeString();
       debugLogs.push({ message, type, timestamp });
       if (debugLogs.length > 50) debugLogs.shift();
-      const colors = { info: '#4a9eff', success: '#4ade80', error: '#ff6666', warning: '#fbbf24' };
-      window.addEmergencyDebug?.(message, colors[type]);
-      console.log(`[${type.toUpperCase()}] ${timestamp} - ${message}`);
+      console.log(`[${type.toUpperCase()}] ${message}`);
     };
 
-    console.log('🔥 Attempting Firebase initialization...');
     try {
       if (!firebase.apps.length) {
-        console.log('🔥 No existing Firebase apps, initializing new one...');
-        window.addEmergencyDebug?.('🔥 Creating Firebase app...', '#fbbf24');
-        const app = firebase.initializeApp(firebaseConfig);
-        console.log('🔥 Firebase app initialized:', app.name);
-        window.addEmergencyDebug?.('✅ Firebase app created: ' + app.name, '#4ade80');
-        addDebugLog('Firebase initialized successfully', 'success');
-      } else {
-        console.log('🔥 Firebase already initialized');
-        window.addEmergencyDebug?.('✅ Firebase already initialized', '#4ade80');
-        addDebugLog('Firebase already initialized', 'info');
+        firebase.initializeApp(firebaseConfig);
+        addDebugLog('Firebase initialized', 'success');
       }
-      
-      console.log('🔥 Getting database reference...');
-      window.addEmergencyDebug?.('🔥 Getting database reference...', '#fbbf24');
       db = firebase.database();
-      console.log('🔥 Database object:', db);
-      console.log('🔥 Database ref method:', typeof db.ref);
-      window.addEmergencyDebug?.('✅ Database reference obtained', '#4ade80');
       addDebugLog('Database connection established', 'success');
-      
-      // Test database connectivity
-      console.log('🔥 Testing database connectivity...');
-      window.addEmergencyDebug?.('🔌 Testing connection...', '#fbbf24');
-      db.ref('.info/connected').on('value', (snap) => {
-        const connected = snap.val();
-        console.log('🔥 Database connected status:', connected);
-        if (connected) {
-          window.addEmergencyDebug?.('✅ Database CONNECTED!', '#4ade80');
-          addDebugLog('✅ Database CONNECTED', 'success');
-        } else {
-          window.addEmergencyDebug?.('❌ Database DISCONNECTED', '#ff6666');
-          addDebugLog('❌ Database DISCONNECTED', 'error');
-        }
-      });
-      
     } catch (error) {
-      console.error('🔥 Firebase initialization FAILED:', error);
-      console.error('🔥 Error name:', error.name);
-      console.error('🔥 Error message:', error.message);
-      console.error('🔥 Error stack:', error.stack);
-      window.addEmergencyDebug?.(`❌ Firebase FAILED: ${error.message}`, '#ff6666');
       addDebugLog(`Firebase error: ${error.message}`, 'error');
     }
 
@@ -510,7 +357,17 @@ function ChatroomApp() {
   console.log('🎯 ==================== ChatroomApp RENDERING ====================');
   console.log('🎯 Component render timestamp:', Date.now());
   
+  // EMERGENCY: Show that component is running
+  if (typeof document !== 'undefined') {
+    const root = document.getElementById('root');
+    if (root) {
+      root.style.background = '#0a0a0a'; // Set background so we know React is running
+      root.innerHTML = '<div style="color: white; padding: 40px; font-size: 20px;">⏳ React Component Loading...</div>';
+    }
+  }
+  
   const [currentView, setCurrentView] = useState('start');
+  console.log('🎯 Initial currentView state:', currentView);
   const [username, setUsername] = useState('');
   const [tempUsername, setTempUsername] = useState('');
   const [currentRoom, setCurrentRoom] = useState(null);
@@ -525,7 +382,7 @@ function ChatroomApp() {
   const [showEmojiPicker, setShowEmojiPicker] = useState(null);
   const [typingUsers, setTypingUsers] = useState([]);
   const [roomUsers, setRoomUsers] = useState([]);
-  const [showDebug, setShowDebug] = useState(true); // FORCE DEBUG ON
+  const [showDebug, setShowDebug] = useState(false);
   const [logs, setLogs] = useState([]);
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
@@ -541,57 +398,24 @@ function ChatroomApp() {
   const [activeGame, setActiveGame] = useState(null);
   const [gameState, setGameState] = useState(null);
   
-  console.log('🎯 State initialized:', {
-    currentView,
-    username,
-    roomsCount: rooms.length,
-    messagesCount: messages.length,
-    showDebug,
-    dbExists: !!db
-  });
-  
   useEffect(() => {
-    console.log('🔄 Logs update effect running...');
     const interval = setInterval(() => {
-      console.log('🔄 Updating logs, count:', debugLogs.length);
       setLogs([...debugLogs]);
     }, 1000);
-    return () => {
-      console.log('🔄 Logs update effect cleanup');
-      clearInterval(interval);
-    };
+    return () => clearInterval(interval);
   }, []);
   
 useEffect(() => {
-  console.log('🔌 Firebase connection effect running...');
-  console.log('🔌 DB exists:', !!db);
   if (db) {
-    console.log('🔌 Setting up connection listener...');
     const connectedRef = db.ref('.info/connected');
-    console.log('🔌 Connected ref created:', connectedRef);
-    
     connectedRef.on('value', (snap) => {
-      const connected = snap.val();
-      console.log('🔌 Connection status changed:', connected);
       if (snap.val() === true) {
         addDebugLog('Firebase connected', 'success');
-        console.log('✅ Firebase is CONNECTED');
       } else {
         addDebugLog('Firebase disconnected', 'error');
-        console.log('❌ Firebase is DISCONNECTED');
       }
-    }, (error) => {
-      console.error('🔌 Connection listener error:', error);
-      addDebugLog(`Connection error: ${error.message}`, 'error');
     });
-    
-    return () => {
-      console.log('🔌 Cleaning up connection listener');
-      connectedRef.off();
-    };
-  } else {
-    console.error('🔌 Database (db) is NULL - cannot set up connection listener');
-    addDebugLog('Database is null, cannot monitor connection', 'error');
+    return () => connectedRef.off();
   }
 }, []);
   
@@ -600,43 +424,20 @@ useEffect(() => {
   }, [messages]);
 
   useEffect(() => {
-    console.log('💬 Messages listener effect running...');
-    console.log('💬 Current room:', currentRoom);
-    console.log('💬 DB exists:', !!db);
-    
     if (currentRoom && db) {
-      console.log(`💬 Setting up messages listener for room: ${currentRoom}`);
       const messagesRef = db.ref(`messages/${currentRoom}`);
-      console.log('💬 Messages ref created:', messagesRef);
-      
       messagesRef.on('value', (snapshot) => {
-        console.log('💬 Messages snapshot received');
         const data = snapshot.val();
-        console.log('💬 Messages data:', data);
-        
         if (data) {
           const msgList = Object.values(data).sort(
             (a, b) => a.timestamp - b.timestamp
           );
-          console.log(`💬 Parsed ${msgList.length} messages:`, msgList);
           setMessages(msgList);
-          addDebugLog(`Loaded ${msgList.length} messages`, 'success');
         } else {
-          console.log('💬 No messages in room');
           setMessages([]);
-          addDebugLog('No messages in room', 'info');
         }
-      }, (error) => {
-        console.error('💬 Messages listener error:', error);
-        addDebugLog(`Messages error: ${error.message}`, 'error');
       });
-      
-      return () => {
-        console.log('💬 Cleaning up messages listener');
-        messagesRef.off();
-      };
-    } else {
-      console.log('💬 Not setting up messages listener - missing room or db');
+      return () => messagesRef.off();
     }
   }, [currentRoom]);
 
@@ -1000,8 +801,15 @@ const deleteRoom = async (roomId, e) => {
       };
 
       if (currentView === 'start') {
+        console.log('🎯 RENDERING START VIEW');
+        window.addEmergencyDebug?.('📱 Rendering START view', '#4ade80');
         return (
           <>
+            {/* DEBUG INDICATOR */}
+            <div style={{ position: 'fixed', top: 0, left: 0, background: '#00ff00', color: '#000', padding: '10px 20px', zIndex: 99999, fontWeight: 'bold', fontFamily: 'monospace' }}>
+              ✅ START VIEW RENDERING
+            </div>
+            
             <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
               <div className="glow-border" style={{ background: '#0a0a0a', borderRadius: '20px', padding: '40px', width: '100%', maxWidth: '400px', border: '1px solid #333' }}>
                 <div style={{ textAlign: 'center', marginBottom: '30px' }}>
@@ -1035,6 +843,8 @@ const deleteRoom = async (roomId, e) => {
       }
 
       if (currentView === 'create') {
+        console.log('🎯 RENDERING CREATE VIEW');
+        window.addEmergencyDebug?.('📱 Rendering CREATE view', '#4ade80');
         return (
           <>
             <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
@@ -1064,6 +874,8 @@ const deleteRoom = async (roomId, e) => {
       }
 
       if (currentView === 'lobby') {
+        console.log('🎯 RENDERING LOBBY VIEW');
+        window.addEmergencyDebug?.('📱 Rendering LOBBY view', '#4ade80');
         return (
           <>
             <div style={{ minHeight: '100vh', padding: '20px' }}>
@@ -1138,6 +950,9 @@ const deleteRoom = async (roomId, e) => {
       }
 
       if (currentView === 'room') {
+        console.log('🎯 RENDERING ROOM VIEW');
+        window.addEmergencyDebug?.('📱 Rendering ROOM view', '#4ade80');
+        
         const currentRoomData = rooms.find(r => r.id === currentRoom);
         const isOwner = currentRoomData && currentRoomData.owner === username;
 
@@ -1379,6 +1194,8 @@ const deleteRoom = async (roomId, e) => {
   </div>
 )}
     
+    <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
+      <div style={{ maxWidth: '800px', margin: '0 auto' }}>
     {messages.map((msg) => {
 
 if (msg.type === 'system') {
@@ -1470,8 +1287,10 @@ if (msg.type === 'snap') {
                   <div ref={messagesEndRef} />
                 </div>
               </div>
+            </div>
 
-
+            <div style={{ padding: '20px', background: '#0a0a0a', borderTop: '1px solid #333' }}>
+              <div style={{ maxWidth: '800px', margin: '0 auto' }}>
                   {replyTo && (
                     <div className="reply-preview">
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '5px' }}>
@@ -1516,9 +1335,9 @@ if (msg.type === 'snap') {
   📸
 </button>
 </div>
-                </div>
               </div>
             </div>
+          </div>
             {!showDebug && (
 <div className="debug-toggle" onClick={() => setShowDebug(true)}>
                 <Bug />
@@ -1529,46 +1348,38 @@ if (msg.type === 'snap') {
         );
       }
 
-      return null;
+      console.log('❌ RENDERING NULL - currentView does not match any condition:', currentView);
+      console.error('❌ This should never happen! currentView =', currentView);
+      window.addEmergencyDebug?.(`❌ RENDERING NULL! View: ${currentView}`, '#ff6666');
+      
+      // Emergency fallback - show something instead of nothing
+      return (
+        <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0a0a0a', color: '#fff', padding: '40px', fontFamily: 'monospace' }}>
+          <div style={{ maxWidth: '600px', background: '#1a1a1a', padding: '40px', borderRadius: '20px', border: '2px solid #ff0000' }}>
+            <h1 style={{ color: '#ff6666', marginBottom: '20px' }}>⚠️ ERROR: Invalid View State</h1>
+            <p style={{ marginBottom: '20px' }}>currentView = "{currentView}"</p>
+            <p style={{ marginBottom: '20px', color: '#999' }}>This should show 'start', 'create', 'lobby', or 'room'</p>
+            <button onClick={() => setCurrentView('start')} style={{ background: '#fff', color: '#000', padding: '15px 30px', borderRadius: '10px', border: 'none', cursor: 'pointer', fontSize: '16px', fontWeight: 'bold' }}>
+              Reset to Start
+            </button>
+            <div style={{ marginTop: '30px', padding: '20px', background: '#0a0a0a', borderRadius: '10px', fontSize: '12px' }}>
+              <p style={{ color: '#666', marginBottom: '10px' }}>Debug Info:</p>
+              <pre style={{ color: '#4a9eff', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
+                {JSON.stringify({
+                  currentView,
+                  username,
+                  currentRoom,
+                  dbExists: !!db,
+                  roomsCount: rooms.length
+                }, null, 2)}
+              </pre>
+            </div>
+          </div>
+        </div>
+      );
     }
 
-    console.log('🎯 ==================== ABOUT TO RENDER REACT APP ====================');
-    console.log('🎯 ChatroomApp function:', typeof ChatroomApp);
-    console.log('🎯 Root element:', document.getElementById('root'));
-    console.log('🎯 ReactDOM:', ReactDOM);
-    console.log('🎯 ReactDOM.render:', typeof ReactDOM.render);
-    
-    try {
-      console.log('🎯 Calling ReactDOM.render...');
-      ReactDOM.render(<ChatroomApp />, document.getElementById('root'));
-      console.log('✅ ReactDOM.render completed successfully');
-    } catch (error) {
-      console.error('❌ ReactDOM.render FAILED:', error);
-      console.error('❌ Error details:', {
-        name: error.name,
-        message: error.message,
-        stack: error.stack
-      });
-      
-      // Show error on page
-      const root = document.getElementById('root');
-      if (root) {
-        root.innerHTML = `
-          <div style="padding: 40px; color: white; font-family: monospace;">
-            <h1 style="color: #ff6666;">❌ React Render Error</h1>
-            <pre style="background: #1a1a1a; padding: 20px; border-radius: 10px; overflow: auto;">
-              <strong>Name:</strong> ${error.name}
-              <strong>Message:</strong> ${error.message}
-              <strong>Stack:</strong>
-              ${error.stack}
-            </pre>
-            <p>Check the console for more details.</p>
-          </div>
-        `;
-      }
-    }
-    
-    console.log('🎯 ==================== SCRIPT EXECUTION COMPLETE ====================');
+    ReactDOM.render(<ChatroomApp />, document.getElementById('root'));
   </script>
 </body>
 </html>
