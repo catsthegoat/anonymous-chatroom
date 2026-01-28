@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -421,8 +420,14 @@ function ChatroomApp() {
   const [showCamera, setShowCamera] = useState(false);
   const [stream, setStream] = useState(null);
   const videoRef = useRef(null);
+  const canvasRef = useRef(null);
+  const drawCanvasRef = useRef(null);
   const [showUnoGame, setShowUnoGame] = useState(false);
   const [showGarticGame, setShowGarticGame] = useState(false);
+  const [showInstructions, setShowInstructions] = useState(false);
+  const [showGamesMenu, setShowGamesMenu] = useState(false);
+  const [activeGame, setActiveGame] = useState(null);
+  const [gameState, setGameState] = useState(null);
   
   useEffect(() => {
     const interval = setInterval(() => {
