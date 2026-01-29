@@ -340,17 +340,36 @@
     const { useState, useEffect, useRef } = React;
 
     const firebaseConfig = {
-      apiKey: "AIzaSyDC4Uvm6qdmMd0LJ9-VjVSUGkMVfEsJgJE",
-      authDomain: "emma-chatroom.firebaseapp.com",
-      databaseURL: "https://emma-chatroom-default-rtdb.firebaseio.com",
-      projectId: "emma-chatroom",
-      storageBucket: "emma-chatroom.firebasestorage.app",
-      messagingSenderId: "634854265302",
-      appId: "1:634854265302:web:bf2a5c64c86e0ba0d01002"
+      apiKey: "AIzaSyCR9UiBA6mg3J5a6WGtPK9F76E_ul1D1_c",
+      authDomain: "chatroom-60410.firebaseapp.com",
+      databaseURL: "https://chatroom-60410-default-rtdb.firebaseio.com",
+      projectId: "chatroom-60410",
+      storageBucket: "chatroom-60410.firebasestorage.app",
+      messagingSenderId: "1074130659134",
+      appId: "1:1074130659134:web:06b77a69a0c1d2ee47ee6f",
+      measurementId: "G-ENN9HEXNDB"
     };
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+    let db = null;
+    const debugLogs = [];
+    
+    const addDebugLogGlobal = (message, type = 'info') => {
+      const timestamp = new Date().toLocaleTimeString();
+      debugLogs.push({ message, type, timestamp });
+      if (debugLogs.length > 50) debugLogs.shift();
+      console.log(`[${type.toUpperCase()}] ${message}`);
+    };
+
+    try {
+      if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+        addDebugLogGlobal('Firebase initialized', 'success');
+      }
+      db = firebase.database();
+      addDebugLogGlobal('Database connection established', 'success');
+    } catch (error) {
+      addDebugLogGlobal(`Firebase error: ${error.message}`, 'error');
+    }
 
     const EMOJIS = ['👍', '❤️', '😂', '😮', '😢', '😡', '🎉', '🔥', '👀', '💯', '🙏', '✨'];
 
@@ -497,8 +516,107 @@
       const canvasRef = useRef(null);
 
       const addDebugLog = (message, type = 'info') => {
-        setLogs(prev => [...prev, { message, type, timestamp: Date.now() }]);
+        addDebugLogGlobal(message, type);
       };
+
+      useEffect(() => {
+        const interval = setInterval(() => {
+          setLogs([...debugLogs]);
+        }, 1000);
+        return () => clearInterval(interval);
+      }, []);
+
+      useEffect(() => {
+        if (db) {
+          const connectedRef = db.ref('.info/connected');
+          connectedRef.on('value', (snap) => {
+            if (snap.val() === true) {
+              addDebugLog('Firebase connected', 'success');
+            } else {
+              addDebugLog('Firebase disconnected', 'error');
+            }
+          });
+          return () => connectedRef.off();
+        }
+      }, []);
+
+      useEffect(() => {
+        if (db) {
+          const roomsRef = db.ref('rooms');
+          const handleRooms = (snapshot) => {
+            const data = snapshot.val();
+            setRooms(data ? Object.values(data) : []);
+            addDebugLog(`Rooms loaded: ${data ? Object.keys(data).length : 0}`, 'info');
+          };
+          roomsRef.on('value', handleRooms);
+          return () => roomsRef.off('value', handleRooms);
+        }
+      }, []);
+
+      useEffect(() => {
+        if (username && currentRoom && db) {
+          addDebugLog(`Joined room ${currentRoom}`, 'success');
+          const userRef = db.ref(`roomUsers/${currentRoom}/${username}`);
+          userRef.set(Date.now());
+          userRef.onDisconnect().remove();
+
+          const usersRef = db.ref(`roomUsers/${currentRoom}`);
+          const handleUsers = (snapshot) => {
+            const data = snapshot.val();
+            setRoomUsers(data ? Object.keys(data) : []);
+          };
+          usersRef.on('value', handleUsers);
+
+          const typingRef = db.ref(`typing/${currentRoom}`);
+          const handleTyping = (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+              const now = Date.now();
+              const activeTypers = Object.entries(data)
+                .filter(([user, time]) => user !== username && now - time < 3000)
+                .map(([user]) => user);
+              setTypingUsers(activeTypers);
+            } else {
+              setTypingUsers([]);
+            }
+          };
+          const typingInterval = setInterval(() => typingRef.once('value', handleTyping), 1000);
+
+          return () => {
+            usersRef.off('value', handleUsers);
+            clearInterval(typingInterval);
+            userRef.remove();
+          };
+        }
+      }, [username, currentRoom]);
+
+      useEffect(() => {
+        if (currentRoom && db) {
+          const messagesRef = db.ref(`messages/${currentRoom}`);
+          const handleMessages = (snapshot) => {
+            const data = snapshot.val();
+            setMessages(data ? Object.values(data).sort((a, b) => a.timestamp - b.timestamp) : []);
+          };
+          messagesRef.on('value', handleMessages);
+          return () => messagesRef.off('value', handleMessages);
+        }
+      }, [currentRoom]);
+
+      useEffect(() => {
+        if (currentRoom && db) {
+          const inviteRef = db.ref(`gameInvites/${currentRoom}`);
+          const handleInvite = (snapshot) => {
+            const data = snapshot.val();
+            setGameInvite(data);
+          };
+          inviteRef.on('value', handleInvite);
+          return () => inviteRef.off('value', handleInvite);
+        }
+      }, [currentRoom]);
+
+      useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, [messages]);
 
       useEffect(() => {
         if (username && currentRoom) {
