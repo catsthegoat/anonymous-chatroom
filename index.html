@@ -773,6 +773,11 @@
       const [snapStream, setSnapStream] = useState(null);
       const [capturedSnap, setCapturedSnap] = useState(null);
       const [isFrontCamera, setIsFrontCamera] = useState(true);
+      const [isRecording, setIsRecording] = useState(false);
+      const [recordedVideo, setRecordedVideo] = useState(null);
+      const [mediaRecorder, setMediaRecorder] = useState(null);
+      const [recordingTime, setRecordingTime] = useState(0);
+      const [captureMode, setCaptureMode] = useState('photo'); // 'photo' or 'video'
 
       const messagesEndRef = useRef(null);
       const typingTimeoutRef = useRef(null);
@@ -781,6 +786,7 @@
       const peerConnectionRef = useRef(null);
       const snapVideoRef = useRef(null);
       const snapCanvasRef = useRef(null);
+      const recordingIntervalRef = useRef(null);
 
       const addDebugLog = (message, type = 'info') => {
         addDebugLogGlobal(message, type);
@@ -1044,10 +1050,11 @@
         try {
           const stream = await navigator.mediaDevices.getUserMedia({ 
             video: { facingMode: isFrontCamera ? 'user' : 'environment' }, 
-            audio: false 
+            audio: true // Need audio for video recording
           });
           setSnapStream(stream);
           setShowSnapCamera(true);
+          setCaptureMode('photo'); // Default to photo mode
           if (snapVideoRef.current) {
             snapVideoRef.current.srcObject = stream;
           }
@@ -1062,8 +1069,18 @@
           snapStream.getTracks().forEach(track => track.stop());
           setSnapStream(null);
         }
+        if (mediaRecorder && mediaRecorder.state === 'recording') {
+          mediaRecorder.stop();
+        }
+        if (recordingIntervalRef.current) {
+          clearInterval(recordingIntervalRef.current);
+        }
         setShowSnapCamera(false);
         setCapturedSnap(null);
+        setRecordedVideo(null);
+        setIsRecording(false);
+        setRecordingTime(0);
+        setMediaRecorder(null);
       };
 
       const captureSnap = () => {
@@ -1079,8 +1096,61 @@
         }
       };
 
+      const startRecording = () => {
+        if (!snapStream) return;
+        
+        const recorder = new MediaRecorder(snapStream, {
+          mimeType: 'video/webm;codecs=vp9'
+        });
+        
+        const chunks = [];
+        recorder.ondataavailable = (e) => {
+          if (e.data.size > 0) {
+            chunks.push(e.data);
+          }
+        };
+        
+        recorder.onstop = () => {
+          const blob = new Blob(chunks, { type: 'video/webm' });
+          const videoUrl = URL.createObjectURL(blob);
+          
+          // Convert blob to base64 for Firebase
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            setRecordedVideo(reader.result);
+          };
+          reader.readAsDataURL(blob);
+          
+          clearInterval(recordingIntervalRef.current);
+        };
+        
+        recorder.start();
+        setMediaRecorder(recorder);
+        setIsRecording(true);
+        setRecordingTime(0);
+        
+        // Update recording time every second
+        recordingIntervalRef.current = setInterval(() => {
+          setRecordingTime(prev => {
+            const newTime = prev + 1;
+            if (newTime >= 60) { // Max 60 seconds
+              stopRecording();
+            }
+            return newTime;
+          });
+        }, 1000);
+      };
+
+      const stopRecording = () => {
+        if (mediaRecorder && mediaRecorder.state === 'recording') {
+          mediaRecorder.stop();
+          setIsRecording(false);
+        }
+      };
+
       const retakeSnap = () => {
         setCapturedSnap(null);
+        setRecordedVideo(null);
       };
 
       const flipCamera = async () => {
@@ -1094,7 +1164,7 @@
         try {
           const stream = await navigator.mediaDevices.getUserMedia({ 
             video: { facingMode: newFacingMode ? 'user' : 'environment' }, 
-            audio: false 
+            audio: true
           });
           setSnapStream(stream);
           if (snapVideoRef.current) {
@@ -1107,26 +1177,53 @@
       };
 
       const sendSnap = async () => {
-        if (!capturedSnap || !currentRoom || !username) return;
+        if ((!capturedSnap && !recordedVideo) || !currentRoom || !username) return;
         
         const msgId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
-        const newMsg = {
-          id: msgId,
-          username,
-          type: 'snap',
-          image: capturedSnap,
-          timestamp: Date.now(),
-          reactions: {}
-        };
         
-        try {
-          await db.ref(`messages/${currentRoom}/${msgId}`).set(newMsg);
-          addDebugLog('Snap sent', 'success');
-          closeSnapCamera();
-        } catch (err) {
-          console.error('Snap send error:', err);
-          setError('Failed to send snap');
+        if (capturedSnap) {
+          // Send photo
+          const newMsg = {
+            id: msgId,
+            username,
+            type: 'snap',
+            image: capturedSnap,
+            timestamp: Date.now(),
+            reactions: {}
+          };
+          
+          try {
+            await db.ref(`messages/${currentRoom}/${msgId}`).set(newMsg);
+            addDebugLog('Snap sent', 'success');
+            closeSnapCamera();
+          } catch (err) {
+            console.error('Snap send error:', err);
+            setError('Failed to send snap');
+          }
+        } else if (recordedVideo) {
+          // Send video
+          const newMsg = {
+            id: msgId,
+            username,
+            type: 'video',
+            videoUrl: recordedVideo,
+            timestamp: Date.now(),
+            reactions: {}
+          };
+          
+          try {
+            await db.ref(`messages/${currentRoom}/${msgId}`).set(newMsg);
+            addDebugLog('Video sent', 'success');
+            closeSnapCamera();
+          } catch (err) {
+            console.error('Video send error:', err);
+            setError('Failed to send video');
+          }
         }
+      };
+
+      const toggleCaptureMode = () => {
+        setCaptureMode(prev => prev === 'photo' ? 'video' : 'photo');
       };
 
       // Video Call Functions
@@ -2016,7 +2113,34 @@
                           </div>
                         )}
 
-                        <div style={{ fontSize: '15px', lineHeight: '1.5', wordBreak: 'break-word' }}>{msg.text}</div>
+                        {msg.type === 'snap' && msg.image ? (
+                          <div style={{ marginTop: '8px' }}>
+                            <img 
+                              src={msg.image} 
+                              alt="Snap" 
+                              style={{ 
+                                maxWidth: '100%', 
+                                maxHeight: '400px', 
+                                borderRadius: '10px',
+                                cursor: 'pointer'
+                              }} 
+                            />
+                          </div>
+                        ) : msg.type === 'video' && msg.videoUrl ? (
+                          <div style={{ marginTop: '8px' }}>
+                            <video 
+                              src={msg.videoUrl} 
+                              controls 
+                              style={{ 
+                                maxWidth: '100%', 
+                                maxHeight: '400px', 
+                                borderRadius: '10px'
+                              }} 
+                            />
+                          </div>
+                        ) : (
+                          <div style={{ fontSize: '15px', lineHeight: '1.5', wordBreak: 'break-word' }}>{msg.text}</div>
+                        )}
 
                         {msg.reactions && Object.keys(msg.reactions).length > 0 && (
                           <div className="reaction-container">
@@ -2235,34 +2359,107 @@
                   ✕
                 </button>
                 
+                {/* Mode toggle button */}
+                <button 
+                  onClick={toggleCaptureMode}
+                  style={{
+                    position: 'absolute',
+                    top: '20px',
+                    right: '20px',
+                    padding: '10px 20px',
+                    borderRadius: '50px',
+                    background: captureMode === 'photo' ? '#ffeb3b' : '#ff4444',
+                    color: '#000',
+                    border: 'none',
+                    fontSize: '14px',
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    zIndex: 11,
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  {captureMode === 'photo' ? '📸 Photo' : '🎥 Video'}
+                </button>
+                
                 <div className="snap-video-container">
-                  {!capturedSnap ? (
+                  {!capturedSnap && !recordedVideo ? (
                     <>
                       <video 
                         ref={snapVideoRef} 
                         autoPlay 
                         playsInline 
+                        muted
                         className="snap-video"
                         style={{ transform: isFrontCamera ? 'scaleX(-1)' : 'none' }}
                       />
+                      
+                      {/* Recording indicator */}
+                      {isRecording && (
+                        <div style={{
+                          position: 'absolute',
+                          top: '80px',
+                          left: '50%',
+                          transform: 'translateX(-50%)',
+                          background: 'rgba(255, 0, 0, 0.9)',
+                          color: '#fff',
+                          padding: '10px 20px',
+                          borderRadius: '50px',
+                          fontSize: '16px',
+                          fontWeight: 'bold',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '10px',
+                          zIndex: 11
+                        }}>
+                          <div style={{
+                            width: '12px',
+                            height: '12px',
+                            borderRadius: '50%',
+                            background: '#fff',
+                            animation: 'glow 1s ease-in-out infinite'
+                          }} />
+                          {Math.floor(recordingTime / 60)}:{(recordingTime % 60).toString().padStart(2, '0')}
+                        </div>
+                      )}
+                      
                       <div className="snap-controls">
                         <button onClick={flipCamera} className="snap-action-btn" title="Flip camera">
                           🔄
                         </button>
-                        <button onClick={captureSnap} className="snap-capture-btn" title="Capture snap">
-                        </button>
+                        
+                        {captureMode === 'photo' ? (
+                          <button onClick={captureSnap} className="snap-capture-btn" title="Capture photo" />
+                        ) : (
+                          <button 
+                            onClick={isRecording ? stopRecording : startRecording}
+                            className="snap-capture-btn"
+                            style={{
+                              background: isRecording ? '#ff4444' : '#fff',
+                              border: isRecording ? '5px solid #fff' : '5px solid rgba(255, 255, 255, 0.3)'
+                            }}
+                            title={isRecording ? 'Stop recording' : 'Start recording'}
+                          />
+                        )}
                       </div>
                     </>
                   ) : (
                     <>
-                      <img src={capturedSnap} className="snap-preview-image" alt="Captured snap" />
+                      {capturedSnap && (
+                        <img src={capturedSnap} className="snap-preview-image" alt="Captured snap" />
+                      )}
+                      {recordedVideo && (
+                        <video src={recordedVideo} className="snap-preview-image" controls autoPlay loop />
+                      )}
                       <div className="snap-controls">
                         <button onClick={retakeSnap} className="snap-action-btn" title="Retake">
                           ↺
                         </button>
                       </div>
                       <button onClick={sendSnap} className="snap-send-btn">
-                        📤 Send Snap
+                        📤 Send {capturedSnap ? 'Snap' : 'Video'}
                       </button>
                     </>
                   )}
