@@ -477,6 +477,15 @@
           <strong>🐛 Debug Console</strong>
           <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: '#999', cursor: 'pointer', fontSize: '18px' }}>×</button>
         </div>
+        <div style={{ marginBottom: '10px', padding: '10px', background: '#1a1a1a', borderRadius: '8px', fontSize: '12px' }}>
+          <strong style={{ color: '#4CAF50' }}>📋 Browser Console Instructions:</strong>
+          <div style={{ marginTop: '5px', color: '#999' }}>
+            Press <strong style={{ color: '#fff' }}>F12</strong> or <strong style={{ color: '#fff' }}>Ctrl+Shift+I</strong> (Windows) / <strong style={{ color: '#fff' }}>Cmd+Option+I</strong> (Mac)
+          </div>
+          <div style={{ color: '#999' }}>
+            Click the <strong style={{ color: '#fff' }}>"Console"</strong> tab to see detailed camera & snap debugging
+          </div>
+        </div>
         <div>
           {logs.slice(-20).map((log, i) => (
             <div key={i} className={`debug-log ${log.type}`}>
@@ -696,15 +705,29 @@
       }, [messages]);
 
       const startCamera = async () => {
+        console.log('=== CAMERA START DEBUG ===');
         try {
+          console.log('Requesting camera access...');
           const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+          console.log('Camera access granted!');
+          console.log('Stream:', stream);
+          console.log('Video tracks:', stream.getVideoTracks());
+          
           if (videoRef.current) {
             videoRef.current.srcObject = stream;
+            console.log('Stream assigned to video element');
+          } else {
+            console.error('videoRef.current is null!');
           }
           setShowCamera(true);
           addDebugLog('Camera started', 'success');
+          console.log('=== CAMERA START SUCCESS ===');
         } catch (err) {
-          setError('Camera access denied');
+          console.error('=== CAMERA ERROR ===');
+          console.error('Error:', err);
+          console.error('Error name:', err.name);
+          console.error('Error message:', err.message);
+          setError('Camera access denied: ' + err.message);
           addDebugLog(`Camera error: ${err.message}`, 'error');
         }
       };
@@ -718,10 +741,20 @@
       };
 
       const takeSnap = async () => {
-        if (!videoRef.current || !canvasRef.current) return;
+        console.log('=== SNAP DEBUG START ===');
+        console.log('videoRef.current:', videoRef.current);
+        console.log('canvasRef.current:', canvasRef.current);
+        
+        if (!videoRef.current || !canvasRef.current) {
+          console.error('Missing refs!');
+          addDebugLog('Snap failed: missing refs', 'error');
+          return;
+        }
         
         const canvas = canvasRef.current;
         const video = videoRef.current;
+        
+        console.log('Video dimensions:', video.videoWidth, 'x', video.videoHeight);
         
         // Resize to max 800px width to reduce file size
         const maxWidth = 800;
@@ -729,11 +762,20 @@
         canvas.width = video.videoWidth * scale;
         canvas.height = video.videoHeight * scale;
         
+        console.log('Canvas dimensions:', canvas.width, 'x', canvas.height);
+        console.log('Scale:', scale);
+        
         const ctx = canvas.getContext('2d');
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         
+        console.log('Image drawn to canvas');
+        
         // Compress more aggressively (0.5 quality)
         const imageData = canvas.toDataURL('image/jpeg', 0.5);
+        
+        console.log('Image data URL length:', imageData.length);
+        console.log('Image data preview:', imageData.substring(0, 50) + '...');
+        console.log('Estimated size (KB):', (imageData.length * 0.75 / 1024).toFixed(2));
         
         const msgId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
         const newMsg = {
@@ -745,18 +787,44 @@
           reactions: {}
         };
         
+        console.log('Message object created:', {
+          id: newMsg.id,
+          username: newMsg.username,
+          type: newMsg.type,
+          imageLength: newMsg.image.length,
+          timestamp: newMsg.timestamp
+        });
+        console.log('Current room:', currentRoom);
+        console.log('Firebase path:', `messages/${currentRoom}/${msgId}`);
+        
         try {
+          console.log('Attempting to send to Firebase...');
           await db.ref(`messages/${currentRoom}/${msgId}`).set(newMsg);
+          console.log('✅ SUCCESS! Snap sent to Firebase');
           addDebugLog('Snap sent', 'success');
           stopCamera();
         } catch (err) {
-          setError('Failed to send snap');
+          console.error('❌ FIREBASE ERROR:', err);
+          console.error('Error message:', err.message);
+          console.error('Error code:', err.code);
+          console.error('Full error:', err);
+          setError('Failed to send snap: ' + err.message);
           addDebugLog(`Snap send error: ${err.message}`, 'error');
         }
+        
+        console.log('=== SNAP DEBUG END ===');
       };
 
       const sendImageUrl = async () => {
-        if (!imageUrl.trim() || !currentRoom || !username) return;
+        console.log('=== IMAGE URL SEND DEBUG ===');
+        console.log('Image URL:', imageUrl);
+        console.log('Current room:', currentRoom);
+        console.log('Username:', username);
+        
+        if (!imageUrl.trim() || !currentRoom || !username) {
+          console.error('Missing required data!');
+          return;
+        }
         
         const msgId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
         const newMsg = {
@@ -768,15 +836,24 @@
           reactions: {}
         };
         
+        console.log('Message object:', newMsg);
+        console.log('Firebase path:', `messages/${currentRoom}/${msgId}`);
+        
         try {
+          console.log('Sending to Firebase...');
           await db.ref(`messages/${currentRoom}/${msgId}`).set(newMsg);
+          console.log('✅ SUCCESS! Image URL sent');
           addDebugLog('Image sent', 'success');
           setImageUrl('');
           setShowImageInput(false);
         } catch (err) {
-          setError('Failed to send image');
+          console.error('❌ FIREBASE ERROR:', err);
+          console.error('Error message:', err.message);
+          setError('Failed to send image: ' + err.message);
           addDebugLog(`Image send error: ${err.message}`, 'error');
         }
+        
+        console.log('=== IMAGE URL SEND END ===');
       };
 
       const updateTyping = () => {
