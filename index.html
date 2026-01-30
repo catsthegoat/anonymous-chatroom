@@ -506,6 +506,8 @@
       const [logs, setLogs] = useState([]);
       const [showDebug, setShowDebug] = useState(false);
       const [showCamera, setShowCamera] = useState(false);
+      const [showImageInput, setShowImageInput] = useState(false);
+      const [imageUrl, setImageUrl] = useState('');
       const [showGamesMenu, setShowGamesMenu] = useState(false);
       const [gameInvite, setGameInvite] = useState(null);
       const [openGameWindows, setOpenGameWindows] = useState([]);
@@ -750,6 +752,30 @@
         } catch (err) {
           setError('Failed to send snap');
           addDebugLog(`Snap send error: ${err.message}`, 'error');
+        }
+      };
+
+      const sendImageUrl = async () => {
+        if (!imageUrl.trim() || !currentRoom || !username) return;
+        
+        const msgId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+        const newMsg = {
+          id: msgId,
+          username,
+          type: 'snap',
+          image: imageUrl.trim(),
+          timestamp: Date.now(),
+          reactions: {}
+        };
+        
+        try {
+          await db.ref(`messages/${currentRoom}/${msgId}`).set(newMsg);
+          addDebugLog('Image sent', 'success');
+          setImageUrl('');
+          setShowImageInput(false);
+        } catch (err) {
+          setError('Failed to send image');
+          addDebugLog(`Image send error: ${err.message}`, 'error');
         }
       };
 
@@ -1337,6 +1363,31 @@
                     </div>
                   )}
 
+                  {showImageInput && (
+                    <div style={{ marginBottom: '15px', background: '#1a1a1a', padding: '20px', borderRadius: '15px', border: '1px solid #333' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                        <h3 style={{ fontSize: '16px', fontWeight: 'bold' }}>🖼️ Send Image/GIF</h3>
+                        <button onClick={() => setShowImageInput(false)} style={{ background: 'transparent', border: 'none', color: '#999', cursor: 'pointer', fontSize: '24px' }}>×</button>
+                      </div>
+                      <input
+                        type="text"
+                        value={imageUrl}
+                        onChange={(e) => setImageUrl(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && sendImageUrl()}
+                        placeholder="Paste image or GIF URL..."
+                        style={{ width: '100%', padding: '15px', background: '#0a0a0a', border: '1px solid #333', borderRadius: '10px', color: '#fff', fontSize: '15px', marginBottom: '15px' }}
+                      />
+                      {imageUrl && (
+                        <div style={{ marginBottom: '15px', textAlign: 'center' }}>
+                          <img src={imageUrl} alt="Preview" style={{ maxWidth: '100%', maxHeight: '200px', borderRadius: '10px' }} onError={(e) => e.target.style.display = 'none'} />
+                        </div>
+                      )}
+                      <button onClick={sendImageUrl} className="glow-button" style={{ width: '100%', background: '#fff', color: '#000', padding: '15px', borderRadius: '10px', border: 'none', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>
+                        📤 SEND IMAGE
+                      </button>
+                    </div>
+                  )}
+
                   <div style={{ display: 'flex', gap: '10px' }}>
                     <input
                       type="text"
@@ -1354,6 +1405,9 @@
                     </button>
                     <button onClick={startCamera} className="glow-button" style={{ background: '#1a1a1a', color: '#fff', padding: '15px 30px', borderRadius: '10px', border: '1px solid #333', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>
                       📸
+                    </button>
+                    <button onClick={() => setShowImageInput(!showImageInput)} className="glow-button" style={{ background: '#1a1a1a', color: '#fff', padding: '15px 30px', borderRadius: '10px', border: '1px solid #333', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>
+                      🖼️
                     </button>
                   </div>
                 </div>
