@@ -681,7 +681,22 @@
           const messagesRef = db.ref(`messages/${currentRoom}`);
           const handleMessages = (snapshot) => {
             const data = snapshot.val();
-            setMessages(data ? Object.values(data).sort((a, b) => a.timestamp - b.timestamp) : []);
+            const msgs = data ? Object.values(data).sort((a, b) => a.timestamp - b.timestamp) : [];
+            console.log('=== MESSAGES LOADED FROM FIREBASE ===');
+            console.log('Total messages:', msgs.length);
+            const snapMessages = msgs.filter(m => m.type === 'snap');
+            console.log('Snap messages:', snapMessages.length);
+            snapMessages.forEach((snap, i) => {
+              console.log(`Snap ${i + 1}:`, {
+                id: snap.id,
+                username: snap.username,
+                hasImage: !!snap.image,
+                imageType: typeof snap.image,
+                imageLength: snap.image?.length,
+                imageStart: snap.image?.substring(0, 30)
+              });
+            });
+            setMessages(msgs);
           };
           messagesRef.on('value', handleMessages);
           return () => messagesRef.off('value', handleMessages);
@@ -755,6 +770,22 @@
         const video = videoRef.current;
         
         console.log('Video dimensions:', video.videoWidth, 'x', video.videoHeight);
+        console.log('Video readyState:', video.readyState);
+        
+        // Check if video is ready and has dimensions
+        if (video.videoWidth === 0 || video.videoHeight === 0) {
+          console.error('Video not ready! Dimensions are 0x0');
+          setError('Video not ready yet. Wait a moment and try again.');
+          addDebugLog('Snap failed: video not ready', 'error');
+          return;
+        }
+        
+        if (video.readyState < 2) {
+          console.error('Video readyState too low:', video.readyState);
+          setError('Video still loading. Please wait a moment.');
+          addDebugLog('Snap failed: video still loading', 'error');
+          return;
+        }
         
         // Resize to max 800px width to reduce file size
         const maxWidth = 800;
@@ -776,6 +807,14 @@
         console.log('Image data URL length:', imageData.length);
         console.log('Image data preview:', imageData.substring(0, 50) + '...');
         console.log('Estimated size (KB):', (imageData.length * 0.75 / 1024).toFixed(2));
+        
+        // Additional check - make sure we have actual image data
+        if (imageData.length < 100) {
+          console.error('Image data too short! Something went wrong with capture.');
+          setError('Failed to capture image. Please try again.');
+          addDebugLog('Snap failed: image data too short', 'error');
+          return;
+        }
         
         const msgId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
         const newMsg = {
@@ -1330,13 +1369,38 @@
 
                     if (msg.type === 'snap') {
                       const userColor = `hsl(${msg.username.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % 360}, 70%, 60%)`;
+                      console.log('Rendering snap message:', {
+                        id: msg.id,
+                        username: msg.username,
+                        hasImage: !!msg.image,
+                        imageLength: msg.image?.length,
+                        imagePreview: msg.image?.substring(0, 50)
+                      });
                       return (
                         <div key={msg.id} className="message-bubble" style={{ marginBottom: '15px', background: msg.username === username ? '#1a1a1a' : '#0a0a0a', padding: '15px', borderRadius: '15px', border: '1px solid #333' }}>
                           <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', marginBottom: '8px' }}>
                             <span style={{ color: userColor, fontWeight: 'bold', fontSize: '14px' }}>{msg.username}</span>
                             <span style={{ color: '#666', fontSize: '12px' }}>{formatTime(msg.timestamp)} 📸</span>
                           </div>
-                          <img src={msg.image} alt="Snap" style={{ maxWidth: '100%', borderRadius: '10px', marginTop: '10px' }} />
+                          {msg.image ? (
+                            <img 
+                              src={msg.image} 
+                              alt="Snap" 
+                              style={{ maxWidth: '100%', borderRadius: '10px', marginTop: '10px' }}
+                              onLoad={() => console.log('✅ Snap image loaded successfully:', msg.id)}
+                              onError={(e) => {
+                                console.error('❌ Snap image failed to load:', msg.id);
+                                console.error('Image src length:', msg.image?.length);
+                                console.error('Image src preview:', msg.image?.substring(0, 100));
+                                e.target.style.display = 'none';
+                                e.target.parentElement.innerHTML += '<div style="background: #2a0000; border: 1px solid #ff0000; color: #ff6666; padding: 15px; borderRadius: 10px; marginTop: 10px;">⚠️ Image failed to load. Check console for details.</div>';
+                              }}
+                            />
+                          ) : (
+                            <div style={{ background: '#2a0000', border: '1px solid #ff0000', color: '#ff6666', padding: '15px', borderRadius: '10px', marginTop: '10px' }}>
+                              ⚠️ No image data found in this snap
+                            </div>
+                          )}
                           {msg.reactions && Object.keys(msg.reactions).length > 0 && (
                             <div className="reaction-container">
                               {Object.entries(msg.reactions).map(([emoji, users]) => (
@@ -1431,6 +1495,9 @@
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
                         <h3 style={{ fontSize: '16px', fontWeight: 'bold' }}>📸 Take a Snap</h3>
                         <button onClick={stopCamera} style={{ background: 'transparent', border: 'none', color: '#999', cursor: 'pointer', fontSize: '24px' }}>×</button>
+                      </div>
+                      <div style={{ marginBottom: '10px', padding: '8px', background: '#2a2a0a', border: '1px solid #666600', borderRadius: '8px', color: '#ffff88', fontSize: '13px' }}>
+                        ⚠️ Wait 2-3 seconds for video to fully load before clicking SNAP & SEND
                       </div>
                       <video ref={videoRef} autoPlay playsInline style={{ width: '100%', borderRadius: '10px', marginBottom: '15px' }} />
                       <canvas ref={canvasRef} style={{ display: 'none' }} />
