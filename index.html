@@ -875,6 +875,11 @@
             videoRef.current.srcObject = stream;
             console.log('Stream assigned to video element');
             
+            // Immediately try to play
+            videoRef.current.play().catch(err => {
+              console.warn('Initial play failed:', err);
+            });
+            
             // Set a timeout to warn if video doesn't load
             const loadTimeout = setTimeout(() => {
               console.error('⚠️ WARNING: Video has not loaded after 5 seconds!');
@@ -907,19 +912,21 @@
               console.log('✅ Camera ready set from oncanplay');
             };
             
+            // AGGRESSIVE: Set ready immediately if stream has video track
+            const videoTrack = stream.getVideoTracks()[0];
+            if (videoTrack && videoTrack.readyState === 'live') {
+              console.log('🔥 Video track is LIVE, setting ready immediately!');
+              // Give it a tiny moment to render
+              setTimeout(() => {
+                setCameraReady(true);
+                console.log('✅ Camera ready set aggressively');
+              }, 500);
+            }
+            
             videoRef.current.onerror = (e) => {
               console.error('❌ VIDEO ERROR:', e);
               console.error('Video error details:', videoRef.current?.error);
             };
-            
-            // Force play if needed
-            console.log('Calling video.play()...');
-            try {
-              await videoRef.current.play();
-              console.log('✅ Video play() succeeded');
-            } catch (playErr) {
-              console.warn('⚠️ Video play() failed (may autoplay):', playErr);
-            }
             
             // Fallback: Set camera ready after 2 seconds if not already set
             setTimeout(() => {
@@ -2009,7 +2016,7 @@
                           <strong>Camera Ready!</strong> You can now take a snap
                         </div>
                       )}
-                      <video ref={videoRef} autoPlay playsInline muted style={{ width: '100%', borderRadius: '10px', marginBottom: '15px', background: '#000' }} />
+                      <video ref={videoRef} autoPlay playsInline muted style={{ width: '100%', minHeight: '300px', maxHeight: '400px', borderRadius: '10px', marginBottom: '15px', background: '#000', display: 'block' }} />
                       <canvas ref={canvasRef} style={{ display: 'none' }} />
                       <button 
                         onClick={takeSnap} 
