@@ -1174,8 +1174,13 @@
           peerConnection.onicecandidate = (event) => {
             if (event.candidate) {
               console.log('Sending ICE candidate');
+              const candidateData = {
+                candidate: event.candidate.candidate,
+                sdpMLineIndex: event.candidate.sdpMLineIndex,
+                sdpMid: event.candidate.sdpMid
+              };
               db.ref(`calls/${currentRoom}/${targetUser}/candidates/${username}`).push({
-                candidate: event.candidate.toJSON()
+                candidate: candidateData
               });
             }
           };
@@ -1189,7 +1194,10 @@
           console.log('Sending offer to Firebase...');
           await db.ref(`calls/${currentRoom}/${targetUser}/offer`).set({
             from: username,
-            offer: offer.toJSON(),
+            offer: {
+              type: offer.type,
+              sdp: offer.sdp
+            },
             timestamp: Date.now()
           });
           console.log('✅ Offer sent to Firebase');
@@ -1276,8 +1284,13 @@
           // Handle ICE candidates
           peerConnection.onicecandidate = (event) => {
             if (event.candidate) {
+              const candidateData = {
+                candidate: event.candidate.candidate,
+                sdpMLineIndex: event.candidate.sdpMLineIndex,
+                sdpMid: event.candidate.sdpMid
+              };
               db.ref(`calls/${currentRoom}/${caller}/candidates/${username}`).push({
-                candidate: event.candidate.toJSON()
+                candidate: candidateData
               });
             }
           };
@@ -1292,7 +1305,10 @@
 
           await db.ref(`calls/${currentRoom}/${caller}/answer`).set({
             from: username,
-            answer: answer.toJSON(),
+            answer: {
+              type: answer.type,
+              sdp: answer.sdp
+            },
             timestamp: Date.now()
           });
 
