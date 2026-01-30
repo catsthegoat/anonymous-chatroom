@@ -920,6 +920,15 @@
             } catch (playErr) {
               console.warn('⚠️ Video play() failed (may autoplay):', playErr);
             }
+            
+            // Fallback: Set camera ready after 2 seconds if not already set
+            setTimeout(() => {
+              if (!cameraReady && videoRef.current?.srcObject) {
+                console.log('⏰ Fallback: Force setting camera ready after 2s');
+                setCameraReady(true);
+              }
+            }, 2000);
+            
           } else {
             console.error('❌ videoRef.current is null!');
           }
