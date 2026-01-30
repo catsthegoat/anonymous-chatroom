@@ -183,6 +183,142 @@
       border-radius: 8px;
     }
 
+    .snap-camera-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: #000;
+      z-index: 10002;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .snap-video-container {
+      flex: 1;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .snap-video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .snap-preview-image {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .snap-controls {
+      position: absolute;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 20px;
+      align-items: center;
+      z-index: 10;
+    }
+
+    .snap-capture-btn {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background: #fff;
+      border: 5px solid rgba(255, 255, 255, 0.3);
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 15px rgba(255, 255, 255, 0.4);
+    }
+
+    .snap-capture-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 20px rgba(255, 255, 255, 0.6);
+    }
+
+    .snap-capture-btn:active {
+      transform: scale(0.95);
+    }
+
+    .snap-action-btn {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.6);
+      border: 2px solid #fff;
+      color: #fff;
+      font-size: 24px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      backdrop-filter: blur(10px);
+    }
+
+    .snap-action-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: scale(1.1);
+    }
+
+    .snap-close-btn {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.6);
+      border: 2px solid #fff;
+      color: #fff;
+      font-size: 24px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      backdrop-filter: blur(10px);
+      z-index: 11;
+    }
+
+    .snap-close-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: scale(1.1);
+    }
+
+    .snap-send-btn {
+      position: absolute;
+      bottom: 30px;
+      right: 30px;
+      padding: 15px 30px;
+      border-radius: 50px;
+      background: #fff;
+      color: #000;
+      border: none;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 4px 15px rgba(255, 255, 255, 0.4);
+      transition: all 0.2s;
+      z-index: 11;
+    }
+
+    .snap-send-btn:hover {
+      background: #ffeb3b;
+      transform: scale(1.05);
+      box-shadow: 0 6px 20px rgba(255, 255, 255, 0.6);
+    }
+
     .video-call-modal {
       position: fixed;
       top: 0;
@@ -621,8 +757,6 @@
       const [showEmojiPicker, setShowEmojiPicker] = useState(null);
       const [logs, setLogs] = useState([]);
       const [showDebug, setShowDebug] = useState(false);
-      const [showCamera, setShowCamera] = useState(false);
-      const [cameraReady, setCameraReady] = useState(false);
       const [showImageInput, setShowImageInput] = useState(false);
       const [imageUrl, setImageUrl] = useState('');
       const [showGamesMenu, setShowGamesMenu] = useState(false);
@@ -635,14 +769,18 @@
       const [remoteStream, setRemoteStream] = useState(null);
       const [isMuted, setIsMuted] = useState(false);
       const [isVideoOff, setIsVideoOff] = useState(false);
+      const [showSnapCamera, setShowSnapCamera] = useState(false);
+      const [snapStream, setSnapStream] = useState(null);
+      const [capturedSnap, setCapturedSnap] = useState(null);
+      const [isFrontCamera, setIsFrontCamera] = useState(true);
 
       const messagesEndRef = useRef(null);
       const typingTimeoutRef = useRef(null);
-      const videoRef = useRef(null);
-      const canvasRef = useRef(null);
       const localVideoRef = useRef(null);
       const remoteVideoRef = useRef(null);
       const peerConnectionRef = useRef(null);
+      const snapVideoRef = useRef(null);
+      const snapCanvasRef = useRef(null);
 
       const addDebugLog = (message, type = 'info') => {
         addDebugLogGlobal(message, type);
@@ -837,217 +975,6 @@
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
       }, [messages]);
 
-      const startCamera = async () => {
-        console.log('=== CAMERA START DEBUG ===');
-        console.log('Time:', new Date().toLocaleTimeString());
-        
-        // Clean up any existing stream first
-        if (videoRef.current?.srcObject) {
-          console.log('Cleaning up existing stream...');
-          const tracks = videoRef.current.srcObject.getTracks();
-          tracks.forEach(track => track.stop());
-          videoRef.current.srcObject = null;
-        }
-        
-        setCameraReady(false);
-        
-        try {
-          console.log('Requesting camera access...');
-          const startTime = Date.now();
-          
-          const stream = await navigator.mediaDevices.getUserMedia({ 
-            video: { 
-              facingMode: 'user',
-              width: { ideal: 1280 },
-              height: { ideal: 720 }
-            } 
-          });
-          
-          const accessTime = Date.now() - startTime;
-          console.log(`✅ Camera access granted! Took ${accessTime}ms`);
-          console.log('Stream:', stream);
-          console.log('Video tracks:', stream.getVideoTracks());
-          console.log('Track state:', stream.getVideoTracks()[0]?.readyState);
-          console.log('Track enabled:', stream.getVideoTracks()[0]?.enabled);
-          
-          if (videoRef.current) {
-            console.log('Setting srcObject...');
-            videoRef.current.srcObject = stream;
-            console.log('Stream assigned to video element');
-            
-            // Immediately try to play
-            videoRef.current.play().catch(err => {
-              console.warn('Initial play failed:', err);
-            });
-            
-            // Set a timeout to warn if video doesn't load
-            const loadTimeout = setTimeout(() => {
-              console.error('⚠️ WARNING: Video has not loaded after 5 seconds!');
-              console.error('Video readyState:', videoRef.current?.readyState);
-              console.error('Video dimensions:', videoRef.current?.videoWidth, 'x', videoRef.current?.videoHeight);
-              console.error('Video networkState:', videoRef.current?.networkState);
-              console.error('Video paused:', videoRef.current?.paused);
-              console.error('Video error:', videoRef.current?.error);
-            }, 5000);
-            
-            // Wait for video to actually load
-            videoRef.current.onloadedmetadata = () => {
-              clearTimeout(loadTimeout);
-              const loadTime = Date.now() - startTime;
-              console.log(`✅ Video metadata loaded! Took ${loadTime}ms total`);
-              console.log('Video dimensions:', videoRef.current.videoWidth, 'x', videoRef.current.videoHeight);
-              console.log('Video readyState:', videoRef.current.readyState);
-              if (videoRef.current.videoWidth > 0 && videoRef.current.videoHeight > 0) {
-                setCameraReady(true);
-                console.log('✅ CAMERA IS READY TO SNAP!');
-              } else {
-                console.error('❌ Video dimensions are still 0x0!');
-              }
-            };
-            
-            videoRef.current.oncanplay = () => {
-              console.log('✅ Video can play now!');
-              console.log('Video readyState:', videoRef.current.readyState);
-              setCameraReady(true);
-              console.log('✅ Camera ready set from oncanplay');
-            };
-            
-            // AGGRESSIVE: Set ready immediately if stream has video track
-            const videoTrack = stream.getVideoTracks()[0];
-            if (videoTrack && videoTrack.readyState === 'live') {
-              console.log('🔥 Video track is LIVE, setting ready immediately!');
-              // Give it a tiny moment to render
-              setTimeout(() => {
-                setCameraReady(true);
-                console.log('✅ Camera ready set aggressively');
-              }, 500);
-            }
-            
-            videoRef.current.onerror = (e) => {
-              console.error('❌ VIDEO ERROR:', e);
-              console.error('Video error details:', videoRef.current?.error);
-            };
-            
-            // Fallback: Set camera ready after 2 seconds if not already set
-            setTimeout(() => {
-              if (!cameraReady && videoRef.current?.srcObject) {
-                console.log('⏰ Fallback: Force setting camera ready after 2s');
-                setCameraReady(true);
-              }
-            }, 2000);
-            
-          } else {
-            console.error('❌ videoRef.current is null!');
-          }
-          setShowCamera(true);
-          addDebugLog('Camera started', 'success');
-          console.log('=== CAMERA START COMPLETE ===');
-        } catch (err) {
-          console.error('=== CAMERA ERROR ===');
-          console.error('Error:', err);
-          console.error('Error name:', err.name);
-          console.error('Error message:', err.message);
-          setError('Camera access denied: ' + err.message);
-          addDebugLog(`Camera error: ${err.message}`, 'error');
-        }
-      };
-
-      const stopCamera = () => {
-        console.log('=== STOPPING CAMERA ===');
-        if (videoRef.current) {
-          // Stop all tracks
-          if (videoRef.current.srcObject) {
-            const tracks = videoRef.current.srcObject.getTracks();
-            console.log('Stopping tracks:', tracks.length);
-            tracks.forEach(track => {
-              track.stop();
-              console.log('Track stopped:', track.kind);
-            });
-          }
-          
-          // Clear all event handlers
-          videoRef.current.onloadedmetadata = null;
-          videoRef.current.oncanplay = null;
-          videoRef.current.onerror = null;
-          
-          // Clear srcObject
-          videoRef.current.srcObject = null;
-          console.log('Video srcObject cleared');
-        }
-        setShowCamera(false);
-        setCameraReady(false);
-        addDebugLog('Camera stopped', 'info');
-        console.log('=== CAMERA STOPPED ===');
-      };
-
-      const takeSnap = async () => {
-        console.log('📸 === TAKING SNAP ===');
-        
-        if (!videoRef.current || !canvasRef.current || !currentRoom || !username) {
-          console.error('❌ Missing required refs or data');
-          alert('Error: Camera not ready or missing data');
-          return;
-        }
-        
-        const video = videoRef.current;
-        const canvas = canvasRef.current;
-        
-        console.log('📸 Video dimensions:', video.videoWidth, 'x', video.videoHeight);
-        
-        // Set canvas to match video
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        
-        // Draw video frame to canvas
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(video, 0, 0);
-        
-        console.log('📸 Frame captured to canvas');
-        
-        // Convert to blob for better compression
-        canvas.toBlob(async (blob) => {
-          if (!blob) {
-            console.error('❌ Failed to create blob');
-            alert('Failed to capture image');
-            return;
-          }
-          
-          console.log('📸 Blob size:', (blob.size / 1024).toFixed(2), 'KB');
-          
-          // Convert blob to base64
-          const reader = new FileReader();
-          reader.onloadend = async () => {
-            const base64data = reader.result;
-            console.log('📸 Base64 length:', base64data.length);
-            
-            // Send to Firebase
-            const msgId = Date.now().toString();
-            const newMsg = {
-              id: msgId,
-              username: username,
-              type: 'snap',
-              image: base64data,
-              timestamp: Date.now(),
-              reactions: {}
-            };
-            
-            try {
-              console.log('📸 Sending to Firebase...');
-              await db.ref(`messages/${currentRoom}/${msgId}`).set(newMsg);
-              console.log('✅ Snap sent successfully!');
-              addDebugLog('Snap sent', 'success');
-              stopCamera();
-            } catch (err) {
-              console.error('❌ Firebase error:', err);
-              alert('Failed to send snap: ' + err.message);
-              addDebugLog(`Snap error: ${err.message}`, 'error');
-            }
-          };
-          reader.readAsDataURL(blob);
-        }, 'image/jpeg', 0.7);
-        
-        console.log('📸 === SNAP COMPLETE ===');
-      };
 
       const sendImageUrl = async () => {
         console.log('=== IMAGE URL SEND DEBUG ===');
@@ -1112,6 +1039,96 @@
         console.log('=== IMAGE URL SEND END ===');
       };
 
+      // Snap Camera Functions
+      const openSnapCamera = async () => {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ 
+            video: { facingMode: isFrontCamera ? 'user' : 'environment' }, 
+            audio: false 
+          });
+          setSnapStream(stream);
+          setShowSnapCamera(true);
+          if (snapVideoRef.current) {
+            snapVideoRef.current.srcObject = stream;
+          }
+        } catch (err) {
+          console.error('Camera access error:', err);
+          setError('Could not access camera');
+        }
+      };
+
+      const closeSnapCamera = () => {
+        if (snapStream) {
+          snapStream.getTracks().forEach(track => track.stop());
+          setSnapStream(null);
+        }
+        setShowSnapCamera(false);
+        setCapturedSnap(null);
+      };
+
+      const captureSnap = () => {
+        if (snapVideoRef.current && snapCanvasRef.current) {
+          const video = snapVideoRef.current;
+          const canvas = snapCanvasRef.current;
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(video, 0, 0);
+          const imageData = canvas.toDataURL('image/jpeg', 0.8);
+          setCapturedSnap(imageData);
+        }
+      };
+
+      const retakeSnap = () => {
+        setCapturedSnap(null);
+      };
+
+      const flipCamera = async () => {
+        const newFacingMode = !isFrontCamera;
+        setIsFrontCamera(newFacingMode);
+        
+        if (snapStream) {
+          snapStream.getTracks().forEach(track => track.stop());
+        }
+        
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ 
+            video: { facingMode: newFacingMode ? 'user' : 'environment' }, 
+            audio: false 
+          });
+          setSnapStream(stream);
+          if (snapVideoRef.current) {
+            snapVideoRef.current.srcObject = stream;
+          }
+        } catch (err) {
+          console.error('Camera flip error:', err);
+          setError('Could not flip camera');
+        }
+      };
+
+      const sendSnap = async () => {
+        if (!capturedSnap || !currentRoom || !username) return;
+        
+        const msgId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+        const newMsg = {
+          id: msgId,
+          username,
+          type: 'snap',
+          image: capturedSnap,
+          timestamp: Date.now(),
+          reactions: {}
+        };
+        
+        try {
+          await db.ref(`messages/${currentRoom}/${msgId}`).set(newMsg);
+          addDebugLog('Snap sent', 'success');
+          closeSnapCamera();
+        } catch (err) {
+          console.error('Snap send error:', err);
+          setError('Failed to send snap');
+        }
+      };
+
       // Video Call Functions
       const startCall = async (targetUser) => {
         console.log('=== START CALL DEBUG ===');
@@ -1154,6 +1171,19 @@
           const peerConnection = new RTCPeerConnection(configuration);
           peerConnectionRef.current = peerConnection;
           console.log('Peer connection created');
+          
+          // Monitor connection state
+          peerConnection.onconnectionstatechange = () => {
+            console.log('🔌 Connection state:', peerConnection.connectionState);
+          };
+          
+          peerConnection.oniceconnectionstatechange = () => {
+            console.log('🧊 ICE connection state:', peerConnection.iceConnectionState);
+          };
+          
+          peerConnection.onicegatheringstatechange = () => {
+            console.log('🧊 ICE gathering state:', peerConnection.iceGatheringState);
+          };
 
           // Add local tracks to peer connection
           stream.getTracks().forEach(track => {
@@ -1161,12 +1191,24 @@
             console.log('Added track:', track.kind);
           });
 
-          // Handle incoming tracks
+          // Handle incoming tracks (CALLER SIDE)
           peerConnection.ontrack = (event) => {
-            console.log('Received remote track');
-            setRemoteStream(event.streams[0]);
+            console.log('🎥 === CALLER: RECEIVED REMOTE TRACK ===');
+            console.log('Track kind:', event.track.kind);
+            console.log('Track state:', event.track.readyState);
+            console.log('Streams:', event.streams);
+            
+            const remoteStream = event.streams[0];
+            setRemoteStream(remoteStream);
+            
             if (remoteVideoRef.current) {
-              remoteVideoRef.current.srcObject = event.streams[0];
+              console.log('Setting remote video srcObject');
+              remoteVideoRef.current.srcObject = remoteStream;
+              remoteVideoRef.current.play().catch(err => {
+                console.error('❌ Remote video play failed:', err);
+              });
+            } else {
+              console.error('❌ remoteVideoRef is NULL!');
             }
           };
 
@@ -1266,18 +1308,43 @@
           };
           const peerConnection = new RTCPeerConnection(configuration);
           peerConnectionRef.current = peerConnection;
+          
+          // Monitor connection state
+          peerConnection.onconnectionstatechange = () => {
+            console.log('🔌 Connection state:', peerConnection.connectionState);
+          };
+          
+          peerConnection.oniceconnectionstatechange = () => {
+            console.log('🧊 ICE connection state:', peerConnection.iceConnectionState);
+          };
+          
+          peerConnection.onicegatheringstatechange = () => {
+            console.log('🧊 ICE gathering state:', peerConnection.iceGatheringState);
+          };
 
           // Add local tracks
           stream.getTracks().forEach(track => {
             peerConnection.addTrack(track, stream);
           });
 
-          // Handle incoming tracks
+          // Handle incoming tracks (ANSWERER SIDE)
           peerConnection.ontrack = (event) => {
-            console.log('Received remote track');
-            setRemoteStream(event.streams[0]);
+            console.log('🎥 === ANSWERER: RECEIVED REMOTE TRACK ===');
+            console.log('Track kind:', event.track.kind);
+            console.log('Track state:', event.track.readyState);
+            console.log('Streams:', event.streams);
+            
+            const remoteStream = event.streams[0];
+            setRemoteStream(remoteStream);
+            
             if (remoteVideoRef.current) {
-              remoteVideoRef.current.srcObject = event.streams[0];
+              console.log('Setting remote video srcObject');
+              remoteVideoRef.current.srcObject = remoteStream;
+              remoteVideoRef.current.play().catch(err => {
+                console.error('❌ Remote video play failed:', err);
+              });
+            } else {
+              console.error('❌ remoteVideoRef is NULL!');
             }
           };
 
@@ -1911,53 +1978,6 @@
                       return <div key={msg.id} className="system-message">{msg.text}</div>;
                     }
 
-                    if (msg.type === 'snap') {
-                      const userColor = `hsl(${msg.username.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % 360}, 70%, 60%)`;
-                      console.log('Rendering snap message:', {
-                        id: msg.id,
-                        username: msg.username,
-                        hasImage: !!msg.image,
-                        imageLength: msg.image?.length,
-                        imagePreview: msg.image?.substring(0, 50)
-                      });
-                      return (
-                        <div key={msg.id} className="message-bubble" style={{ marginBottom: '15px', background: msg.username === username ? '#1a1a1a' : '#0a0a0a', padding: '15px', borderRadius: '15px', border: '1px solid #333' }}>
-                          <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', marginBottom: '8px' }}>
-                            <span style={{ color: userColor, fontWeight: 'bold', fontSize: '14px' }}>{msg.username}</span>
-                            <span style={{ color: '#666', fontSize: '12px' }}>{formatTime(msg.timestamp)} 📸</span>
-                          </div>
-                          {msg.image ? (
-                            <img 
-                              src={msg.image} 
-                              alt="Snap" 
-                              style={{ maxWidth: '100%', borderRadius: '10px', marginTop: '10px' }}
-                              onLoad={() => console.log('✅ Snap image loaded successfully:', msg.id)}
-                              onError={(e) => {
-                                console.error('❌ Snap image failed to load:', msg.id);
-                                console.error('Image src length:', msg.image?.length);
-                                console.error('Image src preview:', msg.image?.substring(0, 100));
-                                e.target.style.display = 'none';
-                                e.target.parentElement.innerHTML += '<div style="background: #2a0000; border: 1px solid #ff0000; color: #ff6666; padding: 15px; borderRadius: 10px; marginTop: 10px;">⚠️ Image failed to load. Check console for details.</div>';
-                              }}
-                            />
-                          ) : (
-                            <div style={{ background: '#2a0000', border: '1px solid #ff0000', color: '#ff6666', padding: '15px', borderRadius: '10px', marginTop: '10px' }}>
-                              ⚠️ No image data found in this snap
-                            </div>
-                          )}
-                          {msg.reactions && Object.keys(msg.reactions).length > 0 && (
-                            <div className="reaction-container">
-                              {Object.entries(msg.reactions).map(([emoji, users]) => (
-                                <div key={emoji} onClick={() => addReaction(msg.id, emoji)} className={`reaction ${users.includes(username) ? 'active' : ''}`}>
-                                  <span>{emoji}</span>
-                                  <span>{users.length}</span>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    }
 
                     const replyMsg = msg.replyTo ? getReplyMessage(msg.replyTo) : null;
                     const userColor = `hsl(${msg.username.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % 360}, 70%, 60%)`;
@@ -2034,54 +2054,6 @@
                     </div>
                   )}
 
-                  {showCamera && (
-                    <div style={{ marginBottom: '15px', background: '#1a1a1a', padding: '20px', borderRadius: '15px', border: '1px solid #333' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-                        <h3 style={{ fontSize: '16px', fontWeight: 'bold' }}>📸 Take a Snap</h3>
-                        <button onClick={stopCamera} style={{ background: 'transparent', border: 'none', color: '#999', cursor: 'pointer', fontSize: '24px' }}>×</button>
-                      </div>
-                      {!cameraReady && (
-                        <div style={{ marginBottom: '10px', padding: '10px', background: '#1a1a2a', border: '1px solid #4444ff', borderRadius: '8px', color: '#aaaaff', fontSize: '13px', textAlign: 'center' }}>
-                          <div style={{ fontSize: '20px', marginBottom: '5px' }}>⏳</div>
-                          <strong>Loading camera...</strong> Please wait for video to appear
-                          <div style={{ marginTop: '10px', fontSize: '11px', color: '#8888ff' }}>
-                            If stuck for 10+ seconds, try:<br/>
-                            1. Refresh the page<br/>
-                            2. Check camera permissions in browser settings<br/>
-                            3. Close other apps using the camera<br/>
-                            4. Check console (F12) for errors
-                          </div>
-                        </div>
-                      )}
-                      {cameraReady && (
-                        <div style={{ marginBottom: '10px', padding: '10px', background: '#0a2a0a', border: '1px solid #00ff88', borderRadius: '8px', color: '#88ffcc', fontSize: '13px', textAlign: 'center' }}>
-                          <div style={{ fontSize: '20px', marginBottom: '5px' }}>✅</div>
-                          <strong>Camera Ready!</strong> You can now take a snap
-                        </div>
-                      )}
-                      <video ref={videoRef} autoPlay playsInline muted style={{ width: '100%', minHeight: '300px', maxHeight: '400px', borderRadius: '10px', marginBottom: '15px', background: '#000', display: 'block' }} />
-                      <canvas ref={canvasRef} style={{ display: 'none' }} />
-                      <button 
-                        onClick={takeSnap} 
-                        disabled={!cameraReady}
-                        className="glow-button" 
-                        style={{ 
-                          width: '100%', 
-                          background: cameraReady ? '#fff' : '#333', 
-                          color: cameraReady ? '#000' : '#666', 
-                          padding: '15px', 
-                          borderRadius: '10px', 
-                          border: 'none', 
-                          fontSize: '16px', 
-                          fontWeight: 'bold', 
-                          cursor: cameraReady ? 'pointer' : 'not-allowed',
-                          opacity: cameraReady ? 1 : 0.5
-                        }}
-                      >
-                        {cameraReady ? '📸 SNAP & SEND' : '⏳ WAITING FOR CAMERA...'}
-                      </button>
-                    </div>
-                  )}
 
                   {showImageInput && (
                     <div style={{ marginBottom: '15px', background: '#1a1a1a', padding: '20px', borderRadius: '15px', border: '1px solid #333' }}>
@@ -2126,7 +2098,7 @@
                     <button onClick={sendMessage} className="glow-button" style={{ background: '#fff', color: '#000', padding: '15px 30px', borderRadius: '10px', border: 'none', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <Send /> Send
                     </button>
-                    <button onClick={startCamera} className="glow-button" style={{ background: '#1a1a1a', color: '#fff', padding: '15px 30px', borderRadius: '10px', border: '1px solid #333', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>
+                    <button onClick={openSnapCamera} className="glow-button" style={{ background: '#ffeb3b', color: '#000', padding: '15px 30px', borderRadius: '10px', border: 'none', fontSize: '20px', fontWeight: 'bold', cursor: 'pointer' }} title="Take a snap">
                       📸
                     </button>
                     <button onClick={() => setShowImageInput(!showImageInput)} className="glow-button" style={{ background: '#1a1a1a', color: '#fff', padding: '15px 30px', borderRadius: '10px', border: '1px solid #333', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>
@@ -2252,6 +2224,49 @@
                       ❌ Decline
                     </button>
                   </div>
+                </div>
+              </div>
+            )}
+
+            {/* Snap Camera Modal */}
+            {showSnapCamera && (
+              <div className="snap-camera-modal">
+                <button onClick={closeSnapCamera} className="snap-close-btn">
+                  ✕
+                </button>
+                
+                <div className="snap-video-container">
+                  {!capturedSnap ? (
+                    <>
+                      <video 
+                        ref={snapVideoRef} 
+                        autoPlay 
+                        playsInline 
+                        className="snap-video"
+                        style={{ transform: isFrontCamera ? 'scaleX(-1)' : 'none' }}
+                      />
+                      <div className="snap-controls">
+                        <button onClick={flipCamera} className="snap-action-btn" title="Flip camera">
+                          🔄
+                        </button>
+                        <button onClick={captureSnap} className="snap-capture-btn" title="Capture snap">
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <img src={capturedSnap} className="snap-preview-image" alt="Captured snap" />
+                      <div className="snap-controls">
+                        <button onClick={retakeSnap} className="snap-action-btn" title="Retake">
+                          ↺
+                        </button>
+                      </div>
+                      <button onClick={sendSnap} className="snap-send-btn">
+                        📤 Send Snap
+                      </button>
+                    </>
+                  )}
+                  <canvas ref={snapCanvasRef} style={{ display: 'none' }} />
                 </div>
               </div>
             )}
