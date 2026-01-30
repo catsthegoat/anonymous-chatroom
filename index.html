@@ -865,12 +865,34 @@
           return;
         }
         
+        let finalImageUrl = imageUrl.trim();
+        
+        // Convert Giphy page URLs to media URLs
+        if (finalImageUrl.includes('giphy.com/gifs/')) {
+          console.log('Detected Giphy page URL, converting...');
+          // Extract the GIF ID from URLs like: https://giphy.com/gifs/spongebob-boi-breathe-in-Mp4YvyzWMpXCWAD7mX
+          const gifIdMatch = finalImageUrl.match(/gifs\/[^\/]+-([A-Za-z0-9]+)$/);
+          if (gifIdMatch) {
+            const gifId = gifIdMatch[1];
+            // Convert to media URL
+            finalImageUrl = `https://media.giphy.com/media/${gifId}/giphy.gif`;
+            console.log('Converted to media URL:', finalImageUrl);
+          }
+        }
+        
+        // Also handle tenor URLs
+        if (finalImageUrl.includes('tenor.com/view/')) {
+          console.log('Detected Tenor page URL - please use "Copy GIF Link" instead');
+          setError('For Tenor, right-click the GIF and select "Copy image address"');
+          return;
+        }
+        
         const msgId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
         const newMsg = {
           id: msgId,
           username,
           type: 'snap',
-          image: imageUrl.trim(),
+          image: finalImageUrl,
           timestamp: Date.now(),
           reactions: {}
         };
@@ -1512,6 +1534,9 @@
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
                         <h3 style={{ fontSize: '16px', fontWeight: 'bold' }}>🖼️ Send Image/GIF</h3>
                         <button onClick={() => setShowImageInput(false)} style={{ background: 'transparent', border: 'none', color: '#999', cursor: 'pointer', fontSize: '24px' }}>×</button>
+                      </div>
+                      <div style={{ marginBottom: '10px', padding: '8px', background: '#0a2a0a', border: '1px solid #00ff88', borderRadius: '8px', color: '#88ffcc', fontSize: '12px' }}>
+                        💡 <strong>Tip:</strong> You can paste Giphy page URLs directly! Or use "Share" → "Copy GIF Link" from Giphy/Tenor
                       </div>
                       <input
                         type="text"
