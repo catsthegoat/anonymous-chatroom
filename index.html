@@ -27,6 +27,18 @@
       50% { filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.8)); }
     }
 
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.8; transform: scale(1.05); }
+    }
+
+    @keyframes ring {
+      0%, 100% { transform: scale(1) rotate(0deg); }
+      10%, 30% { transform: scale(1.1) rotate(-10deg); }
+      20%, 40% { transform: scale(1.1) rotate(10deg); }
+      50% { transform: scale(1) rotate(0deg); }
+    }
+
     .glow {
       animation: glow 2s ease-in-out infinite;
     }
@@ -189,7 +201,7 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(0, 0, 0, 0.95);
+      background: rgba(0, 0, 0, 0.98);
       z-index: 10000;
       display: flex;
       flex-direction: column;
@@ -207,32 +219,39 @@
     .remote-video {
       width: 100%;
       height: 100%;
-      object-fit: contain;
+      object-fit: cover;
       border-radius: 20px;
       background: #000;
+      box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
     }
 
     .local-video {
       position: absolute;
-      bottom: 20px;
+      bottom: 80px;
       right: 20px;
-      width: 200px;
-      height: 150px;
+      width: 180px;
+      height: 240px;
       object-fit: cover;
       border-radius: 15px;
-      border: 3px solid #fff;
-      box-shadow: 0 5px 30px rgba(0, 0, 0, 0.5);
+      border: 3px solid rgba(255, 255, 255, 0.2);
+      background: #1a1a1a;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+    }
+
+    .call-status {
+      text-align: center;
+      color: #fff;
     }
 
     .call-controls {
       position: absolute;
-      bottom: 40px;
+      bottom: 20px;
       left: 50%;
       transform: translateX(-50%);
       display: flex;
       gap: 20px;
-      padding: 20px;
-      background: rgba(0, 0, 0, 0.8);
+      padding: 15px 30px;
+      background: rgba(0, 0, 0, 0.6);
       border-radius: 50px;
       backdrop-filter: blur(10px);
     }
@@ -242,201 +261,48 @@
       height: 60px;
       border-radius: 50%;
       border: none;
-      cursor: pointer;
       font-size: 24px;
+      cursor: pointer;
       transition: all 0.3s;
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
       display: flex;
       align-items: center;
       justify-content: center;
     }
 
     .call-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
       transform: scale(1.1);
+    }
+
+    .call-btn.active {
+      background: rgba(255, 50, 50, 0.8);
     }
 
     .call-btn.end {
       background: #ff3b30;
-      color: #fff;
     }
 
-    .call-btn.mute {
-      background: rgba(255, 255, 255, 0.2);
-      color: #fff;
-    }
-
-    .call-btn.video-toggle {
-      background: rgba(255, 255, 255, 0.2);
-      color: #fff;
+    .call-btn.end:hover {
+      background: #ff1a1a;
     }
 
     .incoming-call {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
       background: #1a1a1a;
-      padding: 40px;
+      border: 1px solid #333;
       border-radius: 20px;
-      border: 2px solid #fff;
+      padding: 40px;
       text-align: center;
-      z-index: 10001;
-      box-shadow: 0 10px 50px rgba(0, 0, 0, 0.8);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
     }
 
-    .call-status {
-      text-align: center;
-      font-size: 18px;
-      color: #fff;
-      margin-bottom: 20px;
+    .ringing-icon {
+      animation: ring 2s ease-in-out infinite;
     }
 
-    .reply-preview {
-      background: rgba(255, 255, 255, 0.05);
-      border-left: 3px solid #666;
-      padding: 10px 15px;
-      margin-bottom: 10px;
-      border-radius: 5px;
-      font-size: 13px;
-    }
-
-    .reply-to {
-      background: rgba(255, 255, 255, 0.05);
-      border-left: 3px solid currentColor;
-      padding: 6px 10px;
-      margin-bottom: 8px;
-      border-radius: 3px;
-      font-size: 12px;
-      opacity: 0.8;
-    }
-
-    .debug-console {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: rgba(0, 0, 0, 0.95);
-      border: 1px solid #333;
-      border-radius: 10px;
-      padding: 15px;
-      max-width: 400px;
-      max-height: 300px;
-      overflow-y: auto;
-      font-size: 12px;
-      font-family: 'Courier New', monospace;
-      z-index: 999;
-      box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
-    }
-
-    .debug-log {
-      margin-bottom: 8px;
-      padding: 6px 10px;
-      border-radius: 6px;
-      border-left: 3px solid;
-    }
-
-    .debug-log.info { border-color: #4a9eff; background: rgba(74, 158, 255, 0.1); }
-    .debug-log.success { border-color: #00ff00; background: rgba(0, 255, 0, 0.1); }
-    .debug-log.error { border-color: #ff0000; background: rgba(255, 0, 0, 0.1); }
-    .debug-log.warning { border-color: #ffaa00; background: rgba(255, 170, 0, 0.1); }
-
-    .debug-toggle {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: rgba(0, 0, 0, 0.9);
-      border: 1px solid #333;
-      border-radius: 50%;
-      width: 50px;
-      height: 50px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all 0.3s;
-      z-index: 998;
-      box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
-    }
-
-    .debug-toggle:hover {
-      background: rgba(255, 255, 255, 0.2);
-      box-shadow: 0 0 30px rgba(255, 255, 255, 0.4);
-    }
-
-    /* Minimized window styles */
-    .minimized-window {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      width: 300px;
-      background: #0a0a0a;
-      border: 1px solid #333;
-      border-radius: 10px;
-      overflow: hidden;
-      box-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
-      z-index: 900;
-      transition: all 0.3s ease;
-    }
-
-    .minimized-window.maximized {
-      width: 90vw;
-      height: 90vh;
-      bottom: 5vh;
-      right: 5vw;
-      z-index: 950;
-    }
-
-    .minimized-window-header {
-      background: #1a1a1a;
-      padding: 10px 15px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      cursor: move;
-      border-bottom: 1px solid #333;
-    }
-
-    .minimized-window-title {
-      font-size: 14px;
-      font-weight: bold;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .minimized-window-controls {
-      display: flex;
-      gap: 8px;
-    }
-
-    .window-btn {
-      background: transparent;
-      border: none;
-      color: #999;
-      cursor: pointer;
-      padding: 4px 8px;
-      border-radius: 4px;
-      transition: all 0.2s;
-      font-size: 16px;
-      line-height: 1;
-    }
-
-    .window-btn:hover {
-      background: rgba(255, 255, 255, 0.1);
-      color: #fff;
-    }
-
-    .minimized-window-content {
-      height: 200px;
-      overflow: hidden;
-    }
-
-    .minimized-window.maximized .minimized-window-content {
-      height: calc(90vh - 50px);
-    }
-
-    .game-iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
+    .calling-status {
+      animation: pulse 2s ease-in-out infinite;
     }
   </style>
 </head>
@@ -446,1634 +312,983 @@
   <script type="text/babel">
     const { useState, useEffect, useRef } = React;
 
+    // Firebase configuration
     const firebaseConfig = {
-      apiKey: "AIzaSyCR9UiBA6mg3J5a6WGtPK9F76E_ul1D1_c",
-      authDomain: "chatroom-60410.firebaseapp.com",
-      databaseURL: "https://chatroom-60410-default-rtdb.firebaseio.com",
-      projectId: "chatroom-60410",
-      storageBucket: "chatroom-60410.firebasestorage.app",
-      messagingSenderId: "1074130659134",
-      appId: "1:1074130659134:web:06b77a69a0c1d2ee47ee6f",
-      measurementId: "G-ENN9HEXNDB"
+      apiKey: "AIzaSyCHGTZHNPdjfb-cGGXJMevlvDtgXyPygFA",
+      authDomain: "chatroom-b5e53.firebaseapp.com",
+      databaseURL: "https://chatroom-b5e53-default-rtdb.firebaseio.com",
+      projectId: "chatroom-b5e53",
+      storageBucket: "chatroom-b5e53.firebasestorage.app",
+      messagingSenderId: "1083699838126",
+      appId: "1:1083699838126:web:6eacf8da63b1e64b6cb3a1",
+      measurementId: "G-MRGR2PJJK3"
     };
 
-    let db = null;
-    const debugLogs = [];
-    
-    const addDebugLogGlobal = (message, type = 'info') => {
-      const timestamp = new Date().toLocaleTimeString();
-      debugLogs.push({ message, type, timestamp });
-      if (debugLogs.length > 50) debugLogs.shift();
-      console.log(`[${type.toUpperCase()}] ${message}`);
-    };
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
 
-    try {
-      if (!firebase.apps.length) {
-        firebase.initializeApp(firebaseConfig);
-        addDebugLogGlobal('Firebase initialized', 'success');
-      }
-      db = firebase.database();
-      addDebugLogGlobal('Database connection established', 'success');
-    } catch (error) {
-      addDebugLogGlobal(`Firebase error: ${error.message}`, 'error');
-    }
+    // Icons
+    const Send = () => <span>➤</span>;
+    const Phone = () => <span>📞</span>;
+    const Bug = () => <span>🐛</span>;
 
-    const EMOJIS = ['👍', '❤️', '😂', '😮', '😢', '😡', '🎉', '🔥', '👀', '💯', '🙏', '✨'];
-
-    const MessageCircle = () => <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>;
-    const Send = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>;
-    const LogOut = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>;
-    const Plus = () => <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>;
-    const Trash = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>;
-    const Users = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>;
-    const UserX = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="18" y1="8" x2="23" y2="13"/><line x1="23" y1="8" x2="18" y2="13"/></svg>;
-    const Gamepad = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="6" y1="12" x2="10" y2="12"/><line x1="8" y1="10" x2="8" y2="14"/><line x1="15" y1="13" x2="15.01" y2="13"/><line x1="18" y1="11" x2="18.01" y2="11"/><rect x="2" y="6" width="20" height="12" rx="2"/></svg>;
-    const Bug = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="8" y="6" width="8" height="14" rx="4"/><path d="M6 12h4m8 0h4M8 6V4a2 2 0 0 1 4 0v2m4 0V4a2 2 0 0 1 4 0v2M8 18v2a2 2 0 0 0 4 0v-2m4 0v2a2 2 0 0 0 4 0v-2"/></svg>;
-    const Smile = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>;
-
-    // Minimized Window Component
-    const MinimizedWindow = ({ title, url, onClose, icon }) => {
-      const [isMaximized, setIsMaximized] = useState(false);
-      const [position, setPosition] = useState({ x: window.innerWidth - 320, y: window.innerHeight - 250 });
-      const [isDragging, setIsDragging] = useState(false);
-      const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
-
-      const handleMouseDown = (e) => {
-        if (e.target.closest('.window-btn')) return;
-        setIsDragging(true);
-        setDragOffset({
-          x: e.clientX - position.x,
-          y: e.clientY - position.y
-        });
-      };
-
-      const handleMouseMove = (e) => {
-        if (isDragging && !isMaximized) {
-          setPosition({
-            x: e.clientX - dragOffset.x,
-            y: e.clientY - dragOffset.y
-          });
-        }
-      };
-
-      const handleMouseUp = () => {
-        setIsDragging(false);
-      };
-
-      useEffect(() => {
-        if (isDragging) {
-          document.addEventListener('mousemove', handleMouseMove);
-          document.addEventListener('mouseup', handleMouseUp);
-          return () => {
-            document.removeEventListener('mousemove', handleMouseMove);
-            document.removeEventListener('mouseup', handleMouseUp);
-          };
-        }
-      }, [isDragging, dragOffset]);
-
+    // Debug Console Component
+    function DebugConsole({ logs, onClose }) {
       return (
-        <div 
-          className={`minimized-window ${isMaximized ? 'maximized' : ''}`}
-          style={!isMaximized ? { 
-            left: `${position.x}px`, 
-            top: `${position.y}px`,
-            right: 'auto',
-            bottom: 'auto'
-          } : {}}
-        >
-          <div 
-            className="minimized-window-header"
-            onMouseDown={handleMouseDown}
-          >
-            <div className="minimized-window-title">
-              <span>{icon}</span>
-              <span>{title}</span>
-            </div>
-            <div className="minimized-window-controls">
-              <button 
-                className="window-btn" 
-                onClick={() => setIsMaximized(!isMaximized)}
-                title={isMaximized ? "Minimize" : "Maximize"}
-              >
-                {isMaximized ? '🗗' : '🗖'}
-              </button>
-              <button 
-                className="window-btn" 
-                onClick={onClose}
-                title="Close"
-              >
-                ✕
-              </button>
-            </div>
+        <div style={{ position: 'fixed', bottom: 0, right: 0, width: '400px', height: '300px', background: '#1a1a1a', border: '1px solid #333', borderRadius: '10px 10px 0 0', zIndex: 10002, display: 'flex', flexDirection: 'column' }}>
+          <div style={{ padding: '10px', borderBottom: '1px solid #333', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ fontWeight: 'bold', fontSize: '14px' }}>🐛 Debug Console</div>
+            <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: '#999', cursor: 'pointer', fontSize: '20px' }}>×</button>
           </div>
-          <div className="minimized-window-content">
-            <iframe 
-              src={url} 
-              className="game-iframe"
-              title={title}
-              allow="camera; microphone; fullscreen"
-            />
+          <div style={{ flex: 1, overflowY: 'auto', padding: '10px', fontSize: '11px', fontFamily: 'monospace' }}>
+            {logs.map((log, i) => (
+              <div key={i} style={{ marginBottom: '5px', color: log.type === 'error' ? '#ff6b6b' : log.type === 'warn' ? '#ffd93d' : '#6bcf7f' }}>
+                <span style={{ color: '#999' }}>[{log.time}]</span> {log.message}
+              </div>
+            ))}
           </div>
         </div>
       );
-    };
+    }
 
-    const DebugConsole = ({ logs, onClose }) => (
-      <div className="debug-console">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', borderBottom: '1px solid #333', paddingBottom: '10px' }}>
-          <strong>🐛 Debug Console</strong>
-          <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: '#999', cursor: 'pointer', fontSize: '18px' }}>×</button>
-        </div>
-        <div style={{ marginBottom: '10px', padding: '10px', background: '#1a1a1a', borderRadius: '8px', fontSize: '12px' }}>
-          <strong style={{ color: '#4CAF50' }}>📋 Browser Console Instructions:</strong>
-          <div style={{ marginTop: '5px', color: '#999' }}>
-            Press <strong style={{ color: '#fff' }}>F12</strong> or <strong style={{ color: '#fff' }}>Ctrl+Shift+I</strong> (Windows) / <strong style={{ color: '#fff' }}>Cmd+Option+I</strong> (Mac)
-          </div>
-          <div style={{ color: '#999' }}>
-            Click the <strong style={{ color: '#fff' }}>"Console"</strong> tab to see detailed camera & snap debugging
-          </div>
-        </div>
-        <div>
-          {logs.slice(-20).map((log, i) => (
-            <div key={i} className={`debug-log ${log.type}`}>
-              <div style={{ fontSize: '10px', color: '#666', marginBottom: '2px' }}>{new Date(log.timestamp).toLocaleTimeString()}</div>
-              <div>{log.message}</div>
+    // Minimized Window Component for Games
+    function MinimizedWindow({ title, url, icon, onClose }) {
+      const [isMaximized, setIsMaximized] = useState(false);
+      
+      return (
+        <>
+          {!isMaximized && (
+            <div style={{ 
+              position: 'fixed', 
+              bottom: '20px', 
+              left: '20px', 
+              background: '#1a1a1a', 
+              border: '1px solid #333', 
+              borderRadius: '10px', 
+              padding: '15px 20px',
+              display: 'flex',
+              gap: '15px',
+              alignItems: 'center',
+              zIndex: 9999,
+              boxShadow: '0 5px 20px rgba(0,0,0,0.5)'
+            }}>
+              <span style={{ fontSize: '24px' }}>{icon}</span>
+              <span style={{ fontWeight: 'bold' }}>{title}</span>
+              <button 
+                onClick={() => setIsMaximized(true)} 
+                style={{ 
+                  background: '#333', 
+                  border: 'none', 
+                  color: '#fff', 
+                  padding: '8px 15px', 
+                  borderRadius: '5px', 
+                  cursor: 'pointer',
+                  fontSize: '12px'
+                }}
+              >
+                Open
+              </button>
+              <button 
+                onClick={onClose} 
+                style={{ 
+                  background: '#ff3b30', 
+                  border: 'none', 
+                  color: '#fff', 
+                  padding: '8px 15px', 
+                  borderRadius: '5px', 
+                  cursor: 'pointer',
+                  fontSize: '12px'
+                }}
+              >
+                Close
+              </button>
             </div>
-          ))}
-        </div>
-      </div>
-    );
+          )}
+          
+          {isMaximized && (
+            <div style={{ 
+              position: 'fixed', 
+              top: 0, 
+              left: 0, 
+              right: 0, 
+              bottom: 0, 
+              background: '#000', 
+              zIndex: 10000,
+              display: 'flex',
+              flexDirection: 'column'
+            }}>
+              <div style={{ 
+                padding: '15px 20px', 
+                background: '#1a1a1a', 
+                borderBottom: '1px solid #333',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }}>
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                  <span style={{ fontSize: '24px' }}>{icon}</span>
+                  <span style={{ fontWeight: 'bold' }}>{title}</span>
+                </div>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <button 
+                    onClick={() => setIsMaximized(false)} 
+                    style={{ 
+                      background: '#333', 
+                      border: 'none', 
+                      color: '#fff', 
+                      padding: '8px 15px', 
+                      borderRadius: '5px', 
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Minimize
+                  </button>
+                  <button 
+                    onClick={onClose} 
+                    style={{ 
+                      background: '#ff3b30', 
+                      border: 'none', 
+                      color: '#fff', 
+                      padding: '8px 15px', 
+                      borderRadius: '5px', 
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+              <iframe 
+                src={url} 
+                style={{ 
+                  flex: 1, 
+                  border: 'none', 
+                  width: '100%' 
+                }}
+                allow="fullscreen"
+              />
+            </div>
+          )}
+        </>
+      );
+    }
 
     function ChatroomApp() {
+      const [screen, setScreen] = useState('home');
+      const [roomCode, setRoomCode] = useState('');
       const [username, setUsername] = useState('');
-      const [tempUsername, setTempUsername] = useState('');
-      const [currentView, setCurrentView] = useState('start');
       const [currentRoom, setCurrentRoom] = useState(null);
-      const [rooms, setRooms] = useState([]);
       const [messages, setMessages] = useState([]);
       const [message, setMessage] = useState('');
-      const [newRoomName, setNewRoomName] = useState('');
-      const [newRoomPassword, setNewRoomPassword] = useState('');
-      const [error, setError] = useState('');
-      const [roomUsers, setRoomUsers] = useState([]);
-      const [typingUsers, setTypingUsers] = useState([]);
-      const [replyTo, setReplyTo] = useState(null);
-      const [showEmojiPicker, setShowEmojiPicker] = useState(null);
+      const [users, setUsers] = useState([]);
       const [logs, setLogs] = useState([]);
       const [showDebug, setShowDebug] = useState(false);
+      const [showEmojiPicker, setShowEmojiPicker] = useState(null);
+      const [reactions, setReactions] = useState({});
+      const [typingUsers, setTypingUsers] = useState({});
       const [showCamera, setShowCamera] = useState(false);
       const [cameraReady, setCameraReady] = useState(false);
       const [showImageInput, setShowImageInput] = useState(false);
       const [imageUrl, setImageUrl] = useState('');
-      const [showGamesMenu, setShowGamesMenu] = useState(false);
-      const [gameInvite, setGameInvite] = useState(null);
       const [openGameWindows, setOpenGameWindows] = useState([]);
+      
+      // Video call states
       const [inCall, setInCall] = useState(false);
       const [callWith, setCallWith] = useState(null);
-      const [incomingCall, setIncomingCall] = useState(null);
       const [localStream, setLocalStream] = useState(null);
       const [remoteStream, setRemoteStream] = useState(null);
+      const [peerConnection, setPeerConnection] = useState(null);
       const [isMuted, setIsMuted] = useState(false);
       const [isVideoOff, setIsVideoOff] = useState(false);
+      const [incomingCall, setIncomingCall] = useState(null);
+      const [isRinging, setIsRinging] = useState(false);
 
-      const messagesEndRef = useRef(null);
-      const typingTimeoutRef = useRef(null);
       const videoRef = useRef(null);
       const canvasRef = useRef(null);
       const localVideoRef = useRef(null);
       const remoteVideoRef = useRef(null);
-      const peerConnectionRef = useRef(null);
+      const messagesEndRef = useRef(null);
+      const typingTimeoutRef = useRef(null);
 
-      const addDebugLog = (message, type = 'info') => {
-        addDebugLogGlobal(message, type);
+      const emojis = ['😀', '😂', '😍', '😎', '🤔', '😢', '😡', '👍', '👎', '❤️', '🔥', '✨'];
+
+      const addLog = (message, type = 'info') => {
+        const time = new Date().toLocaleTimeString();
+        setLogs(prev => [...prev.slice(-49), { time, message, type }]);
       };
 
       useEffect(() => {
-        const interval = setInterval(() => {
-          setLogs([...debugLogs]);
-        }, 1000);
-        return () => clearInterval(interval);
-      }, []);
-
-      useEffect(() => {
-        if (db) {
-          const connectedRef = db.ref('.info/connected');
-          connectedRef.on('value', (snap) => {
-            if (snap.val() === true) {
-              addDebugLog('Firebase connected', 'success');
-            } else {
-              addDebugLog('Firebase disconnected', 'error');
-            }
-          });
-          return () => connectedRef.off();
-        }
-      }, []);
-
-      useEffect(() => {
-        if (db) {
-          const roomsRef = db.ref('rooms');
-          const handleRooms = (snapshot) => {
-            const data = snapshot.val();
-            setRooms(data ? Object.values(data) : []);
-            addDebugLog(`Rooms loaded: ${data ? Object.keys(data).length : 0}`, 'info');
-          };
-          roomsRef.on('value', handleRooms);
-          return () => roomsRef.off('value', handleRooms);
-        }
-      }, []);
-
-      useEffect(() => {
-        if (username && currentRoom && db) {
-          addDebugLog(`Joined room ${currentRoom}`, 'success');
-          const userRef = db.ref(`roomUsers/${currentRoom}/${username}`);
-          userRef.set(Date.now());
-          userRef.onDisconnect().remove();
-
-          const usersRef = db.ref(`roomUsers/${currentRoom}`);
-          const handleUsers = (snapshot) => {
-            const data = snapshot.val();
-            setRoomUsers(data ? Object.keys(data) : []);
-          };
-          usersRef.on('value', handleUsers);
-
-          const typingRef = db.ref(`typing/${currentRoom}`);
-          const handleTyping = (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-              const now = Date.now();
-              const activeTypers = Object.entries(data)
-                .filter(([user, time]) => user !== username && now - time < 3000)
-                .map(([user]) => user);
-              setTypingUsers(activeTypers);
-            } else {
-              setTypingUsers([]);
-            }
-          };
-          const typingInterval = setInterval(() => typingRef.once('value', handleTyping), 1000);
-
-          return () => {
-            usersRef.off('value', handleUsers);
-            clearInterval(typingInterval);
-            userRef.remove();
-          };
-        }
-      }, [username, currentRoom]);
-
-      useEffect(() => {
-        if (currentRoom && db) {
-          const messagesRef = db.ref(`messages/${currentRoom}`);
-          const handleMessages = (snapshot) => {
-            const data = snapshot.val();
-            setMessages(data ? Object.values(data).sort((a, b) => a.timestamp - b.timestamp) : []);
-          };
-          messagesRef.on('value', handleMessages);
-          return () => messagesRef.off('value', handleMessages);
-        }
-      }, [currentRoom]);
-
-      useEffect(() => {
-        if (currentRoom && db) {
-          const inviteRef = db.ref(`gameInvites/${currentRoom}`);
-          const handleInvite = (snapshot) => {
-            const data = snapshot.val();
-            setGameInvite(data);
-          };
-          inviteRef.on('value', handleInvite);
-          return () => inviteRef.off('value', handleInvite);
-        }
-      }, [currentRoom]);
-
-      useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
       }, [messages]);
 
       useEffect(() => {
-        if (username && currentRoom) {
-          addDebugLog(`Joined room ${currentRoom}`, 'success');
-          const userRef = db.ref(`roomUsers/${currentRoom}/${username}`);
-          userRef.set(Date.now());
-          userRef.onDisconnect().remove();
+        if (!currentRoom || !username) return;
 
-          const usersRef = db.ref(`roomUsers/${currentRoom}`);
-          const handleUsers = (snapshot) => {
-            const data = snapshot.val();
-            setRoomUsers(data ? Object.keys(data) : []);
-          };
-          usersRef.on('value', handleUsers);
+        const userRef = database.ref(`rooms/${currentRoom}/users/${username}`);
+        userRef.set({ username, online: true, lastSeen: Date.now() });
+        userRef.onDisconnect().update({ online: false, lastSeen: Date.now() });
 
-          const typingRef = db.ref(`typing/${currentRoom}`);
-          const handleTyping = (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-              const now = Date.now();
-              const activeTypers = Object.entries(data)
-                .filter(([user, time]) => user !== username && now - time < 3000)
-                .map(([user]) => user);
-              setTypingUsers(activeTypers);
-            } else {
-              setTypingUsers([]);
-            }
-          };
-          const typingInterval = setInterval(() => typingRef.once('value', handleTyping), 1000);
+        const usersRef = database.ref(`rooms/${currentRoom}/users`);
+        usersRef.on('value', (snapshot) => {
+          const usersData = snapshot.val() || {};
+          setUsers(Object.values(usersData));
+        });
 
-          return () => {
-            usersRef.off('value', handleUsers);
-            clearInterval(typingInterval);
-            userRef.remove();
-          };
-        }
-      }, [username, currentRoom]);
+        const messagesRef = database.ref(`rooms/${currentRoom}/messages`);
+        messagesRef.on('value', (snapshot) => {
+          const messagesData = snapshot.val() || {};
+          setMessages(Object.entries(messagesData).map(([id, msg]) => ({ id, ...msg })));
+        });
 
-      useEffect(() => {
-        const roomsRef = db.ref('rooms');
-        const handleRooms = (snapshot) => {
-          const data = snapshot.val();
-          setRooms(data ? Object.values(data) : []);
+        const reactionsRef = database.ref(`rooms/${currentRoom}/reactions`);
+        reactionsRef.on('value', (snapshot) => {
+          setReactions(snapshot.val() || {});
+        });
+
+        const typingRef = database.ref(`rooms/${currentRoom}/typing`);
+        typingRef.on('value', (snapshot) => {
+          setTypingUsers(snapshot.val() || {});
+        });
+
+        // Listen for incoming calls
+        const callRef = database.ref(`rooms/${currentRoom}/calls/${username}`);
+        callRef.on('value', (snapshot) => {
+          const callData = snapshot.val();
+          if (callData && callData.type === 'offer' && !inCall) {
+            addLog(`Incoming call from ${callData.from}`, 'info');
+            setIncomingCall(callData);
+          } else if (callData && callData.type === 'answer' && inCall) {
+            addLog(`Call answered by ${callData.from}`, 'info');
+            handleAnswer(callData);
+          }
+        });
+
+        return () => {
+          userRef.off();
+          usersRef.off();
+          messagesRef.off();
+          reactionsRef.off();
+          typingRef.off();
+          callRef.off();
+          userRef.update({ online: false, lastSeen: Date.now() });
         };
-        roomsRef.on('value', handleRooms);
-        return () => roomsRef.off('value', handleRooms);
-      }, []);
+      }, [currentRoom, username, inCall]);
 
-      useEffect(() => {
-        if (currentRoom) {
-          const messagesRef = db.ref(`messages/${currentRoom}`);
-          const handleMessages = (snapshot) => {
-            const data = snapshot.val();
-            const msgs = data ? Object.values(data).sort((a, b) => a.timestamp - b.timestamp) : [];
-            console.log('=== MESSAGES LOADED FROM FIREBASE ===');
-            console.log('Total messages:', msgs.length);
-            const snapMessages = msgs.filter(m => m.type === 'snap');
-            console.log('Snap messages:', snapMessages.length);
-            snapMessages.forEach((snap, i) => {
-              console.log(`Snap ${i + 1}:`, {
-                id: snap.id,
-                username: snap.username,
-                hasImage: !!snap.image,
-                imageType: typeof snap.image,
-                imageLength: snap.image?.length,
-                imageStart: snap.image?.substring(0, 30)
-              });
+      const createRoom = () => {
+        if (!username.trim()) {
+          alert('Please enter a username');
+          return;
+        }
+        const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+        setRoomCode(code);
+        setCurrentRoom(code);
+        setScreen('chat');
+        addLog(`Room ${code} created by ${username}`, 'info');
+        
+        database.ref(`rooms/${code}/messages`).push({
+          text: `${username} created the room`,
+          type: 'system',
+          timestamp: Date.now()
+        });
+      };
+
+      const joinRoom = () => {
+        if (!username.trim() || !roomCode.trim()) {
+          alert('Please enter both username and room code');
+          return;
+        }
+        
+        database.ref(`rooms/${roomCode}`).once('value', (snapshot) => {
+          if (snapshot.exists()) {
+            setCurrentRoom(roomCode);
+            setScreen('chat');
+            addLog(`${username} joined room ${roomCode}`, 'info');
+            
+            database.ref(`rooms/${roomCode}/messages`).push({
+              text: `${username} joined the room`,
+              type: 'system',
+              timestamp: Date.now()
             });
-            setMessages(msgs);
-          };
-          messagesRef.on('value', handleMessages);
-          return () => messagesRef.off('value', handleMessages);
+          } else {
+            alert('Room not found');
+          }
+        });
+      };
+
+      const sendMessage = () => {
+        if (!message.trim()) return;
+        
+        database.ref(`rooms/${currentRoom}/messages`).push({
+          text: message,
+          username,
+          timestamp: Date.now(),
+          type: 'text'
+        });
+        
+        setMessage('');
+        database.ref(`rooms/${currentRoom}/typing/${username}`).remove();
+      };
+
+      const updateTyping = () => {
+        if (typingTimeoutRef.current) {
+          clearTimeout(typingTimeoutRef.current);
         }
-      }, [currentRoom]);
+        
+        database.ref(`rooms/${currentRoom}/typing/${username}`).set(true);
+        
+        typingTimeoutRef.current = setTimeout(() => {
+          database.ref(`rooms/${currentRoom}/typing/${username}`).remove();
+        }, 1000);
+      };
 
-      useEffect(() => {
-        if (currentRoom) {
-          const inviteRef = db.ref(`gameInvites/${currentRoom}`);
-          const handleInvite = (snapshot) => {
-            const data = snapshot.val();
-            setGameInvite(data);
-          };
-          inviteRef.on('value', handleInvite);
-          return () => inviteRef.off('value', handleInvite);
+      const addReaction = (messageId, emoji) => {
+        const reactionPath = `rooms/${currentRoom}/reactions/${messageId}/${emoji}`;
+        const userReactions = reactions[messageId]?.[emoji] || [];
+        
+        if (userReactions.includes(username)) {
+          database.ref(reactionPath).set(userReactions.filter(u => u !== username));
+        } else {
+          database.ref(reactionPath).set([...userReactions, username]);
         }
-      }, [currentRoom]);
+      };
 
-      useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-      }, [messages]);
-
+      // Camera and snap functions
       const startCamera = async () => {
-        console.log('=== CAMERA START DEBUG ===');
-        console.log('Time:', new Date().toLocaleTimeString());
-        
-        // Clean up any existing stream first
-        if (videoRef.current?.srcObject) {
-          console.log('Cleaning up existing stream...');
-          const tracks = videoRef.current.srcObject.getTracks();
-          tracks.forEach(track => track.stop());
-          videoRef.current.srcObject = null;
-        }
-        
-        setCameraReady(false);
-        
         try {
-          console.log('Requesting camera access...');
-          const startTime = Date.now();
+          addLog('Starting camera...', 'info');
+          setShowCamera(true);
+          setCameraReady(false);
           
           const stream = await navigator.mediaDevices.getUserMedia({ 
-            video: { 
-              facingMode: 'user',
-              width: { ideal: 1280 },
-              height: { ideal: 720 }
-            } 
+            video: { facingMode: 'user' }, 
+            audio: false 
           });
           
-          const accessTime = Date.now() - startTime;
-          console.log(`✅ Camera access granted! Took ${accessTime}ms`);
-          console.log('Stream:', stream);
-          console.log('Video tracks:', stream.getVideoTracks());
-          console.log('Track state:', stream.getVideoTracks()[0]?.readyState);
-          console.log('Track enabled:', stream.getVideoTracks()[0]?.enabled);
-          
           if (videoRef.current) {
-            console.log('Setting srcObject...');
             videoRef.current.srcObject = stream;
-            console.log('Stream assigned to video element');
-            
-            // Set a timeout to warn if video doesn't load
-            const loadTimeout = setTimeout(() => {
-              console.error('⚠️ WARNING: Video has not loaded after 5 seconds!');
-              console.error('Video readyState:', videoRef.current?.readyState);
-              console.error('Video dimensions:', videoRef.current?.videoWidth, 'x', videoRef.current?.videoHeight);
-              console.error('Video networkState:', videoRef.current?.networkState);
-              console.error('Video paused:', videoRef.current?.paused);
-              console.error('Video error:', videoRef.current?.error);
-            }, 5000);
-            
-            // Wait for video to actually load
             videoRef.current.onloadedmetadata = () => {
-              clearTimeout(loadTimeout);
-              const loadTime = Date.now() - startTime;
-              console.log(`✅ Video metadata loaded! Took ${loadTime}ms total`);
-              console.log('Video dimensions:', videoRef.current.videoWidth, 'x', videoRef.current.videoHeight);
-              console.log('Video readyState:', videoRef.current.readyState);
-              if (videoRef.current.videoWidth > 0 && videoRef.current.videoHeight > 0) {
-                setCameraReady(true);
-                console.log('✅ CAMERA IS READY TO SNAP!');
-              } else {
-                console.error('❌ Video dimensions are still 0x0!');
-              }
-            };
-            
-            videoRef.current.oncanplay = () => {
-              console.log('✅ Video can play now!');
-              console.log('Video readyState:', videoRef.current.readyState);
               setCameraReady(true);
-              console.log('✅ Camera ready set from oncanplay');
+              addLog('Camera ready!', 'info');
             };
-            
-            videoRef.current.onerror = (e) => {
-              console.error('❌ VIDEO ERROR:', e);
-              console.error('Video error details:', videoRef.current?.error);
-            };
-            
-            // Force play if needed
-            console.log('Calling video.play()...');
-            try {
-              await videoRef.current.play();
-              console.log('✅ Video play() succeeded');
-            } catch (playErr) {
-              console.warn('⚠️ Video play() failed (may autoplay):', playErr);
-            }
-          } else {
-            console.error('❌ videoRef.current is null!');
           }
-          setShowCamera(true);
-          addDebugLog('Camera started', 'success');
-          console.log('=== CAMERA START COMPLETE ===');
-        } catch (err) {
-          console.error('=== CAMERA ERROR ===');
-          console.error('Error:', err);
-          console.error('Error name:', err.name);
-          console.error('Error message:', err.message);
-          setError('Camera access denied: ' + err.message);
-          addDebugLog(`Camera error: ${err.message}`, 'error');
+        } catch (error) {
+          addLog(`Camera error: ${error.message}`, 'error');
+          alert('Could not access camera. Please allow camera permissions.');
+          setShowCamera(false);
         }
       };
 
-      const stopCamera = () => {
-        console.log('=== STOPPING CAMERA ===');
-        if (videoRef.current) {
-          // Stop all tracks
-          if (videoRef.current.srcObject) {
-            const tracks = videoRef.current.srcObject.getTracks();
-            console.log('Stopping tracks:', tracks.length);
-            tracks.forEach(track => {
-              track.stop();
-              console.log('Track stopped:', track.kind);
-            });
+      const takeSnap = () => {
+        if (!cameraReady || !videoRef.current || !canvasRef.current) {
+          addLog('Camera not ready', 'error');
+          return;
+        }
+
+        try {
+          const video = videoRef.current;
+          const canvas = canvasRef.current;
+          
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(video, 0, 0);
+          
+          const imageData = canvas.toDataURL('image/jpeg', 0.8);
+          
+          database.ref(`rooms/${currentRoom}/messages`).push({
+            type: 'image',
+            username,
+            timestamp: Date.now(),
+            imageUrl: imageData
+          });
+          
+          // Stop camera
+          const stream = video.srcObject;
+          if (stream) {
+            stream.getTracks().forEach(track => track.stop());
           }
           
-          // Clear all event handlers
-          videoRef.current.onloadedmetadata = null;
-          videoRef.current.oncanplay = null;
-          videoRef.current.onerror = null;
-          
-          // Clear srcObject
-          videoRef.current.srcObject = null;
-          console.log('Video srcObject cleared');
+          setShowCamera(false);
+          setCameraReady(false);
+          addLog('Snap sent!', 'info');
+        } catch (error) {
+          addLog(`Snap error: ${error.message}`, 'error');
         }
-        setShowCamera(false);
-        setCameraReady(false);
-        addDebugLog('Camera stopped', 'info');
-        console.log('=== CAMERA STOPPED ===');
       };
 
-      const takeSnap = async () => {
-        console.log('=== SNAP DEBUG START ===');
-        console.log('videoRef.current:', videoRef.current);
-        console.log('canvasRef.current:', canvasRef.current);
+      const sendImageUrl = () => {
+        if (!imageUrl.trim()) return;
         
-        if (!videoRef.current || !canvasRef.current) {
-          console.error('Missing refs!');
-          addDebugLog('Snap failed: missing refs', 'error');
-          return;
+        let finalUrl = imageUrl;
+        if (imageUrl.includes('giphy.com') && !imageUrl.endsWith('.gif')) {
+          const giphyId = imageUrl.split('-').pop();
+          finalUrl = `https://media.giphy.com/media/${giphyId}/giphy.gif`;
         }
         
-        const canvas = canvasRef.current;
-        const video = videoRef.current;
-        
-        console.log('Video dimensions:', video.videoWidth, 'x', video.videoHeight);
-        console.log('Video readyState:', video.readyState);
-        
-        // Check if video is ready and has dimensions
-        if (video.videoWidth === 0 || video.videoHeight === 0) {
-          console.error('Video not ready! Dimensions are 0x0');
-          setError('Video not ready yet. Wait a moment and try again.');
-          addDebugLog('Snap failed: video not ready', 'error');
-          return;
-        }
-        
-        if (video.readyState < 2) {
-          console.error('Video readyState too low:', video.readyState);
-          setError('Video still loading. Please wait a moment.');
-          addDebugLog('Snap failed: video still loading', 'error');
-          return;
-        }
-        
-        // Resize to max 800px width to reduce file size
-        const maxWidth = 800;
-        const scale = Math.min(1, maxWidth / video.videoWidth);
-        canvas.width = video.videoWidth * scale;
-        canvas.height = video.videoHeight * scale;
-        
-        console.log('Canvas dimensions:', canvas.width, 'x', canvas.height);
-        console.log('Scale:', scale);
-        
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        
-        console.log('Image drawn to canvas');
-        
-        // Compress more aggressively (0.5 quality)
-        const imageData = canvas.toDataURL('image/jpeg', 0.5);
-        
-        console.log('Image data URL length:', imageData.length);
-        console.log('Image data preview:', imageData.substring(0, 50) + '...');
-        console.log('Estimated size (KB):', (imageData.length * 0.75 / 1024).toFixed(2));
-        
-        // Additional check - make sure we have actual image data
-        if (imageData.length < 100) {
-          console.error('Image data too short! Something went wrong with capture.');
-          setError('Failed to capture image. Please try again.');
-          addDebugLog('Snap failed: image data too short', 'error');
-          return;
-        }
-        
-        const msgId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
-        const newMsg = {
-          id: msgId,
+        database.ref(`rooms/${currentRoom}/messages`).push({
+          type: 'image',
           username,
-          type: 'snap',
-          image: imageData,
           timestamp: Date.now(),
-          reactions: {}
-        };
-        
-        console.log('Message object created:', {
-          id: newMsg.id,
-          username: newMsg.username,
-          type: newMsg.type,
-          imageLength: newMsg.image.length,
-          timestamp: newMsg.timestamp
+          imageUrl: finalUrl
         });
-        console.log('Current room:', currentRoom);
-        console.log('Firebase path:', `messages/${currentRoom}/${msgId}`);
         
-        try {
-          console.log('Attempting to send to Firebase...');
-          await db.ref(`messages/${currentRoom}/${msgId}`).set(newMsg);
-          console.log('✅ SUCCESS! Snap sent to Firebase');
-          addDebugLog('Snap sent', 'success');
-          stopCamera();
-        } catch (err) {
-          console.error('❌ FIREBASE ERROR:', err);
-          console.error('Error message:', err.message);
-          console.error('Error code:', err.code);
-          console.error('Full error:', err);
-          setError('Failed to send snap: ' + err.message);
-          addDebugLog(`Snap send error: ${err.message}`, 'error');
-        }
-        
-        console.log('=== SNAP DEBUG END ===');
+        setImageUrl('');
+        setShowImageInput(false);
       };
 
-      const sendImageUrl = async () => {
-        console.log('=== IMAGE URL SEND DEBUG ===');
-        console.log('Image URL:', imageUrl);
-        console.log('Current room:', currentRoom);
-        console.log('Username:', username);
-        
-        if (!imageUrl.trim() || !currentRoom || !username) {
-          console.error('Missing required data!');
-          return;
-        }
-        
-        let finalImageUrl = imageUrl.trim();
-        
-        // Convert Giphy page URLs to media URLs
-        if (finalImageUrl.includes('giphy.com/gifs/')) {
-          console.log('Detected Giphy page URL, converting...');
-          // Extract the GIF ID from URLs like: https://giphy.com/gifs/spongebob-boi-breathe-in-Mp4YvyzWMpXCWAD7mX
-          const gifIdMatch = finalImageUrl.match(/gifs\/[^\/]+-([A-Za-z0-9]+)$/);
-          if (gifIdMatch) {
-            const gifId = gifIdMatch[1];
-            // Convert to media URL
-            finalImageUrl = `https://media.giphy.com/media/${gifId}/giphy.gif`;
-            console.log('Converted to media URL:', finalImageUrl);
-          }
-        }
-        
-        // Also handle tenor URLs
-        if (finalImageUrl.includes('tenor.com/view/')) {
-          console.log('Detected Tenor page URL - please use "Copy GIF Link" instead');
-          setError('For Tenor, right-click the GIF and select "Copy image address"');
-          return;
-        }
-        
-        const msgId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
-        const newMsg = {
-          id: msgId,
-          username,
-          type: 'snap',
-          image: finalImageUrl,
-          timestamp: Date.now(),
-          reactions: {}
-        };
-        
-        console.log('Message object:', newMsg);
-        console.log('Firebase path:', `messages/${currentRoom}/${msgId}`);
-        
-        try {
-          console.log('Sending to Firebase...');
-          await db.ref(`messages/${currentRoom}/${msgId}`).set(newMsg);
-          console.log('✅ SUCCESS! Image URL sent');
-          addDebugLog('Image sent', 'success');
-          setImageUrl('');
-          setShowImageInput(false);
-        } catch (err) {
-          console.error('❌ FIREBASE ERROR:', err);
-          console.error('Error message:', err.message);
-          setError('Failed to send image: ' + err.message);
-          addDebugLog(`Image send error: ${err.message}`, 'error');
-        }
-        
-        console.log('=== IMAGE URL SEND END ===');
-      };
-
-      // Video Call Functions
+      // Video call functions
       const startCall = async (targetUser) => {
+        if (targetUser === username) {
+          alert('You cannot call yourself!');
+          return;
+        }
+
         try {
-          console.log('Starting call with:', targetUser);
+          addLog(`Starting call with ${targetUser}...`, 'info');
+          setIsRinging(true);
           
-          // Get local media stream
           const stream = await navigator.mediaDevices.getUserMedia({ 
             video: true, 
             audio: true 
           });
+          
           setLocalStream(stream);
           if (localVideoRef.current) {
             localVideoRef.current.srcObject = stream;
           }
 
-          // Create peer connection
-          const configuration = {
+          const pc = new RTCPeerConnection({
             iceServers: [
               { urls: 'stun:stun.l.google.com:19302' },
               { urls: 'stun:stun1.l.google.com:19302' }
             ]
-          };
-          const peerConnection = new RTCPeerConnection(configuration);
-          peerConnectionRef.current = peerConnection;
-
-          // Add local tracks to peer connection
-          stream.getTracks().forEach(track => {
-            peerConnection.addTrack(track, stream);
           });
 
-          // Handle incoming tracks
-          peerConnection.ontrack = (event) => {
-            console.log('Received remote track');
+          stream.getTracks().forEach(track => pc.addTrack(track, stream));
+
+          pc.ontrack = (event) => {
+            addLog('Received remote stream', 'info');
             setRemoteStream(event.streams[0]);
             if (remoteVideoRef.current) {
               remoteVideoRef.current.srcObject = event.streams[0];
             }
+            setIsRinging(false);
           };
 
-          // Handle ICE candidates
-          peerConnection.onicecandidate = (event) => {
+          pc.onicecandidate = (event) => {
             if (event.candidate) {
-              db.ref(`calls/${currentRoom}/${targetUser}/candidates/${username}`).push({
-                candidate: event.candidate.toJSON()
-              });
+              database.ref(`rooms/${currentRoom}/calls/${targetUser}/candidates/${username}`).push(event.candidate.toJSON());
             }
           };
 
-          // Create and send offer
-          const offer = await peerConnection.createOffer();
-          await peerConnection.setLocalDescription(offer);
+          const offer = await pc.createOffer();
+          await pc.setLocalDescription(offer);
 
-          await db.ref(`calls/${currentRoom}/${targetUser}/offer`).set({
+          database.ref(`rooms/${currentRoom}/calls/${targetUser}`).set({
+            type: 'offer',
             from: username,
-            offer: offer.toJSON(),
+            offer: {
+              type: offer.type,
+              sdp: offer.sdp
+            },
             timestamp: Date.now()
           });
 
+          setPeerConnection(pc);
           setInCall(true);
           setCallWith(targetUser);
-          addDebugLog(`Calling ${targetUser}...`, 'info');
+          addLog(`Calling ${targetUser}...`, 'info');
 
-          // Listen for answer
-          db.ref(`calls/${currentRoom}/${username}/answer`).on('value', async (snapshot) => {
-            const data = snapshot.val();
-            if (data && data.from === targetUser) {
-              const answer = new RTCSessionDescription(data.answer);
-              await peerConnection.setRemoteDescription(answer);
-              console.log('Answer received and set');
-            }
-          });
-
-          // Listen for ICE candidates from remote peer
-          db.ref(`calls/${currentRoom}/${username}/candidates/${targetUser}`).on('child_added', async (snapshot) => {
-            const data = snapshot.val();
-            if (data && data.candidate) {
-              await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
-            }
-          });
-
-        } catch (err) {
-          console.error('Error starting call:', err);
-          setError('Failed to start call: ' + err.message);
-          addDebugLog(`Call error: ${err.message}`, 'error');
+        } catch (error) {
+          addLog(`Call error: ${error.message}`, 'error');
+          alert('Could not start call. Please check camera/microphone permissions.');
+          setIsRinging(false);
         }
       };
 
       const answerCall = async (caller) => {
         try {
-          console.log('Answering call from:', caller);
+          addLog(`Answering call from ${caller}...`, 'info');
           
-          // Get local media stream
           const stream = await navigator.mediaDevices.getUserMedia({ 
             video: true, 
             audio: true 
           });
+          
           setLocalStream(stream);
           if (localVideoRef.current) {
             localVideoRef.current.srcObject = stream;
           }
 
-          // Create peer connection
-          const configuration = {
+          const pc = new RTCPeerConnection({
             iceServers: [
               { urls: 'stun:stun.l.google.com:19302' },
               { urls: 'stun:stun1.l.google.com:19302' }
             ]
-          };
-          const peerConnection = new RTCPeerConnection(configuration);
-          peerConnectionRef.current = peerConnection;
-
-          // Add local tracks
-          stream.getTracks().forEach(track => {
-            peerConnection.addTrack(track, stream);
           });
 
-          // Handle incoming tracks
-          peerConnection.ontrack = (event) => {
-            console.log('Received remote track');
+          stream.getTracks().forEach(track => pc.addTrack(track, stream));
+
+          pc.ontrack = (event) => {
+            addLog('Received remote stream', 'info');
             setRemoteStream(event.streams[0]);
             if (remoteVideoRef.current) {
               remoteVideoRef.current.srcObject = event.streams[0];
             }
           };
 
-          // Handle ICE candidates
-          peerConnection.onicecandidate = (event) => {
+          pc.onicecandidate = (event) => {
             if (event.candidate) {
-              db.ref(`calls/${currentRoom}/${caller}/candidates/${username}`).push({
-                candidate: event.candidate.toJSON()
-              });
+              database.ref(`rooms/${currentRoom}/calls/${caller}/candidates/${username}`).push(event.candidate.toJSON());
             }
           };
 
-          // Set remote description from offer
-          const offerData = incomingCall.offer;
-          await peerConnection.setRemoteDescription(new RTCSessionDescription(offerData));
+          if (incomingCall && incomingCall.offer) {
+            await pc.setRemoteDescription(new RTCSessionDescription(incomingCall.offer));
+            const answer = await pc.createAnswer();
+            await pc.setLocalDescription(answer);
 
-          // Create and send answer
-          const answer = await peerConnection.createAnswer();
-          await peerConnection.setLocalDescription(answer);
+            database.ref(`rooms/${currentRoom}/calls/${caller}`).set({
+              type: 'answer',
+              from: username,
+              answer: {
+                type: answer.type,
+                sdp: answer.sdp
+              },
+              timestamp: Date.now()
+            });
 
-          await db.ref(`calls/${currentRoom}/${caller}/answer`).set({
-            from: username,
-            answer: answer.toJSON(),
-            timestamp: Date.now()
-          });
-
-          setInCall(true);
-          setCallWith(caller);
-          setIncomingCall(null);
-          addDebugLog(`In call with ${caller}`, 'success');
-
-          // Listen for ICE candidates from remote peer
-          db.ref(`calls/${currentRoom}/${username}/candidates/${caller}`).on('child_added', async (snapshot) => {
-            const data = snapshot.val();
-            if (data && data.candidate) {
-              await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
-            }
-          });
-
-        } catch (err) {
-          console.error('Error answering call:', err);
-          setError('Failed to answer call: ' + err.message);
-          setIncomingCall(null);
-        }
-      };
-
-      const endCall = () => {
-        console.log('Ending call');
-        
-        // Stop all tracks
-        if (localStream) {
-          localStream.getTracks().forEach(track => track.stop());
-        }
-        
-        // Close peer connection
-        if (peerConnectionRef.current) {
-          peerConnectionRef.current.close();
-          peerConnectionRef.current = null;
-        }
-
-        // Clean up Firebase
-        if (currentRoom && username) {
-          db.ref(`calls/${currentRoom}/${username}`).remove();
-          db.ref(`calls/${currentRoom}/${callWith}`).remove();
-        }
-
-        setInCall(false);
-        setCallWith(null);
-        setLocalStream(null);
-        setRemoteStream(null);
-        setIsMuted(false);
-        setIsVideoOff(false);
-        addDebugLog('Call ended', 'info');
-      };
-
-      const toggleMute = () => {
-        if (localStream) {
-          const audioTrack = localStream.getAudioTracks()[0];
-          if (audioTrack) {
-            audioTrack.enabled = !audioTrack.enabled;
-            setIsMuted(!audioTrack.enabled);
+            setPeerConnection(pc);
+            setInCall(true);
+            setCallWith(caller);
+            setIncomingCall(null);
+            addLog(`Call connected with ${caller}`, 'info');
           }
+
+        } catch (error) {
+          addLog(`Answer error: ${error.message}`, 'error');
+          alert('Could not answer call. Please check camera/microphone permissions.');
         }
       };
 
-      const toggleVideo = () => {
-        if (localStream) {
-          const videoTrack = localStream.getVideoTracks()[0];
-          if (videoTrack) {
-            videoTrack.enabled = !videoTrack.enabled;
-            setIsVideoOff(!videoTrack.enabled);
+      const handleAnswer = async (answerData) => {
+        if (peerConnection && answerData.answer) {
+          try {
+            await peerConnection.setRemoteDescription(new RTCSessionDescription(answerData.answer));
+            addLog('Call connected!', 'info');
+            setIsRinging(false);
+          } catch (error) {
+            addLog(`Error setting remote description: ${error.message}`, 'error');
           }
         }
       };
 
       const declineCall = () => {
         if (incomingCall) {
-          db.ref(`calls/${currentRoom}/${incomingCall.from}/declined`).set(true);
-        }
-        setIncomingCall(null);
-      };
-
-      // Listen for incoming calls
-      useEffect(() => {
-        if (username && currentRoom && db) {
-          const callRef = db.ref(`calls/${currentRoom}/${username}/offer`);
-          callRef.on('value', (snapshot) => {
-            const data = snapshot.val();
-            if (data && data.from !== username && !inCall) {
-              setIncomingCall(data);
-            }
-          });
-          return () => callRef.off();
-        }
-      }, [username, currentRoom, inCall]);
-
-      const updateTyping = () => {
-        if (!currentRoom || !username || !db) return;
-        db.ref(`typing/${currentRoom}/${username}`).set(Date.now());
-        if (typingTimeoutRef.current) {
-          clearTimeout(typingTimeoutRef.current);
-        }
-        typingTimeoutRef.current = setTimeout(() => {
-          db.ref(`typing/${currentRoom}/${username}`).remove();
-        }, 3000);
-      };
-
-      const createRoom = async () => {
-        if (!newRoomName.trim()) {
-          setError('Room name required');
-          addDebugLog('Room creation failed: name required', 'error');
-          return;
-        }
-        const roomId = Date.now().toString();
-        const room = {
-          id: roomId,
-          name: newRoomName.trim(),
-          password: newRoomPassword,
-          createdAt: Date.now(),
-          owner: username
-        };
-        try {
-          await db.ref(`rooms/${roomId}`).set(room);
-          addDebugLog(`Room created: ${newRoomName}`, 'success');
-          setCurrentRoom(roomId);
-          setNewRoomName('');
-          setNewRoomPassword('');
-          setError('');
-          setCurrentView('room');
-        } catch (err) {
-          setError('Failed to create room');
-          addDebugLog(`Room creation error: ${err.message}`, 'error');
+          database.ref(`rooms/${currentRoom}/calls/${username}`).remove();
+          setIncomingCall(null);
+          addLog('Call declined', 'info');
         }
       };
 
-      // Game invite handlers
-      const sendGameInvite = async (gameType) => {
-        const msgId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
-        try {
-          await db.ref(`gameInvites/${currentRoom}`).set({
-            sender: username,
-            gameType: gameType,
-            timestamp: Date.now()
-          });
-          addDebugLog(`Sent ${gameType} invite`, 'success');
-          setShowGamesMenu(false);
-        } catch (err) {
-          addDebugLog(`Game invite error: ${err.message}`, 'error');
+      const endCall = () => {
+        if (localStream) {
+          localStream.getTracks().forEach(track => track.stop());
         }
-      };
-
-      const acceptGameInvite = async () => {
-        if (!gameInvite) return;
-        
-        const gameUrls = {
-          'gartic': 'https://garlicphone.vercel.app',
-          'uno': 'https://unoonline-delta.vercel.app'
-        };
-
-        const gameIcons = {
-          'gartic': '🎨',
-          'uno': '🃏'
-        };
-
-        const gameTitles = {
-          'gartic': 'Gartic Phone',
-          'uno': 'Uno Online'
-        };
-
-        const url = gameUrls[gameInvite.gameType];
-        if (url) {
-          const newWindow = {
-            id: Date.now().toString(),
-            title: gameTitles[gameInvite.gameType],
-            url: url,
-            icon: gameIcons[gameInvite.gameType]
-          };
-          setOpenGameWindows(prev => [...prev, newWindow]);
+        if (peerConnection) {
+          peerConnection.close();
         }
         
-        await db.ref(`gameInvites/${currentRoom}`).remove();
-        setGameInvite(null);
+        database.ref(`rooms/${currentRoom}/calls/${callWith}`).remove();
+        database.ref(`rooms/${currentRoom}/calls/${username}`).remove();
+        
+        setInCall(false);
+        setCallWith(null);
+        setLocalStream(null);
+        setRemoteStream(null);
+        setPeerConnection(null);
+        setIsRinging(false);
+        addLog('Call ended', 'info');
       };
 
-      const declineGameInvite = async () => {
-        await db.ref(`gameInvites/${currentRoom}`).remove();
-        setGameInvite(null);
-      };
-
-      const closeGameWindow = (windowId) => {
-        setOpenGameWindows(prev => prev.filter(w => w.id !== windowId));
-      };
-
-      const joinRoom = (room, password = '') => {
-        if (room.password && room.password !== password) {
-          setError('Incorrect password');
-          addDebugLog(`Failed to join ${room.name}: wrong password`, 'error');
-          return;
+      const toggleMute = () => {
+        if (localStream) {
+          localStream.getAudioTracks().forEach(track => {
+            track.enabled = !track.enabled;
+          });
+          setIsMuted(!isMuted);
         }
-        setCurrentRoom(room.id);
-        setCurrentView('room');
-        setError('');
-        addDebugLog(`Joining room: ${room.name}`, 'info');
       };
 
-      const sendMessage = async () => {
-        if (!message.trim() || !currentRoom || !username) return;
-        const msgId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
-        const newMsg = {
-          id: msgId,
-          username,
-          text: message,
-          timestamp: Date.now(),
-          reactions: {},
-          ...(replyTo && { replyTo: replyTo.id })
+      const toggleVideo = () => {
+        if (localStream) {
+          localStream.getVideoTracks().forEach(track => {
+            track.enabled = !track.enabled;
+          });
+          setIsVideoOff(!isVideoOff);
+        }
+      };
+
+      // Games
+      const openGame = (title, url, icon) => {
+        const newWindow = {
+          id: Date.now(),
+          title,
+          url,
+          icon
         };
-        try {
-          await db.ref(`messages/${currentRoom}/${msgId}`).set(newMsg);
-          setMessage('');
-          setReplyTo(null);
-          addDebugLog('Message sent', 'success');
-          if (typingTimeoutRef.current) {
-            clearTimeout(typingTimeoutRef.current);
-            db.ref(`typing/${currentRoom}/${username}`).remove();
-          }
-        } catch (err) {
-          setError('Failed to send message');
-          addDebugLog(`Message send error: ${err.message}`, 'error');
-        }
+        setOpenGameWindows(prev => [...prev, newWindow]);
       };
 
-      const addReaction = async (messageId, emoji) => {
-        if (!currentRoom || !db) return;
-        try {
-          const reactionPath = `messages/${currentRoom}/${messageId}/reactions/${emoji}`;
-          const reactionRef = db.ref(reactionPath);
-          const snapshot = await reactionRef.once('value');
-          const users = snapshot.val() || [];
-          if (users.includes(username)) {
-            const newUsers = users.filter(u => u !== username);
-            if (newUsers.length === 0) {
-              await reactionRef.remove();
-            } else {
-              await reactionRef.set(newUsers);
-            }
-            addDebugLog(`Removed reaction ${emoji}`, 'info');
-          } else {
-            await reactionRef.set([...users, username]);
-            addDebugLog(`Added reaction ${emoji}`, 'success');
-          }
-        } catch (err) {
-          addDebugLog(`Reaction error: ${err.message}`, 'error');
-        }
+      const closeGameWindow = (id) => {
+        setOpenGameWindows(prev => prev.filter(w => w.id !== id));
       };
 
-      const clearAllMessages = async () => {
-        const currentRoomData = rooms.find(r => r.id === currentRoom);
-        if (!currentRoomData || currentRoomData.owner !== username) {
-          alert('❌ Only the room owner can clear messages!');
-          addDebugLog('Clear messages denied: not owner', 'warning');
-          return;
-        }
-        if (!confirm('⚠️ Clear all messages in this room?')) return;
-        try {
-          await db.ref(`messages/${currentRoom}`).remove();
-          addDebugLog('All messages cleared', 'success');
-        } catch (err) {
-          setError('Failed to clear messages');
-          addDebugLog(`Clear messages error: ${err.message}`, 'error');
-        }
-      };
-  
-      const kickUser = async (targetUser) => {
-        const currentRoomData = rooms.find(r => r.id === currentRoom);
-        if (!currentRoomData || (currentRoomData.owner !== username && username !== 'emmaowner')) {
-          alert('❌ Only the room owner can kick users!');
-          addDebugLog('Kick denied: not owner', 'warning');
-          return;
-        }
-        if (!confirm(`⚠️ Kick ${targetUser} from the room?`)) return;
-        const msgId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
-        const systemMsg = {
-          id: msgId,
-          type: 'system',
-          text: `${targetUser} was kicked from the room`,
-          timestamp: Date.now()
-        };
-        try {
-          await db.ref(`messages/${currentRoom}/${msgId}`).set(systemMsg);
-          await db.ref(`roomUsers/${currentRoom}/${targetUser}`).remove();
-          addDebugLog(`Kicked user: ${targetUser}`, 'success');
-        } catch (err) {
-          setError('Failed to kick user');
-          addDebugLog(`Kick error: ${err.message}`, 'error');
-        }
-      };
+      const games = [
+        { title: '2048', url: 'https://play2048.co/', icon: '🎮' },
+        { title: 'Tetris', url: 'https://tetris.com/play-tetris', icon: '🧱' },
+        { title: 'Snake', url: 'https://playsnake.org/', icon: '🐍' },
+        { title: 'Pac-Man', url: 'https://www.google.com/logos/2010/pacman10-i.html', icon: '👾' },
+        { title: 'Chess', url: 'https://www.chess.com/play/computer', icon: '♟️' }
+      ];
 
-      const leaveRoom = async () => {
-        if (!currentRoom || !username) return;
-        const msgId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
-        const systemMsg = {
-          id: msgId,
-          type: 'system',
-          text: `${username} left the room`,
-          timestamp: Date.now()
-        };
-        try {
-          await db.ref(`messages/${currentRoom}/${msgId}`).set(systemMsg);
-          await db.ref(`roomUsers/${currentRoom}/${username}`).remove();
-          addDebugLog('Left room', 'info');
-        } catch (err) {
-          addDebugLog(`Leave room error: ${err.message}`, 'error');
-        }
-        setCurrentRoom(null);
-        setCurrentView('lobby');
-        setMessages([]);
-      };
-
-      const deleteRoom = async (roomId, e) => {
-        e.stopPropagation();
-        const room = rooms.find(r => r.id === roomId);
-        if (room && room.owner !== username && username !== 'emmaowner') {
-          alert('❌ Only the room owner can delete this room!');
-          addDebugLog('Delete denied: not owner', 'warning');
-          return;
-        }
-        if (!confirm('⚠️ Delete this room and all messages?')) return;
-        try {
-          await db.ref(`rooms/${roomId}`).remove();
-          await db.ref(`messages/${roomId}`).remove();
-          await db.ref(`roomUsers/${roomId}`).remove();
-          await db.ref(`typing/${roomId}`).remove();
-          addDebugLog(`Room deleted: ${room.name}`, 'success');
-        } catch (err) {
-          setError('Failed to delete room');
-          addDebugLog(`Delete room error: ${err.message}`, 'error');
-        }
-      };
-
-      const formatTime = (timestamp) => {
-        const date = new Date(timestamp);
-        return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-      };
-
-      const getReplyMessage = (replyToId) => {
-        return messages.find(m => m.id === replyToId);
-      };
-
-      if (currentView === 'start') {
+      if (screen === 'home') {
         return (
-          <>
-            <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-              <div className="glow-border" style={{ background: '#0a0a0a', borderRadius: '20px', padding: '40px', width: '100%', maxWidth: '400px', border: '1px solid #333' }}>
-                <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-                  <div className="glow" style={{ display: 'inline-block' }}><MessageCircle /></div>
-                  <h1 className="glow-text" style={{ fontSize: '32px', fontWeight: 'bold', marginTop: '20px', marginBottom: '10px' }}>CHATROOMS</h1>
-                  <p style={{ color: '#999' }}>Enter the void</p>
-                </div>
+          <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+            <div style={{ maxWidth: '500px', width: '100%' }}>
+              <h1 className="glow-text" style={{ fontSize: '48px', fontWeight: 'bold', marginBottom: '10px', textAlign: 'center' }}>Anonymous Chat</h1>
+              <p style={{ color: '#999', textAlign: 'center', marginBottom: '40px', fontSize: '16px' }}>
+                Connect anonymously • Video calls • Games • Fun
+              </p>
+              
+              <div style={{ background: '#1a1a1a', border: '1px solid #333', borderRadius: '20px', padding: '30px' }} className="glow-border">
                 <input
                   type="text"
-                  value={tempUsername}
-                  onChange={(e) => setTempUsername(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && tempUsername.trim() && (setUsername(tempUsername.trim()), setCurrentView('lobby'))}
-                  placeholder="Choose username..."
-                  style={{ width: '100%', padding: '15px', background: '#1a1a1a', border: '1px solid #333', borderRadius: '10px', color: '#fff', fontSize: '16px', marginBottom: '20px' }}
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && (roomCode ? joinRoom() : createRoom())}
+                  placeholder="Enter your username..."
+                  style={{ width: '100%', padding: '15px', background: '#0a0a0a', border: '1px solid #333', borderRadius: '10px', color: '#fff', fontSize: '16px', marginBottom: '20px' }}
                 />
-                <div style={{ display: 'grid', gap: '10px' }}>
-                  <button onClick={() => tempUsername.trim() ? (setUsername(tempUsername.trim()), setCurrentView('lobby')) : setError('Enter a username')} className="glow-button" style={{ width: '100%', background: '#fff', color: '#000', padding: '15px', borderRadius: '10px', border: 'none', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>JOIN ROOM</button>
-                  <button onClick={() => tempUsername.trim() ? (setUsername(tempUsername.trim()), setCurrentView('create')) : setError('Enter a username')} className="glow-button" style={{ width: '100%', background: '#1a1a1a', color: '#fff', padding: '15px', borderRadius: '10px', border: '1px solid #333', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>CREATE ROOM</button>
-                </div>
-                {error && <div style={{ background: '#2a0000', border: '1px solid #ff0000', color: '#ff6666', padding: '15px', borderRadius: '10px', marginTop: '15px' }}>{error}</div>}
-              </div>
-            </div>
-            {!showDebug && (
-              <div className="debug-toggle" onClick={() => setShowDebug(true)}>
-                <Bug />
-              </div>
-            )}
-            {showDebug && <DebugConsole logs={logs} onClose={() => setShowDebug(false)} />}
-          </>
-        );
-      }
-
-      if (currentView === 'create') {
-        return (
-          <>
-            <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-              <div className="glow-border" style={{ background: '#0a0a0a', borderRadius: '20px', padding: '40px', width: '100%', maxWidth: '500px', border: '1px solid #333' }}>
-                <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-                  <div className="glow" style={{ display: 'inline-block' }}><Plus /></div>
-                  <h1 className="glow-text" style={{ fontSize: '28px', fontWeight: 'bold', marginTop: '20px', marginBottom: '10px' }}>CREATE ROOM</h1>
-                  <p style={{ color: '#999' }}>User: {username}</p>
-                </div>
-                <input type="text" value={newRoomName} onChange={(e) => setNewRoomName(e.target.value)} placeholder="Room name..." style={{ width: '100%', padding: '15px', background: '#1a1a1a', border: '1px solid #333', borderRadius: '10px', color: '#fff', fontSize: '16px', marginBottom: '15px' }} />
-                <input type="password" value={newRoomPassword} onChange={(e) => setNewRoomPassword(e.target.value)} placeholder="Password (optional)..." style={{ width: '100%', padding: '15px', background: '#1a1a1a', border: '1px solid #333', borderRadius: '10px', color: '#fff', fontSize: '16px', marginBottom: '20px' }} />
-                <div style={{ display: 'grid', gap: '10px' }}>
-                  <button onClick={createRoom} className="glow-button" style={{ width: '100%', background: '#fff', color: '#000', padding: '15px', borderRadius: '10px', border: 'none', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>CREATE & ENTER</button>
-                  <button onClick={() => setCurrentView('lobby')} style={{ width: '100%', background: '#1a1a1a', color: '#fff', padding: '15px', borderRadius: '10px', border: '1px solid #333', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>BACK</button>
-                </div>
-                {error && <div style={{ background: '#2a0000', border: '1px solid #ff0000', color: '#ff6666', padding: '15px', borderRadius: '10px', marginTop: '15px' }}>{error}</div>}
-              </div>
-            </div>
-            {!showDebug && (
-              <div className="debug-toggle" onClick={() => setShowDebug(true)}>
-                <Bug />
-              </div>
-            )}
-            {showDebug && <DebugConsole logs={logs} onClose={() => setShowDebug(false)} />}
-          </>
-        );
-      }
-
-      if (currentView === 'lobby') {
-        return (
-          <>
-            <div style={{ minHeight: '100vh', padding: '20px' }}>
-              <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-                <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-                  <h1 className="glow-text" style={{ fontSize: '36px', fontWeight: 'bold', marginBottom: '10px' }}>ACTIVE ROOMS</h1>
-                  <p style={{ color: '#999', fontSize: '16px' }}>User: {username}</p>
-                </div>
-                <div style={{ display: 'grid', gap: '15px', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
-                  {rooms.length === 0 ? (
-                    <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '60px 20px', background: '#0a0a0a', borderRadius: '15px', border: '1px solid #333' }}>
-                      <p style={{ color: '#666', fontSize: '18px', marginBottom: '20px' }}>No rooms yet. Create one!</p>
-                      <button onClick={() => setCurrentView('create')} className="glow-button" style={{ background: '#fff', color: '#000', padding: '15px 30px', borderRadius: '10px', border: 'none', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>CREATE ROOM</button>
-                    </div>
-                  ) : (
-                    rooms.map(room => (
-                      <div key={room.id} className="glow-border" style={{ background: '#0a0a0a', padding: '20px', borderRadius: '15px', border: '1px solid #333', display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                        <div>
-                          <h3 style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '8px' }}>{room.name}</h3>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#999', fontSize: '13px', flexWrap: 'wrap' }}>
-                            <span>by {room.owner}</span>
-                            {room.password && <span style={{ background: '#1a1a1a', padding: '4px 8px', borderRadius: '6px', border: '1px solid #333' }}>🔒 Private</span>}
-                          </div>
-                        </div>
-                        <div style={{ display: 'flex', gap: '10px' }}>
-                          <button onClick={() => room.password ? (() => {
-                            const pwd = prompt('Enter password:');
-                            if (pwd !== null) joinRoom(room, pwd);
-                          })() : joinRoom(room)} className="glow-button" style={{ flex: 1, background: '#fff', color: '#000', padding: '12px', borderRadius: '8px', border: 'none', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer' }}>
-                            JOIN
-                          </button>
-                          {(room.owner === username || username === 'emmaowner') && (
-                            <button onClick={(e) => deleteRoom(room.id, e)}
-                              style={{ background: '#2a0000', border: '1px solid #ff0000', color: '#ff6666', padding: '10px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                              <Trash /> Delete
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    ))
-                  )}
+                
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '20px' }}>
+                  <button onClick={createRoom} className="glow-button" style={{ background: '#fff', color: '#000', padding: '15px', borderRadius: '10px', border: 'none', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>
+                    Create Room
+                  </button>
+                  <button onClick={() => setScreen('join')} className="glow-button" style={{ background: '#1a1a1a', color: '#fff', padding: '15px', borderRadius: '10px', border: '1px solid #333', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>
+                    Join Room
+                  </button>
                 </div>
               </div>
             </div>
-            {!showDebug && (
-              <div className="debug-toggle" onClick={() => setShowDebug(true)}>
-                <Bug />
-              </div>
-            )}
-            {showDebug && <DebugConsole logs={logs} onClose={() => setShowDebug(false)} />}
-          </>
+          </div>
         );
       }
 
-      if (currentView === 'room') {
-        const currentRoomData = rooms.find(r => r.id === currentRoom);
-        const isOwner = currentRoomData && currentRoomData.owner === username;
+      if (screen === 'join') {
+        return (
+          <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+            <div style={{ maxWidth: '500px', width: '100%' }}>
+              <h1 className="glow-text" style={{ fontSize: '48px', fontWeight: 'bold', marginBottom: '10px', textAlign: 'center' }}>Join Room</h1>
+              
+              <div style={{ background: '#1a1a1a', border: '1px solid #333', borderRadius: '20px', padding: '30px' }} className="glow-border">
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="Enter your username..."
+                  style={{ width: '100%', padding: '15px', background: '#0a0a0a', border: '1px solid #333', borderRadius: '10px', color: '#fff', fontSize: '16px', marginBottom: '15px' }}
+                />
+                
+                <input
+                  type="text"
+                  value={roomCode}
+                  onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
+                  onKeyDown={(e) => e.key === 'Enter' && joinRoom()}
+                  placeholder="Enter room code..."
+                  style={{ width: '100%', padding: '15px', background: '#0a0a0a', border: '1px solid #333', borderRadius: '10px', color: '#fff', fontSize: '16px', marginBottom: '20px' }}
+                />
+                
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                  <button onClick={joinRoom} className="glow-button" style={{ background: '#fff', color: '#000', padding: '15px', borderRadius: '10px', border: 'none', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>
+                    Join
+                  </button>
+                  <button onClick={() => setScreen('home')} className="glow-button" style={{ background: '#1a1a1a', color: '#fff', padding: '15px', borderRadius: '10px', border: '1px solid #333', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>
+                    Back
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      if (screen === 'chat') {
+        const onlineUsers = users.filter(u => u.online && u.username !== username);
+        const typingList = Object.keys(typingUsers).filter(u => u !== username);
 
         return (
           <>
-            <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
-              <div className="glow-border" style={{ background: '#0a0a0a', padding: '20px', borderBottom: '1px solid #333' }}>
-                <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '15px' }}>
+            <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#000' }}>
+              {/* Header */}
+              <div style={{ background: '#1a1a1a', borderBottom: '1px solid #333', padding: '20px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
                   <div>
-                    <h2 className="glow-text" style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '5px' }}>
-                      {currentRoomData?.name || 'Room'}
-                    </h2>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#999', fontSize: '13px' }}>
-                      <span>{roomUsers.length} {roomUsers.length === 1 ? 'user' : 'users'} in room</span>
-                      {isOwner && <span style={{ background: '#1a1a1a', padding: '4px 10px', borderRadius: '6px', border: '1px solid #333' }}>👑 Owner</span>}
-                    </div>
+                    <h2 className="glow-text" style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '5px' }}>Room: {currentRoom}</h2>
+                    <p style={{ color: '#999', fontSize: '14px' }}>{onlineUsers.length} online</p>
                   </div>
-                  <div style={{ display: 'flex', gap: '10px' }}>
-                    {isOwner && (
-                      <button onClick={clearAllMessages} style={{ background: '#2a0000', border: '1px solid #ff0000', color: '#ff6666', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <Trash /> Clear All
+                  <button onClick={() => { setScreen('home'); setCurrentRoom(null); }} className="glow-button" style={{ background: '#ff3b30', color: '#fff', padding: '12px 20px', borderRadius: '10px', border: 'none', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer' }}>
+                    Leave
+                  </button>
+                </div>
+
+                {/* Online Users */}
+                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                  {onlineUsers.map(user => (
+                    <div key={user.username} style={{ background: '#0a0a0a', border: '1px solid #333', borderRadius: '20px', padding: '8px 15px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#00ff00' }} />
+                      <span style={{ fontSize: '14px' }}>{user.username}</span>
+                      <button 
+                        onClick={() => startCall(user.username)} 
+                        className="glow-button"
+                        style={{ 
+                          background: '#007aff', 
+                          color: '#fff', 
+                          border: 'none', 
+                          borderRadius: '50%', 
+                          width: '30px', 
+                          height: '30px', 
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '16px'
+                        }}
+                      >
+                        📞
                       </button>
-                    )}
-                    <button onClick={() => setShowGamesMenu(!showGamesMenu)} className="glow-button" style={{ background: '#1a1a1a', color: '#fff', padding: '10px 20px', borderRadius: '8px', border: '1px solid #333', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <Gamepad /> Games
-                    </button>
-                    <button onClick={leaveRoom} className="glow-button" style={{ background: '#1a1a1a', color: '#fff', padding: '10px 20px', borderRadius: '8px', border: '1px solid #333', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <LogOut /> Leave
-                    </button>
-                  </div>
+                    </div>
+                  ))}
                 </div>
               </div>
 
-              {roomUsers.length > 1 && (
-                <div style={{ background: '#0a0a0a', padding: '10px 20px', borderBottom: '1px solid #333' }}>
-                  <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                    <Users style={{ width: '16px', height: '16px' }} />
-                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                      {roomUsers.map(user => (
-                        <div key={user} style={{ background: '#1a1a1a', padding: '6px 12px', borderRadius: '8px', border: '1px solid #333', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span>{user}</span>
-                          {user === currentRoomData?.owner && <span>👑</span>}
-                          {user !== username && !inCall && (
+              {/* Games Bar */}
+              <div style={{ background: '#0a0a0a', borderBottom: '1px solid #333', padding: '15px', display: 'flex', gap: '10px', overflowX: 'auto' }}>
+                {games.map(game => (
+                  <button
+                    key={game.title}
+                    onClick={() => openGame(game.title, game.url, game.icon)}
+                    className="glow-button"
+                    style={{ 
+                      background: '#1a1a1a', 
+                      color: '#fff', 
+                      border: '1px solid #333', 
+                      borderRadius: '10px', 
+                      padding: '10px 20px', 
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      whiteSpace: 'nowrap',
+                      fontSize: '14px'
+                    }}
+                  >
+                    <span style={{ fontSize: '20px' }}>{game.icon}</span>
+                    {game.title}
+                  </button>
+                ))}
+              </div>
+
+              {/* Messages */}
+              <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
+                {messages.map((msg) => {
+                  if (msg.type === 'system') {
+                    return (
+                      <div key={msg.id} className="system-message">
+                        {msg.text}
+                      </div>
+                    );
+                  }
+
+                  const isOwn = msg.username === username;
+                  const msgReactions = reactions[msg.id] || {};
+
+                  return (
+                    <div key={msg.id} style={{ marginBottom: '15px', display: 'flex', justifyContent: isOwn ? 'flex-end' : 'flex-start' }}>
+                      <div className="message-bubble" style={{ maxWidth: '70%', position: 'relative' }}>
+                        <div className="message-actions">
+                          <div style={{ position: 'relative' }}>
                             <button 
-                              onClick={() => startCall(user)} 
-                              style={{ 
-                                background: 'transparent', 
-                                border: 'none', 
-                                color: '#00ff88', 
-                                cursor: 'pointer', 
-                                padding: '0 5px',
-                                fontSize: '16px'
-                              }}
-                              title={`Call ${user}`}
+                              onClick={() => setShowEmojiPicker(showEmojiPicker === msg.id ? null : msg.id)}
+                              className="action-btn"
                             >
-                              📞
+                              😊
                             </button>
-                          )}
-                          {isOwner && user !== username && (
-                            <button onClick={() => kickUser(user)} style={{ background: 'transparent', border: 'none', color: '#ff6666', cursor: 'pointer', padding: '0 5px' }}>
-                              <UserX style={{ width: '14px', height: '14px' }} />
-                            </button>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              <div style={{ flex: 1, overflow: 'auto', background: '#000', padding: '20px' }}>
-                <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-                  
-                  {gameInvite && (
-                    <div className="glow-border" style={{ background: '#0a0a0a', padding: '20px', marginBottom: '20px', borderRadius: '15px', border: '2px solid #4a9eff', animation: 'glow 2s ease-in-out infinite' }}>
-                      <div style={{ textAlign: 'center' }}>
-                        <div style={{ fontSize: '24px', marginBottom: '10px' }}>🎮</div>
-                        <div style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '10px' }}>
-                          {gameInvite.sender} wants to play {gameInvite.gameType === 'gartic' ? 'Gartic Phone' : 'Uno'}!
-                        </div>
-                        <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
-                          <button onClick={acceptGameInvite} className="glow-button" style={{ background: '#00ff00', color: '#000', padding: '12px 24px', borderRadius: '8px', border: 'none', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer' }}>
-                            ✓ Accept
-                          </button>
-                          <button onClick={declineGameInvite} style={{ background: '#2a0000', border: '1px solid #ff0000', color: '#ff6666', padding: '12px 24px', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: 'bold' }}>
-                            ✕ Decline
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {showGamesMenu && (
-                    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={() => setShowGamesMenu(false)}>
-                      <div className="glow-border" style={{ background: '#0a0a0a', padding: '30px', borderRadius: '20px', maxWidth: '400px', width: '90%' }} onClick={(e) => e.stopPropagation()}>
-                        <h3 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '20px', textAlign: 'center' }}>🎮 Choose a Game</h3>
-                        <div style={{ display: 'grid', gap: '10px' }}>
-                          <button onClick={() => sendGameInvite('gartic')} className="glow-button" style={{ width: '100%', background: '#1a1a1a', color: '#fff', padding: '15px', borderRadius: '10px', border: '1px solid #333', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>
-                            🎨 Gartic Phone
-                          </button>
-                          <button onClick={() => sendGameInvite('uno')} className="glow-button" style={{ width: '100%', background: '#1a1a1a', color: '#fff', padding: '15px', borderRadius: '10px', border: '1px solid #333', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>
-                            🃏 Uno Online
-                          </button>
-                          <button onClick={() => setShowGamesMenu(false)} style={{ width: '100%', background: '#2a0000', border: '1px solid #ff0000', color: '#ff6666', padding: '15px', borderRadius: '10px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>
-                            Cancel
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {messages.map((msg) => {
-                    if (msg.type === 'system') {
-                      return <div key={msg.id} className="system-message">{msg.text}</div>;
-                    }
-
-                    if (msg.type === 'snap') {
-                      const userColor = `hsl(${msg.username.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % 360}, 70%, 60%)`;
-                      console.log('Rendering snap message:', {
-                        id: msg.id,
-                        username: msg.username,
-                        hasImage: !!msg.image,
-                        imageLength: msg.image?.length,
-                        imagePreview: msg.image?.substring(0, 50)
-                      });
-                      return (
-                        <div key={msg.id} className="message-bubble" style={{ marginBottom: '15px', background: msg.username === username ? '#1a1a1a' : '#0a0a0a', padding: '15px', borderRadius: '15px', border: '1px solid #333' }}>
-                          <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', marginBottom: '8px' }}>
-                            <span style={{ color: userColor, fontWeight: 'bold', fontSize: '14px' }}>{msg.username}</span>
-                            <span style={{ color: '#666', fontSize: '12px' }}>{formatTime(msg.timestamp)} 📸</span>
+                            {showEmojiPicker === msg.id && (
+                              <div className="emoji-picker">
+                                {emojis.map(emoji => (
+                                  <button
+                                    key={emoji}
+                                    onClick={() => {
+                                      addReaction(msg.id, emoji);
+                                      setShowEmojiPicker(null);
+                                    }}
+                                    className="emoji-btn"
+                                  >
+                                    {emoji}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
                           </div>
-                          {msg.image ? (
-                            <img 
-                              src={msg.image} 
-                              alt="Snap" 
-                              style={{ maxWidth: '100%', borderRadius: '10px', marginTop: '10px' }}
-                              onLoad={() => console.log('✅ Snap image loaded successfully:', msg.id)}
-                              onError={(e) => {
-                                console.error('❌ Snap image failed to load:', msg.id);
-                                console.error('Image src length:', msg.image?.length);
-                                console.error('Image src preview:', msg.image?.substring(0, 100));
-                                e.target.style.display = 'none';
-                                e.target.parentElement.innerHTML += '<div style="background: #2a0000; border: 1px solid #ff0000; color: #ff6666; padding: 15px; borderRadius: 10px; marginTop: 10px;">⚠️ Image failed to load. Check console for details.</div>';
-                              }}
-                            />
-                          ) : (
-                            <div style={{ background: '#2a0000', border: '1px solid #ff0000', color: '#ff6666', padding: '15px', borderRadius: '10px', marginTop: '10px' }}>
-                              ⚠️ No image data found in this snap
-                            </div>
+                        </div>
+
+                        <div style={{ background: isOwn ? '#007aff' : '#1a1a1a', padding: '12px 16px', borderRadius: '18px', border: isOwn ? 'none' : '1px solid #333' }}>
+                          {!isOwn && <div style={{ fontSize: '12px', color: '#999', marginBottom: '5px', fontWeight: 'bold' }}>{msg.username}</div>}
+                          
+                          {msg.type === 'image' && (
+                            <img src={msg.imageUrl} alt="Shared" style={{ maxWidth: '100%', borderRadius: '10px', marginTop: '5px' }} />
                           )}
-                          {msg.reactions && Object.keys(msg.reactions).length > 0 && (
-                            <div className="reaction-container">
-                              {Object.entries(msg.reactions).map(([emoji, users]) => (
-                                <div key={emoji} onClick={() => addReaction(msg.id, emoji)} className={`reaction ${users.includes(username) ? 'active' : ''}`}>
+                          
+                          {msg.type === 'text' && (
+                            <div style={{ fontSize: '15px', lineHeight: '1.4' }}>{msg.text}</div>
+                          )}
+                          
+                          <div style={{ fontSize: '11px', color: isOwn ? 'rgba(255,255,255,0.7)' : '#666', marginTop: '5px' }}>
+                            {new Date(msg.timestamp).toLocaleTimeString()}
+                          </div>
+                        </div>
+
+                        {Object.keys(msgReactions).length > 0 && (
+                          <div className="reaction-container">
+                            {Object.entries(msgReactions).map(([emoji, users]) => (
+                              users.length > 0 && (
+                                <div
+                                  key={emoji}
+                                  className={`reaction ${users.includes(username) ? 'active' : ''}`}
+                                  onClick={() => addReaction(msg.id, emoji)}
+                                >
                                   <span>{emoji}</span>
                                   <span>{users.length}</span>
                                 </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    }
-
-                    const replyMsg = msg.replyTo ? getReplyMessage(msg.replyTo) : null;
-                    const userColor = `hsl(${msg.username.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % 360}, 70%, 60%)`;
-
-                    return (
-                      <div key={msg.id} className="message-bubble" style={{ marginBottom: '15px', background: msg.username === username ? '#1a1a1a' : '#0a0a0a', padding: '15px', borderRadius: '15px', border: '1px solid #333' }}>
-                        <div className="message-actions">
-                          <button onClick={() => setReplyTo(msg)} className="action-btn">Reply</button>
-                          <button onClick={() => setShowEmojiPicker(showEmojiPicker === msg.id ? null : msg.id)} className="action-btn">
-                            <Smile />
-                          </button>
-                        </div>
-
-                        {showEmojiPicker === msg.id && (
-                          <div className="emoji-picker">
-                            {EMOJIS.map(emoji => (
-                              <button key={emoji} onClick={() => {
-                                addReaction(msg.id, emoji);
-                                setShowEmojiPicker(null);
-                              }} className="emoji-btn">
-                                {emoji}
-                              </button>
-                            ))}
-                          </div>
-                        )}
-
-                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', marginBottom: '8px' }}>
-                          <span style={{ color: userColor, fontWeight: 'bold', fontSize: '14px' }}>{msg.username}</span>
-                          <span style={{ color: '#666', fontSize: '12px' }}>{formatTime(msg.timestamp)}</span>
-                        </div>
-
-                        {replyMsg && (
-                          <div className="reply-to" style={{ borderColor: userColor }}>
-                            <div style={{ fontSize: '11px', color: '#999', marginBottom: '4px' }}>Replying to {replyMsg.username}</div>
-                            <div style={{ fontSize: '12px', opacity: 0.7 }}>{replyMsg.text.substring(0, 50)}{replyMsg.text.length > 50 ? '...' : ''}</div>
-                          </div>
-                        )}
-
-                        <div style={{ fontSize: '15px', lineHeight: '1.5', wordBreak: 'break-word' }}>{msg.text}</div>
-
-                        {msg.reactions && Object.keys(msg.reactions).length > 0 && (
-                          <div className="reaction-container">
-                            {Object.entries(msg.reactions).map(([emoji, users]) => (
-                              <div key={emoji} onClick={() => addReaction(msg.id, emoji)} className={`reaction ${users.includes(username) ? 'active' : ''}`}>
-                                <span>{emoji}</span>
-                                <span>{users.length}</span>
-                              </div>
+                              )
                             ))}
                           </div>
                         )}
                       </div>
-                    );
-                  })}
-
-                  {typingUsers.length > 0 && (
-                    <div className="typing-indicator">
-                      {typingUsers.join(', ')} {typingUsers.length === 1 ? 'is' : 'are'} typing...
                     </div>
-                  )}
+                  );
+                })}
 
-                  <div ref={messagesEndRef} />
-                </div>
+                {typingList.length > 0 && (
+                  <div className="typing-indicator">
+                    {typingList.join(', ')} {typingList.length === 1 ? 'is' : 'are'} typing...
+                  </div>
+                )}
+
+                <div ref={messagesEndRef} />
               </div>
 
-              <div className="glow-border" style={{ background: '#0a0a0a', padding: '20px', borderTop: '1px solid #333' }}>
-                <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-                  {replyTo && (
-                    <div className="reply-preview">
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '5px' }}>
-                        <span style={{ fontSize: '12px', color: '#999' }}>Replying to {replyTo.username}</span>
-                        <button onClick={() => setReplyTo(null)} style={{ background: 'transparent', border: 'none', color: '#666', cursor: 'pointer', fontSize: '18px', lineHeight: 1 }}>×</button>
-                      </div>
-                      <div style={{ fontSize: '13px', opacity: 0.8 }}>{replyTo.text.substring(0, 80)}{replyTo.text.length > 80 ? '...' : ''}</div>
-                    </div>
-                  )}
-
-                  {showCamera && (
-                    <div style={{ marginBottom: '15px', background: '#1a1a1a', padding: '20px', borderRadius: '15px', border: '1px solid #333' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-                        <h3 style={{ fontSize: '16px', fontWeight: 'bold' }}>📸 Take a Snap</h3>
-                        <button onClick={stopCamera} style={{ background: 'transparent', border: 'none', color: '#999', cursor: 'pointer', fontSize: '24px' }}>×</button>
-                      </div>
-                      {!cameraReady && (
-                        <div style={{ marginBottom: '10px', padding: '10px', background: '#1a1a2a', border: '1px solid #4444ff', borderRadius: '8px', color: '#aaaaff', fontSize: '13px', textAlign: 'center' }}>
-                          <div style={{ fontSize: '20px', marginBottom: '5px' }}>⏳</div>
-                          <strong>Loading camera...</strong> Please wait for video to appear
-                          <div style={{ marginTop: '10px', fontSize: '11px', color: '#8888ff' }}>
-                            If stuck for 10+ seconds, try:<br/>
-                            1. Refresh the page<br/>
-                            2. Check camera permissions in browser settings<br/>
-                            3. Close other apps using the camera<br/>
-                            4. Check console (F12) for errors
-                          </div>
-                        </div>
-                      )}
-                      {cameraReady && (
-                        <div style={{ marginBottom: '10px', padding: '10px', background: '#0a2a0a', border: '1px solid #00ff88', borderRadius: '8px', color: '#88ffcc', fontSize: '13px', textAlign: 'center' }}>
-                          <div style={{ fontSize: '20px', marginBottom: '5px' }}>✅</div>
-                          <strong>Camera Ready!</strong> You can now take a snap
-                        </div>
-                      )}
-                      <video ref={videoRef} autoPlay playsInline muted style={{ width: '100%', borderRadius: '10px', marginBottom: '15px', background: '#000' }} />
-                      <canvas ref={canvasRef} style={{ display: 'none' }} />
+              {/* Input Area */}
+              <div style={{ background: '#1a1a1a', borderTop: '1px solid #333', padding: '20px' }}>
+                {showCamera && (
+                  <div style={{ marginBottom: '15px', background: '#0a0a0a', padding: '20px', borderRadius: '15px', border: '1px solid #333' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                      <h3 style={{ fontSize: '16px', fontWeight: 'bold' }}>📸 Camera</h3>
                       <button 
-                        onClick={takeSnap} 
-                        disabled={!cameraReady}
-                        className="glow-button" 
-                        style={{ 
-                          width: '100%', 
-                          background: cameraReady ? '#fff' : '#333', 
-                          color: cameraReady ? '#000' : '#666', 
-                          padding: '15px', 
-                          borderRadius: '10px', 
-                          border: 'none', 
-                          fontSize: '16px', 
-                          fontWeight: 'bold', 
-                          cursor: cameraReady ? 'pointer' : 'not-allowed',
-                          opacity: cameraReady ? 1 : 0.5
-                        }}
+                        onClick={() => {
+                          const stream = videoRef.current?.srcObject;
+                          if (stream) {
+                            stream.getTracks().forEach(track => track.stop());
+                          }
+                          setShowCamera(false);
+                          setCameraReady(false);
+                        }} 
+                        style={{ background: 'transparent', border: 'none', color: '#999', cursor: 'pointer', fontSize: '24px' }}
                       >
-                        {cameraReady ? '📸 SNAP & SEND' : '⏳ WAITING FOR CAMERA...'}
+                        ×
                       </button>
                     </div>
-                  )}
-
-                  {showImageInput && (
-                    <div style={{ marginBottom: '15px', background: '#1a1a1a', padding: '20px', borderRadius: '15px', border: '1px solid #333' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-                        <h3 style={{ fontSize: '16px', fontWeight: 'bold' }}>🖼️ Send Image/GIF</h3>
-                        <button onClick={() => setShowImageInput(false)} style={{ background: 'transparent', border: 'none', color: '#999', cursor: 'pointer', fontSize: '24px' }}>×</button>
-                      </div>
+                    {cameraReady && (
                       <div style={{ marginBottom: '10px', padding: '8px', background: '#0a2a0a', border: '1px solid #00ff88', borderRadius: '8px', color: '#88ffcc', fontSize: '12px' }}>
-                        💡 <strong>Tip:</strong> You can paste Giphy page URLs directly! Or use "Share" → "Copy GIF Link" from Giphy/Tenor
+                        ✅ <strong>Camera Ready!</strong> You can now take a snap
                       </div>
-                      <input
-                        type="text"
-                        value={imageUrl}
-                        onChange={(e) => setImageUrl(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && sendImageUrl()}
-                        placeholder="Paste image or GIF URL..."
-                        style={{ width: '100%', padding: '15px', background: '#0a0a0a', border: '1px solid #333', borderRadius: '10px', color: '#fff', fontSize: '15px', marginBottom: '15px' }}
-                      />
-                      {imageUrl && (
-                        <div style={{ marginBottom: '15px', textAlign: 'center' }}>
-                          <img src={imageUrl} alt="Preview" style={{ maxWidth: '100%', maxHeight: '200px', borderRadius: '10px' }} onError={(e) => e.target.style.display = 'none'} />
-                        </div>
-                      )}
-                      <button onClick={sendImageUrl} className="glow-button" style={{ width: '100%', background: '#fff', color: '#000', padding: '15px', borderRadius: '10px', border: 'none', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>
-                        📤 SEND IMAGE
-                      </button>
-                    </div>
-                  )}
-
-                  <div style={{ display: 'flex', gap: '10px' }}>
-                    <input
-                      type="text"
-                      value={message}
-                      onChange={(e) => {
-                        setMessage(e.target.value);
-                        updateTyping();
+                    )}
+                    <video ref={videoRef} autoPlay playsInline muted style={{ width: '100%', borderRadius: '10px', marginBottom: '15px', background: '#000' }} />
+                    <canvas ref={canvasRef} style={{ display: 'none' }} />
+                    <button 
+                      onClick={takeSnap} 
+                      disabled={!cameraReady}
+                      className="glow-button" 
+                      style={{ 
+                        width: '100%', 
+                        background: cameraReady ? '#fff' : '#333', 
+                        color: cameraReady ? '#000' : '#666', 
+                        padding: '15px', 
+                        borderRadius: '10px', 
+                        border: 'none', 
+                        fontSize: '16px', 
+                        fontWeight: 'bold', 
+                        cursor: cameraReady ? 'pointer' : 'not-allowed',
+                        opacity: cameraReady ? 1 : 0.5
                       }}
-                      onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-                      placeholder="Type a message..."
-                      style={{ flex: 1, padding: '15px', background: '#1a1a1a', border: '1px solid #333', borderRadius: '10px', color: '#fff', fontSize: '15px' }}
-                    />
-                    <button onClick={sendMessage} className="glow-button" style={{ background: '#fff', color: '#000', padding: '15px 30px', borderRadius: '10px', border: 'none', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <Send /> Send
-                    </button>
-                    <button onClick={startCamera} className="glow-button" style={{ background: '#1a1a1a', color: '#fff', padding: '15px 30px', borderRadius: '10px', border: '1px solid #333', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>
-                      📸
-                    </button>
-                    <button onClick={() => setShowImageInput(!showImageInput)} className="glow-button" style={{ background: '#1a1a1a', color: '#fff', padding: '15px 30px', borderRadius: '10px', border: '1px solid #333', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>
-                      🖼️
+                    >
+                      {cameraReady ? '📸 SNAP & SEND' : '⏳ WAITING FOR CAMERA...'}
                     </button>
                   </div>
+                )}
+
+                {showImageInput && (
+                  <div style={{ marginBottom: '15px', background: '#1a1a1a', padding: '20px', borderRadius: '15px', border: '1px solid #333' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                      <h3 style={{ fontSize: '16px', fontWeight: 'bold' }}>🖼️ Send Image/GIF</h3>
+                      <button onClick={() => setShowImageInput(false)} style={{ background: 'transparent', border: 'none', color: '#999', cursor: 'pointer', fontSize: '24px' }}>×</button>
+                    </div>
+                    <div style={{ marginBottom: '10px', padding: '8px', background: '#0a2a0a', border: '1px solid #00ff88', borderRadius: '8px', color: '#88ffcc', fontSize: '12px' }}>
+                      💡 <strong>Tip:</strong> You can paste Giphy page URLs directly! Or use "Share" → "Copy GIF Link" from Giphy/Tenor
+                    </div>
+                    <input
+                      type="text"
+                      value={imageUrl}
+                      onChange={(e) => setImageUrl(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && sendImageUrl()}
+                      placeholder="Paste image or GIF URL..."
+                      style={{ width: '100%', padding: '15px', background: '#0a0a0a', border: '1px solid #333', borderRadius: '10px', color: '#fff', fontSize: '15px', marginBottom: '15px' }}
+                    />
+                    {imageUrl && (
+                      <div style={{ marginBottom: '15px', textAlign: 'center' }}>
+                        <img src={imageUrl} alt="Preview" style={{ maxWidth: '100%', maxHeight: '200px', borderRadius: '10px' }} onError={(e) => e.target.style.display = 'none'} />
+                      </div>
+                    )}
+                    <button onClick={sendImageUrl} className="glow-button" style={{ width: '100%', background: '#fff', color: '#000', padding: '15px', borderRadius: '10px', border: 'none', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>
+                      📤 SEND IMAGE
+                    </button>
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <input
+                    type="text"
+                    value={message}
+                    onChange={(e) => {
+                      setMessage(e.target.value);
+                      updateTyping();
+                    }}
+                    onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
+                    placeholder="Type a message..."
+                    style={{ flex: 1, padding: '15px', background: '#1a1a1a', border: '1px solid #333', borderRadius: '10px', color: '#fff', fontSize: '15px' }}
+                  />
+                  <button onClick={sendMessage} className="glow-button" style={{ background: '#fff', color: '#000', padding: '15px 30px', borderRadius: '10px', border: 'none', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Send /> Send
+                  </button>
+                  <button onClick={startCamera} className="glow-button" style={{ background: '#1a1a1a', color: '#fff', padding: '15px 30px', borderRadius: '10px', border: '1px solid #333', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>
+                    📸
+                  </button>
+                  <button onClick={() => setShowImageInput(!showImageInput)} className="glow-button" style={{ background: '#1a1a1a', color: '#fff', padding: '15px 30px', borderRadius: '10px', border: '1px solid #333', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>
+                    🖼️
+                  </button>
                 </div>
               </div>
             </div>
@@ -2101,10 +1316,13 @@
                     style={{ display: remoteStream ? 'block' : 'none' }}
                   />
                   {!remoteStream && (
-                    <div className="call-status">
-                      <div style={{ fontSize: '48px', marginBottom: '20px' }}>📞</div>
-                      <div>Calling {callWith}...</div>
-                      <div style={{ fontSize: '14px', color: '#999', marginTop: '10px' }}>Waiting for them to answer...</div>
+                    <div className="call-status calling-status">
+                      <div className="ringing-icon" style={{ fontSize: '64px', marginBottom: '20px' }}>📞</div>
+                      <div style={{ fontSize: '24px', marginBottom: '10px' }}>
+                        {isRinging ? 'Ringing...' : 'Calling'}
+                      </div>
+                      <div style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '10px' }}>{callWith}</div>
+                      <div style={{ fontSize: '14px', color: '#999' }}>Waiting for them to answer...</div>
                     </div>
                   )}
                   <video 
@@ -2149,9 +1367,9 @@
 
             {/* Incoming Call */}
             {incomingCall && !inCall && (
-              <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10001 }}>
+              <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.95)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10001 }}>
                 <div className="incoming-call">
-                  <div style={{ fontSize: '64px', marginBottom: '20px', animation: 'glow 1s ease-in-out infinite' }}>📞</div>
+                  <div className="ringing-icon" style={{ fontSize: '64px', marginBottom: '20px' }}>📞</div>
                   <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '10px' }}>Incoming Call</h2>
                   <p style={{ fontSize: '18px', color: '#999', marginBottom: '30px' }}>{incomingCall.from} is calling you...</p>
                   <div style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
@@ -2198,7 +1416,7 @@
             )}
 
             {!showDebug && (
-              <div className="debug-toggle" onClick={() => setShowDebug(true)}>
+              <div className="debug-toggle" onClick={() => setShowDebug(true)} style={{ position: 'fixed', bottom: '20px', right: '20px', background: '#1a1a1a', border: '1px solid #333', borderRadius: '50%', width: '50px', height: '50px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 9999 }}>
                 <Bug />
               </div>
             )}
