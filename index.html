@@ -183,6 +183,113 @@
       border-radius: 8px;
     }
 
+    .video-call-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.95);
+      z-index: 10000;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .video-container {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      padding: 20px;
+    }
+
+    .remote-video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 20px;
+      background: #000;
+    }
+
+    .local-video {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      width: 200px;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 15px;
+      border: 3px solid #fff;
+      box-shadow: 0 5px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .call-controls {
+      position: absolute;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 20px;
+      padding: 20px;
+      background: rgba(0, 0, 0, 0.8);
+      border-radius: 50px;
+      backdrop-filter: blur(10px);
+    }
+
+    .call-btn {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      font-size: 24px;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .call-btn:hover {
+      transform: scale(1.1);
+    }
+
+    .call-btn.end {
+      background: #ff3b30;
+      color: #fff;
+    }
+
+    .call-btn.mute {
+      background: rgba(255, 255, 255, 0.2);
+      color: #fff;
+    }
+
+    .call-btn.video-toggle {
+      background: rgba(255, 255, 255, 0.2);
+      color: #fff;
+    }
+
+    .incoming-call {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #1a1a1a;
+      padding: 40px;
+      border-radius: 20px;
+      border: 2px solid #fff;
+      text-align: center;
+      z-index: 10001;
+      box-shadow: 0 10px 50px rgba(0, 0, 0, 0.8);
+    }
+
+    .call-status {
+      text-align: center;
+      font-size: 18px;
+      color: #fff;
+      margin-bottom: 20px;
+    }
+
     .reply-preview {
       background: rgba(255, 255, 255, 0.05);
       border-left: 3px solid #666;
@@ -521,11 +628,21 @@
       const [showGamesMenu, setShowGamesMenu] = useState(false);
       const [gameInvite, setGameInvite] = useState(null);
       const [openGameWindows, setOpenGameWindows] = useState([]);
+      const [inCall, setInCall] = useState(false);
+      const [callWith, setCallWith] = useState(null);
+      const [incomingCall, setIncomingCall] = useState(null);
+      const [localStream, setLocalStream] = useState(null);
+      const [remoteStream, setRemoteStream] = useState(null);
+      const [isMuted, setIsMuted] = useState(false);
+      const [isVideoOff, setIsVideoOff] = useState(false);
 
       const messagesEndRef = useRef(null);
       const typingTimeoutRef = useRef(null);
       const videoRef = useRef(null);
       const canvasRef = useRef(null);
+      const localVideoRef = useRef(null);
+      const remoteVideoRef = useRef(null);
+      const peerConnectionRef = useRef(null);
 
       const addDebugLog = (message, type = 'info') => {
         addDebugLogGlobal(message, type);
@@ -786,6 +903,8 @@
             videoRef.current.oncanplay = () => {
               console.log('✅ Video can play now!');
               console.log('Video readyState:', videoRef.current.readyState);
+              setCameraReady(true);
+              console.log('✅ Camera ready set from oncanplay');
             };
             
             videoRef.current.onerror = (e) => {
@@ -1006,6 +1125,244 @@
         
         console.log('=== IMAGE URL SEND END ===');
       };
+
+      // Video Call Functions
+      const startCall = async (targetUser) => {
+        try {
+          console.log('Starting call with:', targetUser);
+          
+          // Get local media stream
+          const stream = await navigator.mediaDevices.getUserMedia({ 
+            video: true, 
+            audio: true 
+          });
+          setLocalStream(stream);
+          if (localVideoRef.current) {
+            localVideoRef.current.srcObject = stream;
+          }
+
+          // Create peer connection
+          const configuration = {
+            iceServers: [
+              { urls: 'stun:stun.l.google.com:19302' },
+              { urls: 'stun:stun1.l.google.com:19302' }
+            ]
+          };
+          const peerConnection = new RTCPeerConnection(configuration);
+          peerConnectionRef.current = peerConnection;
+
+          // Add local tracks to peer connection
+          stream.getTracks().forEach(track => {
+            peerConnection.addTrack(track, stream);
+          });
+
+          // Handle incoming tracks
+          peerConnection.ontrack = (event) => {
+            console.log('Received remote track');
+            setRemoteStream(event.streams[0]);
+            if (remoteVideoRef.current) {
+              remoteVideoRef.current.srcObject = event.streams[0];
+            }
+          };
+
+          // Handle ICE candidates
+          peerConnection.onicecandidate = (event) => {
+            if (event.candidate) {
+              db.ref(`calls/${currentRoom}/${targetUser}/candidates/${username}`).push({
+                candidate: event.candidate.toJSON()
+              });
+            }
+          };
+
+          // Create and send offer
+          const offer = await peerConnection.createOffer();
+          await peerConnection.setLocalDescription(offer);
+
+          await db.ref(`calls/${currentRoom}/${targetUser}/offer`).set({
+            from: username,
+            offer: offer.toJSON(),
+            timestamp: Date.now()
+          });
+
+          setInCall(true);
+          setCallWith(targetUser);
+          addDebugLog(`Calling ${targetUser}...`, 'info');
+
+          // Listen for answer
+          db.ref(`calls/${currentRoom}/${username}/answer`).on('value', async (snapshot) => {
+            const data = snapshot.val();
+            if (data && data.from === targetUser) {
+              const answer = new RTCSessionDescription(data.answer);
+              await peerConnection.setRemoteDescription(answer);
+              console.log('Answer received and set');
+            }
+          });
+
+          // Listen for ICE candidates from remote peer
+          db.ref(`calls/${currentRoom}/${username}/candidates/${targetUser}`).on('child_added', async (snapshot) => {
+            const data = snapshot.val();
+            if (data && data.candidate) {
+              await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
+            }
+          });
+
+        } catch (err) {
+          console.error('Error starting call:', err);
+          setError('Failed to start call: ' + err.message);
+          addDebugLog(`Call error: ${err.message}`, 'error');
+        }
+      };
+
+      const answerCall = async (caller) => {
+        try {
+          console.log('Answering call from:', caller);
+          
+          // Get local media stream
+          const stream = await navigator.mediaDevices.getUserMedia({ 
+            video: true, 
+            audio: true 
+          });
+          setLocalStream(stream);
+          if (localVideoRef.current) {
+            localVideoRef.current.srcObject = stream;
+          }
+
+          // Create peer connection
+          const configuration = {
+            iceServers: [
+              { urls: 'stun:stun.l.google.com:19302' },
+              { urls: 'stun:stun1.l.google.com:19302' }
+            ]
+          };
+          const peerConnection = new RTCPeerConnection(configuration);
+          peerConnectionRef.current = peerConnection;
+
+          // Add local tracks
+          stream.getTracks().forEach(track => {
+            peerConnection.addTrack(track, stream);
+          });
+
+          // Handle incoming tracks
+          peerConnection.ontrack = (event) => {
+            console.log('Received remote track');
+            setRemoteStream(event.streams[0]);
+            if (remoteVideoRef.current) {
+              remoteVideoRef.current.srcObject = event.streams[0];
+            }
+          };
+
+          // Handle ICE candidates
+          peerConnection.onicecandidate = (event) => {
+            if (event.candidate) {
+              db.ref(`calls/${currentRoom}/${caller}/candidates/${username}`).push({
+                candidate: event.candidate.toJSON()
+              });
+            }
+          };
+
+          // Set remote description from offer
+          const offerData = incomingCall.offer;
+          await peerConnection.setRemoteDescription(new RTCSessionDescription(offerData));
+
+          // Create and send answer
+          const answer = await peerConnection.createAnswer();
+          await peerConnection.setLocalDescription(answer);
+
+          await db.ref(`calls/${currentRoom}/${caller}/answer`).set({
+            from: username,
+            answer: answer.toJSON(),
+            timestamp: Date.now()
+          });
+
+          setInCall(true);
+          setCallWith(caller);
+          setIncomingCall(null);
+          addDebugLog(`In call with ${caller}`, 'success');
+
+          // Listen for ICE candidates from remote peer
+          db.ref(`calls/${currentRoom}/${username}/candidates/${caller}`).on('child_added', async (snapshot) => {
+            const data = snapshot.val();
+            if (data && data.candidate) {
+              await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
+            }
+          });
+
+        } catch (err) {
+          console.error('Error answering call:', err);
+          setError('Failed to answer call: ' + err.message);
+          setIncomingCall(null);
+        }
+      };
+
+      const endCall = () => {
+        console.log('Ending call');
+        
+        // Stop all tracks
+        if (localStream) {
+          localStream.getTracks().forEach(track => track.stop());
+        }
+        
+        // Close peer connection
+        if (peerConnectionRef.current) {
+          peerConnectionRef.current.close();
+          peerConnectionRef.current = null;
+        }
+
+        // Clean up Firebase
+        if (currentRoom && username) {
+          db.ref(`calls/${currentRoom}/${username}`).remove();
+          db.ref(`calls/${currentRoom}/${callWith}`).remove();
+        }
+
+        setInCall(false);
+        setCallWith(null);
+        setLocalStream(null);
+        setRemoteStream(null);
+        setIsMuted(false);
+        setIsVideoOff(false);
+        addDebugLog('Call ended', 'info');
+      };
+
+      const toggleMute = () => {
+        if (localStream) {
+          const audioTrack = localStream.getAudioTracks()[0];
+          if (audioTrack) {
+            audioTrack.enabled = !audioTrack.enabled;
+            setIsMuted(!audioTrack.enabled);
+          }
+        }
+      };
+
+      const toggleVideo = () => {
+        if (localStream) {
+          const videoTrack = localStream.getVideoTracks()[0];
+          if (videoTrack) {
+            videoTrack.enabled = !videoTrack.enabled;
+            setIsVideoOff(!videoTrack.enabled);
+          }
+        }
+      };
+
+      const declineCall = () => {
+        if (incomingCall) {
+          db.ref(`calls/${currentRoom}/${incomingCall.from}/declined`).set(true);
+        }
+        setIncomingCall(null);
+      };
+
+      // Listen for incoming calls
+      useEffect(() => {
+        if (username && currentRoom && db) {
+          const callRef = db.ref(`calls/${currentRoom}/${username}/offer`);
+          callRef.on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data && data.from !== username && !inCall) {
+              setIncomingCall(data);
+            }
+          });
+          return () => callRef.off();
+        }
+      }, [username, currentRoom, inCall]);
 
       const updateTyping = () => {
         if (!currentRoom || !username || !db) return;
@@ -1421,6 +1778,22 @@
                         <div key={user} style={{ background: '#1a1a1a', padding: '6px 12px', borderRadius: '8px', border: '1px solid #333', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <span>{user}</span>
                           {user === currentRoomData?.owner && <span>👑</span>}
+                          {user !== username && !inCall && (
+                            <button 
+                              onClick={() => startCall(user)} 
+                              style={{ 
+                                background: 'transparent', 
+                                border: 'none', 
+                                color: '#00ff88', 
+                                cursor: 'pointer', 
+                                padding: '0 5px',
+                                fontSize: '16px'
+                              }}
+                              title={`Call ${user}`}
+                            >
+                              📞
+                            </button>
+                          )}
                           {isOwner && user !== username && (
                             <button onClick={() => kickUser(user)} style={{ background: 'transparent', border: 'none', color: '#ff6666', cursor: 'pointer', padding: '0 5px' }}>
                               <UserX style={{ width: '14px', height: '14px' }} />
@@ -1715,6 +2088,114 @@
                 onClose={() => closeGameWindow(window.id)}
               />
             ))}
+
+            {/* Video Call Modal */}
+            {inCall && (
+              <div className="video-call-modal">
+                <div className="video-container">
+                  <video 
+                    ref={remoteVideoRef} 
+                    autoPlay 
+                    playsInline 
+                    className="remote-video"
+                    style={{ display: remoteStream ? 'block' : 'none' }}
+                  />
+                  {!remoteStream && (
+                    <div className="call-status">
+                      <div style={{ fontSize: '48px', marginBottom: '20px' }}>📞</div>
+                      <div>Calling {callWith}...</div>
+                      <div style={{ fontSize: '14px', color: '#999', marginTop: '10px' }}>Waiting for them to answer...</div>
+                    </div>
+                  )}
+                  <video 
+                    ref={localVideoRef} 
+                    autoPlay 
+                    playsInline 
+                    muted 
+                    className="local-video"
+                    style={{ display: isVideoOff ? 'none' : 'block' }}
+                  />
+                  {isVideoOff && (
+                    <div className="local-video" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#1a1a1a' }}>
+                      <span style={{ fontSize: '48px' }}>📹</span>
+                    </div>
+                  )}
+                  <div className="call-controls">
+                    <button 
+                      onClick={toggleMute} 
+                      className={`call-btn mute ${isMuted ? 'active' : ''}`}
+                      title={isMuted ? 'Unmute' : 'Mute'}
+                    >
+                      {isMuted ? '🔇' : '🎤'}
+                    </button>
+                    <button 
+                      onClick={toggleVideo} 
+                      className={`call-btn video-toggle ${isVideoOff ? 'active' : ''}`}
+                      title={isVideoOff ? 'Turn on camera' : 'Turn off camera'}
+                    >
+                      {isVideoOff ? '📹' : '📷'}
+                    </button>
+                    <button 
+                      onClick={endCall} 
+                      className="call-btn end"
+                      title="End call"
+                    >
+                      ☎️
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Incoming Call */}
+            {incomingCall && !inCall && (
+              <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10001 }}>
+                <div className="incoming-call">
+                  <div style={{ fontSize: '64px', marginBottom: '20px', animation: 'glow 1s ease-in-out infinite' }}>📞</div>
+                  <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '10px' }}>Incoming Call</h2>
+                  <p style={{ fontSize: '18px', color: '#999', marginBottom: '30px' }}>{incomingCall.from} is calling you...</p>
+                  <div style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
+                    <button 
+                      onClick={() => answerCall(incomingCall.from)} 
+                      className="glow-button" 
+                      style={{ 
+                        background: '#00ff00', 
+                        color: '#000', 
+                        padding: '15px 40px', 
+                        borderRadius: '50px', 
+                        border: 'none', 
+                        fontSize: '18px', 
+                        fontWeight: 'bold', 
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px'
+                      }}
+                    >
+                      📞 Answer
+                    </button>
+                    <button 
+                      onClick={declineCall} 
+                      style={{ 
+                        background: '#ff3b30', 
+                        color: '#fff', 
+                        padding: '15px 40px', 
+                        borderRadius: '50px', 
+                        border: 'none', 
+                        fontSize: '18px', 
+                        fontWeight: 'bold', 
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px'
+                      }}
+                    >
+                      ❌ Decline
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {!showDebug && (
               <div className="debug-toggle" onClick={() => setShowDebug(true)}>
