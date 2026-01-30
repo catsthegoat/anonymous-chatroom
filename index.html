@@ -720,11 +720,18 @@
         
         const canvas = canvasRef.current;
         const video = videoRef.current;
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        canvas.getContext('2d').drawImage(video, 0, 0);
         
-        const imageData = canvas.toDataURL('image/jpeg', 0.7);
+        // Resize to max 800px width to reduce file size
+        const maxWidth = 800;
+        const scale = Math.min(1, maxWidth / video.videoWidth);
+        canvas.width = video.videoWidth * scale;
+        canvas.height = video.videoHeight * scale;
+        
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        // Compress more aggressively (0.5 quality)
+        const imageData = canvas.toDataURL('image/jpeg', 0.5);
         
         const msgId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
         const newMsg = {
