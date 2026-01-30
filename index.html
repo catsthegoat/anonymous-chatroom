@@ -722,9 +722,13 @@
 
       const startCamera = async () => {
         console.log('=== CAMERA START DEBUG ===');
-        setCameraReady(false); // Reset ready state
+        console.log('Time:', new Date().toLocaleTimeString());
+        setCameraReady(false);
+        
         try {
           console.log('Requesting camera access...');
+          const startTime = Date.now();
+          
           const stream = await navigator.mediaDevices.getUserMedia({ 
             video: { 
               facingMode: 'user',
@@ -732,42 +736,68 @@
               height: { ideal: 720 }
             } 
           });
-          console.log('Camera access granted!');
+          
+          const accessTime = Date.now() - startTime;
+          console.log(`✅ Camera access granted! Took ${accessTime}ms`);
           console.log('Stream:', stream);
           console.log('Video tracks:', stream.getVideoTracks());
+          console.log('Track state:', stream.getVideoTracks()[0]?.readyState);
+          console.log('Track enabled:', stream.getVideoTracks()[0]?.enabled);
           
           if (videoRef.current) {
+            console.log('Setting srcObject...');
             videoRef.current.srcObject = stream;
             console.log('Stream assigned to video element');
             
+            // Set a timeout to warn if video doesn't load
+            const loadTimeout = setTimeout(() => {
+              console.error('⚠️ WARNING: Video has not loaded after 5 seconds!');
+              console.error('Video readyState:', videoRef.current?.readyState);
+              console.error('Video dimensions:', videoRef.current?.videoWidth, 'x', videoRef.current?.videoHeight);
+              console.error('Video networkState:', videoRef.current?.networkState);
+              console.error('Video paused:', videoRef.current?.paused);
+              console.error('Video error:', videoRef.current?.error);
+            }, 5000);
+            
             // Wait for video to actually load
             videoRef.current.onloadedmetadata = () => {
-              console.log('✅ Video metadata loaded!');
+              clearTimeout(loadTimeout);
+              const loadTime = Date.now() - startTime;
+              console.log(`✅ Video metadata loaded! Took ${loadTime}ms total`);
               console.log('Video dimensions:', videoRef.current.videoWidth, 'x', videoRef.current.videoHeight);
+              console.log('Video readyState:', videoRef.current.readyState);
               if (videoRef.current.videoWidth > 0 && videoRef.current.videoHeight > 0) {
                 setCameraReady(true);
                 console.log('✅ CAMERA IS READY TO SNAP!');
+              } else {
+                console.error('❌ Video dimensions are still 0x0!');
               }
             };
             
             videoRef.current.oncanplay = () => {
-              console.log('Video can play now!');
+              console.log('✅ Video can play now!');
               console.log('Video readyState:', videoRef.current.readyState);
             };
             
+            videoRef.current.onerror = (e) => {
+              console.error('❌ VIDEO ERROR:', e);
+              console.error('Video error details:', videoRef.current?.error);
+            };
+            
             // Force play if needed
+            console.log('Calling video.play()...');
             try {
               await videoRef.current.play();
-              console.log('Video play() called successfully');
+              console.log('✅ Video play() succeeded');
             } catch (playErr) {
-              console.warn('Video play() failed (may autoplay):', playErr);
+              console.warn('⚠️ Video play() failed (may autoplay):', playErr);
             }
           } else {
-            console.error('videoRef.current is null!');
+            console.error('❌ videoRef.current is null!');
           }
           setShowCamera(true);
           addDebugLog('Camera started', 'success');
-          console.log('=== CAMERA START SUCCESS ===');
+          console.log('=== CAMERA START COMPLETE ===');
         } catch (err) {
           console.error('=== CAMERA ERROR ===');
           console.error('Error:', err);
@@ -1554,6 +1584,13 @@
                         <div style={{ marginBottom: '10px', padding: '10px', background: '#1a1a2a', border: '1px solid #4444ff', borderRadius: '8px', color: '#aaaaff', fontSize: '13px', textAlign: 'center' }}>
                           <div style={{ fontSize: '20px', marginBottom: '5px' }}>⏳</div>
                           <strong>Loading camera...</strong> Please wait for video to appear
+                          <div style={{ marginTop: '10px', fontSize: '11px', color: '#8888ff' }}>
+                            If stuck for 10+ seconds, try:<br/>
+                            1. Refresh the page<br/>
+                            2. Check camera permissions in browser settings<br/>
+                            3. Close other apps using the camera<br/>
+                            4. Check console (F12) for errors
+                          </div>
                         </div>
                       )}
                       {cameraReady && (
