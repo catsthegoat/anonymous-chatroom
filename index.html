@@ -515,6 +515,7 @@
       const [logs, setLogs] = useState([]);
       const [showDebug, setShowDebug] = useState(false);
       const [showCamera, setShowCamera] = useState(false);
+      const [cameraReady, setCameraReady] = useState(false);
       const [showImageInput, setShowImageInput] = useState(false);
       const [imageUrl, setImageUrl] = useState('');
       const [showGamesMenu, setShowGamesMenu] = useState(false);
@@ -721,9 +722,16 @@
 
       const startCamera = async () => {
         console.log('=== CAMERA START DEBUG ===');
+        setCameraReady(false); // Reset ready state
         try {
           console.log('Requesting camera access...');
-          const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+          const stream = await navigator.mediaDevices.getUserMedia({ 
+            video: { 
+              facingMode: 'user',
+              width: { ideal: 1280 },
+              height: { ideal: 720 }
+            } 
+          });
           console.log('Camera access granted!');
           console.log('Stream:', stream);
           console.log('Video tracks:', stream.getVideoTracks());
@@ -731,6 +739,29 @@
           if (videoRef.current) {
             videoRef.current.srcObject = stream;
             console.log('Stream assigned to video element');
+            
+            // Wait for video to actually load
+            videoRef.current.onloadedmetadata = () => {
+              console.log('✅ Video metadata loaded!');
+              console.log('Video dimensions:', videoRef.current.videoWidth, 'x', videoRef.current.videoHeight);
+              if (videoRef.current.videoWidth > 0 && videoRef.current.videoHeight > 0) {
+                setCameraReady(true);
+                console.log('✅ CAMERA IS READY TO SNAP!');
+              }
+            };
+            
+            videoRef.current.oncanplay = () => {
+              console.log('Video can play now!');
+              console.log('Video readyState:', videoRef.current.readyState);
+            };
+            
+            // Force play if needed
+            try {
+              await videoRef.current.play();
+              console.log('Video play() called successfully');
+            } catch (playErr) {
+              console.warn('Video play() failed (may autoplay):', playErr);
+            }
           } else {
             console.error('videoRef.current is null!');
           }
@@ -752,6 +783,7 @@
           videoRef.current.srcObject.getTracks().forEach(track => track.stop());
         }
         setShowCamera(false);
+        setCameraReady(false);
         addDebugLog('Camera stopped', 'info');
       };
 
@@ -1177,7 +1209,7 @@
                 <div style={{ textAlign: 'center', marginBottom: '30px' }}>
                   <div className="glow" style={{ display: 'inline-block' }}><MessageCircle /></div>
                   <h1 className="glow-text" style={{ fontSize: '32px', fontWeight: 'bold', marginTop: '20px', marginBottom: '10px' }}>CHATROOMS</h1>
-                  <p style={{ color: '#999' }}>all credits to emma</p>
+                  <p style={{ color: '#999' }}>Enter the void</p>
                 </div>
                 <input
                   type="text"
@@ -1518,13 +1550,38 @@
                         <h3 style={{ fontSize: '16px', fontWeight: 'bold' }}>📸 Take a Snap</h3>
                         <button onClick={stopCamera} style={{ background: 'transparent', border: 'none', color: '#999', cursor: 'pointer', fontSize: '24px' }}>×</button>
                       </div>
-                      <div style={{ marginBottom: '10px', padding: '8px', background: '#2a2a0a', border: '1px solid #666600', borderRadius: '8px', color: '#ffff88', fontSize: '13px' }}>
-                        ⚠️ Wait 2-3 seconds for video to fully load before clicking SNAP & SEND
-                      </div>
-                      <video ref={videoRef} autoPlay playsInline style={{ width: '100%', borderRadius: '10px', marginBottom: '15px' }} />
+                      {!cameraReady && (
+                        <div style={{ marginBottom: '10px', padding: '10px', background: '#1a1a2a', border: '1px solid #4444ff', borderRadius: '8px', color: '#aaaaff', fontSize: '13px', textAlign: 'center' }}>
+                          <div style={{ fontSize: '20px', marginBottom: '5px' }}>⏳</div>
+                          <strong>Loading camera...</strong> Please wait for video to appear
+                        </div>
+                      )}
+                      {cameraReady && (
+                        <div style={{ marginBottom: '10px', padding: '10px', background: '#0a2a0a', border: '1px solid #00ff88', borderRadius: '8px', color: '#88ffcc', fontSize: '13px', textAlign: 'center' }}>
+                          <div style={{ fontSize: '20px', marginBottom: '5px' }}>✅</div>
+                          <strong>Camera Ready!</strong> You can now take a snap
+                        </div>
+                      )}
+                      <video ref={videoRef} autoPlay playsInline muted style={{ width: '100%', borderRadius: '10px', marginBottom: '15px', background: '#000' }} />
                       <canvas ref={canvasRef} style={{ display: 'none' }} />
-                      <button onClick={takeSnap} className="glow-button" style={{ width: '100%', background: '#fff', color: '#000', padding: '15px', borderRadius: '10px', border: 'none', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>
-                        📸 SNAP & SEND
+                      <button 
+                        onClick={takeSnap} 
+                        disabled={!cameraReady}
+                        className="glow-button" 
+                        style={{ 
+                          width: '100%', 
+                          background: cameraReady ? '#fff' : '#333', 
+                          color: cameraReady ? '#000' : '#666', 
+                          padding: '15px', 
+                          borderRadius: '10px', 
+                          border: 'none', 
+                          fontSize: '16px', 
+                          fontWeight: 'bold', 
+                          cursor: cameraReady ? 'pointer' : 'not-allowed',
+                          opacity: cameraReady ? 1 : 0.5
+                        }}
+                      >
+                        {cameraReady ? '📸 SNAP & SEND' : '⏳ WAITING FOR CAMERA...'}
                       </button>
                     </div>
                   )}
@@ -1611,4 +1668,3 @@
   </script>
 </body>
 </html>
-
