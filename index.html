@@ -723,6 +723,15 @@
       const startCamera = async () => {
         console.log('=== CAMERA START DEBUG ===');
         console.log('Time:', new Date().toLocaleTimeString());
+        
+        // Clean up any existing stream first
+        if (videoRef.current?.srcObject) {
+          console.log('Cleaning up existing stream...');
+          const tracks = videoRef.current.srcObject.getTracks();
+          tracks.forEach(track => track.stop());
+          videoRef.current.srcObject = null;
+        }
+        
         setCameraReady(false);
         
         try {
@@ -809,12 +818,31 @@
       };
 
       const stopCamera = () => {
-        if (videoRef.current && videoRef.current.srcObject) {
-          videoRef.current.srcObject.getTracks().forEach(track => track.stop());
+        console.log('=== STOPPING CAMERA ===');
+        if (videoRef.current) {
+          // Stop all tracks
+          if (videoRef.current.srcObject) {
+            const tracks = videoRef.current.srcObject.getTracks();
+            console.log('Stopping tracks:', tracks.length);
+            tracks.forEach(track => {
+              track.stop();
+              console.log('Track stopped:', track.kind);
+            });
+          }
+          
+          // Clear all event handlers
+          videoRef.current.onloadedmetadata = null;
+          videoRef.current.oncanplay = null;
+          videoRef.current.onerror = null;
+          
+          // Clear srcObject
+          videoRef.current.srcObject = null;
+          console.log('Video srcObject cleared');
         }
         setShowCamera(false);
         setCameraReady(false);
         addDebugLog('Camera stopped', 'info');
+        console.log('=== CAMERA STOPPED ===');
       };
 
       const takeSnap = async () => {
