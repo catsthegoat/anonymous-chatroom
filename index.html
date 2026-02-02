@@ -780,95 +780,280 @@
       const [captureMode, setCaptureMode] = useState('photo'); // 'photo' or 'video'
 
 
-const startCall = async (recipient) => {
-  if (!username || !currentRoom) return;
-  
-  setCallWith(recipient);
-  setInCall(true);
-  
+const startCall = async (targetUser) => {
   try {
-    const pc = await createPeerConnection(true);
+    console.log('📞 Starting call with:', targetUser);
+    setCallWith(targetUser);
+    setInCall(true);
     
+    // Get local media stream with proper constraints
+    const stream = await navigator.mediaDevices.getUserMedia({ 
+      video: {
+        width: { ideal: 1280 },
+        height: { ideal: 720 },
+        facingMode: 'user'
+      }, 
+      audio: {
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true
+      }
+    });
+    
+    console.log('✅ Got local stream with tracks:', stream.getTracks().length);
+    setLocalStream(stream);
+    
+    // CRITICAL: Attach to video element immediately
+    if (localVideoRef.current) {
+      localVideoRef.current.srcObject = stream;
+      localVideoRef.current.muted = true;
+      await localVideoRef.current.play();
+      console.log('✅ Local video playing');
+    }
+
+    // Create peer connection
+    const configuration = {
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' },
+      ],
+      iceCandidatePoolSize: 10
+    };
+    const peerConnection = new RTCPeerConnection(configuration);
+    peerConnectionRef.current = peerConnection;
+    
+    // Add local stream tracks to peer connection
+    stream.getTracks().forEach(track => {
+      console.log('Adding track to peer connection:', track.kind);
+      peerConnection.addTrack(track, stream);
+    });
+    
+    // Handle incoming remote tracks
+    peerConnection.ontrack = (event) => {
+      console.log('📺 Received remote track:', event.track.kind);
+      if (event.streams && event.streams[0]) {
+        console.log('Remote stream received with', event.streams[0].getTracks().length, 'tracks');
+        const remoteStream = event.streams[0];
+        setRemoteStream(remoteStream);
+        
+        // CRITICAL: Attach remote stream to video element
+        if (remoteVideoRef.current) {
+          remoteVideoRef.current.srcObject = remoteStream;
+          remoteVideoRef.current.play()
+            .then(() => console.log('✅ Remote video playing'))
+            .catch(err => console.error('Remote video play error:', err));
+        }
+      }
+    };
+    
+    // Handle ICE candidates
+    peerConnection.onicecandidate = (event) => {
+      if (event.candidate) {
+        console.log('📡 Sending ICE candidate');
+        db.ref(`calls/${currentRoom}/${targetUser}/candidates/${username}`).push({
+          candidate: event.candidate.toJSON()
+        });
+      }
+    };
+    
+    // Monitor connection state
+    peerConnection.onconnectionstatechange = () => {
+      console.log('🔌 Connection state:', peerConnection.connectionState);
+      if (peerConnection.connectionState === 'failed') {
+        alert('Connection failed. Please try again.');
+        endCall();
+      }
+    };
+
     // Create offer
-    const offer = await pc.createOffer();
-    await pc.setLocalDescription(offer);
-    
+    console.log('Creating offer...');
+    const offer = await peerConnection.createOffer({
+      offerToReceiveAudio: true,
+      offerToReceiveVideo: true
+    });
+    await peerConnection.setLocalDescription(offer);
+    console.log('✅ Offer created');
+
     // Send offer to Firebase
-    const callPath = `calls/${currentRoom}/${recipient}`;
-    await database.ref(callPath).set({
+    await db.ref(`calls/${currentRoom}/${targetUser}/offer`).set({
       from: username,
-      to: recipient,
       offer: {
         type: offer.type,
         sdp: offer.sdp
       },
-      status: 'calling',
       timestamp: Date.now()
     });
-    
+    console.log('✅ Offer sent to Firebase');
+
     // Listen for answer
-    database.ref(`${callPath}/answer`).on('value', async (snapshot) => {
-      const answer = snapshot.val();
-      if (answer && pc.signalingState !== 'stable') {
-        await pc.setRemoteDescription(new RTCSessionDescription(answer));
-      }
-    });
-    
-    // Listen for ICE candidates
-    database.ref(`${callPath}/candidates`).on('child_added', async (snapshot) => {
+    const answerRef = db.ref(`calls/${currentRoom}/${username}/answer`);
+    answerRef.on('value', async (snapshot) => {
       const data = snapshot.val();
-      if (data.from !== username && data.candidate) {
+      if (data && data.from === targetUser && peerConnectionRef.current) {
+        console.log('✅ Answer received from', targetUser);
         try {
-          await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
-        } catch (e) {
-          console.error('Error adding ICE candidate:', e);
+          const answer = new RTCSessionDescription(data.answer);
+          await peerConnectionRef.current.setRemoteDescription(answer);
+          console.log('✅ Remote description set');
+        } catch (err) {
+          console.error('Error setting remote description:', err);
         }
       }
     });
-    
-  } catch (error) {
-    console.error('Error starting call:', error);
-    alert('Failed to start call. Please try again.');
-    endCall();
+
+    // Listen for ICE candidates from remote peer
+    const candidatesRef = db.ref(`calls/${currentRoom}/${username}/candidates/${targetUser}`);
+    candidatesRef.on('child_added', async (snapshot) => {
+      const data = snapshot.val();
+      if (data && data.candidate && peerConnectionRef.current) {
+        try {
+          await peerConnectionRef.current.addIceCandidate(new RTCIceCandidate(data.candidate));
+          console.log('✅ Added ICE candidate from remote');
+        } catch (err) {
+          console.error('Error adding ICE candidate:', err);
+        }
+      }
+    });
+
+    // Listen for hang-up
+    const hangupRef = db.ref(`calls/${currentRoom}/${username}/hangup`);
+    hangupRef.on('value', (snapshot) => {
+      const data = snapshot.val();
+      if (data && data.from === targetUser) {
+        console.log('📞 Remote peer hung up');
+        endCall();
+        alert(`${targetUser} ended the call`);
+      }
+    });
+
+    // Listen for decline
+    const declineRef = db.ref(`calls/${currentRoom}/${username}/declined`);
+    declineRef.on('value', (snapshot) => {
+      if (snapshot.val() === true) {
+        console.log('📞 Call declined');
+        endCall();
+        alert(`${targetUser} declined your call`);
+        db.ref(`calls/${currentRoom}/${username}`).remove();
+      }
+    });
+
+    addDebugLog(`Calling ${targetUser}...`, 'info');
+
+  } catch (err) {
+    console.error('CALL ERROR:', err);
+    alert('Failed to start call: ' + err.message);
+    setInCall(false);
+    setCallWith(null);
+    addDebugLog(`Call error: ${err.message}`, 'error');
   }
 };
 
 const answerCall = async (caller) => {
-  setIncomingCall(null);
-  setCallWith(caller);
-  setInCall(true);
-  
   try {
-    const pc = await createPeerConnection(false);
+    console.log('📞 Answering call from:', caller);
+    setIncomingCall(null);
+    setCallWith(caller);
+    setInCall(true);
     
+    // Get local media stream
+    const stream = await navigator.mediaDevices.getUserMedia({ 
+      video: {
+        width: { ideal: 1280 },
+        height: { ideal: 720 },
+        facingMode: 'user'
+      }, 
+      audio: {
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true
+      }
+    });
+    
+    console.log('✅ Got local stream');
+    setLocalStream(stream);
+    
+    if (localVideoRef.current) {
+      localVideoRef.current.srcObject = stream;
+      localVideoRef.current.muted = true;
+      await localVideoRef.current.play();
+    }
+
+    // Create peer connection
+    const configuration = {
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' },
+      ],
+      iceCandidatePoolSize: 10
+    };
+    const peerConnection = new RTCPeerConnection(configuration);
+    peerConnectionRef.current = peerConnection;
+    
+    // Add local stream tracks
+    stream.getTracks().forEach(track => {
+      peerConnection.addTrack(track, stream);
+    });
+    
+    // Handle incoming remote tracks
+    peerConnection.ontrack = (event) => {
+      console.log('📺 Received remote track:', event.track.kind);
+      if (event.streams && event.streams[0]) {
+        const remoteStream = event.streams[0];
+        setRemoteStream(remoteStream);
+        
+        if (remoteVideoRef.current) {
+          remoteVideoRef.current.srcObject = remoteStream;
+          remoteVideoRef.current.play()
+            .then(() => console.log('✅ Remote video playing'))
+            .catch(err => console.error('Remote video play error:', err));
+        }
+      }
+    };
+    
+    // Handle ICE candidates
+    peerConnection.onicecandidate = (event) => {
+      if (event.candidate) {
+        db.ref(`calls/${currentRoom}/${caller}/candidates/${username}`).push({
+          candidate: event.candidate.toJSON()
+        });
+      }
+    };
+    
+    peerConnection.onconnectionstatechange = () => {
+      console.log('🔌 Connection state:', peerConnection.connectionState);
+    };
+
     const callPath = `calls/${currentRoom}/${username}`;
     
     // Get the offer
-    const callSnapshot = await database.ref(callPath).once('value');
+    const callSnapshot = await db.ref(callPath).once('value');
     const callData = callSnapshot.val();
     
     if (callData && callData.offer) {
-      await pc.setRemoteDescription(new RTCSessionDescription(callData.offer));
+      await peerConnection.setRemoteDescription(new RTCSessionDescription(callData.offer));
       
       // Create answer
-      const answer = await pc.createAnswer();
-      await pc.setLocalDescription(answer);
+      const answer = await peerConnection.createAnswer();
+      await peerConnection.setLocalDescription(answer);
       
       // Send answer
-      await database.ref(`${callPath}/answer`).set({
-        type: answer.type,
-        sdp: answer.sdp
+      await db.ref(`calls/${currentRoom}/${caller}/answer`).set({
+        from: username,
+        answer: {
+          type: answer.type,
+          sdp: answer.sdp
+        }
       });
       
-      // Update call status
-      await database.ref(`${callPath}/status`).set('connected');
+      console.log('✅ Answer sent');
       
       // Listen for ICE candidates
-      database.ref(`${callPath}/candidates`).on('child_added', async (snapshot) => {
+      db.ref(`${callPath}/candidates/${caller}`).on('child_added', async (snapshot) => {
         const data = snapshot.val();
-        if (data.from !== username && data.candidate) {
+        if (data && data.candidate && peerConnectionRef.current) {
           try {
-            await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
+            await peerConnectionRef.current.addIceCandidate(new RTCIceCandidate(data.candidate));
+            console.log('✅ Added ICE candidate');
           } catch (e) {
             console.error('Error adding ICE candidate:', e);
           }
@@ -2773,6 +2958,7 @@ const startCall = async (targetUser) => {
   </script>
 </body>
 </html>
+
 
 
 
