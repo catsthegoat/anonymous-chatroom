@@ -779,6 +779,110 @@
       const [recordingTime, setRecordingTime] = useState(0);
       const [captureMode, setCaptureMode] = useState('photo'); // 'photo' or 'video'
 
+
+const startCall = async (recipient) => {
+  if (!username || !currentRoom) return;
+  
+  setCallWith(recipient);
+  setInCall(true);
+  
+  try {
+    const pc = await createPeerConnection(true);
+    
+    // Create offer
+    const offer = await pc.createOffer();
+    await pc.setLocalDescription(offer);
+    
+    // Send offer to Firebase
+    const callPath = `calls/${currentRoom}/${recipient}`;
+    await database.ref(callPath).set({
+      from: username,
+      to: recipient,
+      offer: {
+        type: offer.type,
+        sdp: offer.sdp
+      },
+      status: 'calling',
+      timestamp: Date.now()
+    });
+    
+    // Listen for answer
+    database.ref(`${callPath}/answer`).on('value', async (snapshot) => {
+      const answer = snapshot.val();
+      if (answer && pc.signalingState !== 'stable') {
+        await pc.setRemoteDescription(new RTCSessionDescription(answer));
+      }
+    });
+    
+    // Listen for ICE candidates
+    database.ref(`${callPath}/candidates`).on('child_added', async (snapshot) => {
+      const data = snapshot.val();
+      if (data.from !== username && data.candidate) {
+        try {
+          await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
+        } catch (e) {
+          console.error('Error adding ICE candidate:', e);
+        }
+      }
+    });
+    
+  } catch (error) {
+    console.error('Error starting call:', error);
+    alert('Failed to start call. Please try again.');
+    endCall();
+  }
+};
+
+const answerCall = async (caller) => {
+  setIncomingCall(null);
+  setCallWith(caller);
+  setInCall(true);
+  
+  try {
+    const pc = await createPeerConnection(false);
+    
+    const callPath = `calls/${currentRoom}/${username}`;
+    
+    // Get the offer
+    const callSnapshot = await database.ref(callPath).once('value');
+    const callData = callSnapshot.val();
+    
+    if (callData && callData.offer) {
+      await pc.setRemoteDescription(new RTCSessionDescription(callData.offer));
+      
+      // Create answer
+      const answer = await pc.createAnswer();
+      await pc.setLocalDescription(answer);
+      
+      // Send answer
+      await database.ref(`${callPath}/answer`).set({
+        type: answer.type,
+        sdp: answer.sdp
+      });
+      
+      // Update call status
+      await database.ref(`${callPath}/status`).set('connected');
+      
+      // Listen for ICE candidates
+      database.ref(`${callPath}/candidates`).on('child_added', async (snapshot) => {
+        const data = snapshot.val();
+        if (data.from !== username && data.candidate) {
+          try {
+            await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
+          } catch (e) {
+            console.error('Error adding ICE candidate:', e);
+          }
+        }
+      });
+    }
+  } catch (error) {
+    console.error('Error answering call:', error);
+    alert('Failed to answer call. Please try again.');
+    endCall();
+  }
+};
+
+      
       const messagesEndRef = useRef(null);
       const typingTimeoutRef = useRef(null);
       const localVideoRef = useRef(null);
@@ -2669,5 +2773,6 @@ const startCall = async (targetUser) => {
   </script>
 </body>
 </html>
+
 
 
