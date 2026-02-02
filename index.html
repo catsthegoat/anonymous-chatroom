@@ -981,6 +981,15 @@
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
       }, [messages]);
 
+      // Effect to attach remote stream to video element
+      useEffect(() => {
+        if (remoteStream && remoteVideoRef.current) {
+          console.log('🎥 Attaching remote stream to video element');
+          remoteVideoRef.current.srcObject = remoteStream;
+          remoteVideoRef.current.play().catch(err => console.error('Remote video play error:', err));
+        }
+      }, [remoteStream]);
+
 
       const sendImageUrl = async () => {
         console.log('=== IMAGE URL SEND DEBUG ===');
@@ -1301,20 +1310,12 @@ const startCall = async (targetUser) => {
               
               setRemoteStream(remoteStream);
               
-              // CRITICAL FIX: Wait for element and stream, then attach and play
-              setTimeout(() => {
-                if (remoteVideoRef.current && remoteStream) {
-                  remoteVideoRef.current.srcObject = remoteStream;
-                  remoteVideoRef.current.load();
-                  
-                  remoteVideoRef.current.onloadedmetadata = () => {
-                    console.log('✅ Remote video metadata loaded');
-                    remoteVideoRef.current.play()
-                      .then(() => console.log('✅ Remote video playing'))
-                      .catch(err => console.error('Video play error:', err));
-                  };
-                }
-              }, 100);
+              
+              // Direct attachment
+              if (remoteVideoRef.current) {
+                remoteVideoRef.current.srcObject = remoteStream;
+                remoteVideoRef.current.play().catch(err => console.error('Video play error:', err));
+              }
             }
           };
           
@@ -1477,20 +1478,12 @@ const startCall = async (targetUser) => {
                   
                   remoteVideoRef.current.onloadedmetadata = () => {
                     console.log('✅ Remote video metadata loaded');
-                    remoteVideoRef.current.play()
-                      .then(() => console.log('✅ Remote video playing'))
-                      .catch(err => console.error('Video play error:', err));
-                  };
-                }
-              }, 100);
-            }
-          };
-
-          // Handle ICE candidates
-          peerConnection.onicecandidate = (event) => {
-            if (event.candidate) {
-              console.log('📡 Sending ICE candidate');
-              db.ref(`calls/${currentRoom}/${caller}/candidates/${username}`).push({
+              
+              // Direct attachment
+              if (remoteVideoRef.current) {
+                remoteVideoRef.current.srcObject = remoteStream;
+                remoteVideoRef.current.play().catch(err => console.error('Video play error:', err));
+              }
                 candidate: event.candidate.toJSON()
               });
             }
