@@ -1291,7 +1291,7 @@ const startCall = async (targetUser) => {
             console.log('✅ Added track:', track.kind, 'enabled:', track.enabled);
           });
 
-          // Handle incoming tracks - FIXED
+         // Handle incoming tracks - FIXED
           peerConnection.ontrack = (event) => {
             console.log('🎥 RECEIVED REMOTE TRACK:', event.track.kind);
             
@@ -1301,23 +1301,23 @@ const startCall = async (targetUser) => {
               
               setRemoteStream(remoteStream);
               
-              // CRITICAL FIX: Force video to play
-              if (remoteVideoRef.current) {
-                remoteVideoRef.current.srcObject = remoteStream;
-                
-                const playVideo = () => {
-                  remoteVideoRef.current.play()
-                    .then(() => console.log('✅ Remote video playing'))
-                    .catch(err => {
-                      console.error('Retrying video play...');
-                      setTimeout(playVideo, 500);
-                    });
-                };
-                playVideo();
-              }
+              // CRITICAL FIX: Wait for element and stream, then attach and play
+              setTimeout(() => {
+                if (remoteVideoRef.current && remoteStream) {
+                  remoteVideoRef.current.srcObject = remoteStream;
+                  remoteVideoRef.current.load();
+                  
+                  remoteVideoRef.current.onloadedmetadata = () => {
+                    console.log('✅ Remote video metadata loaded');
+                    remoteVideoRef.current.play()
+                      .then(() => console.log('✅ Remote video playing'))
+                      .catch(err => console.error('Video play error:', err));
+                  };
+                }
+              }, 100);
             }
           };
-
+          
           // Handle ICE candidates
           peerConnection.onicecandidate = (event) => {
             if (event.candidate) {
@@ -1459,7 +1459,7 @@ const startCall = async (targetUser) => {
             console.log('✅ Added track:', track.kind);
           });
 
-          // Handle incoming tracks - FIXED
+         // Handle incoming tracks - FIXED
           peerConnection.ontrack = (event) => {
             console.log('🎥 RECEIVED REMOTE TRACK:', event.track.kind);
             
@@ -1469,20 +1469,20 @@ const startCall = async (targetUser) => {
               
               setRemoteStream(remoteStream);
               
-              // CRITICAL FIX: Force video to play
-              if (remoteVideoRef.current) {
-                remoteVideoRef.current.srcObject = remoteStream;
-                
-                const playVideo = () => {
-                  remoteVideoRef.current.play()
-                    .then(() => console.log('✅ Remote video playing'))
-                    .catch(err => {
-                      console.error('Retrying video play...');
-                      setTimeout(playVideo, 500);
-                    });
-                };
-                playVideo();
-              }
+              // CRITICAL FIX: Wait for element and stream, then attach and play
+              setTimeout(() => {
+                if (remoteVideoRef.current && remoteStream) {
+                  remoteVideoRef.current.srcObject = remoteStream;
+                  remoteVideoRef.current.load();
+                  
+                  remoteVideoRef.current.onloadedmetadata = () => {
+                    console.log('✅ Remote video metadata loaded');
+                    remoteVideoRef.current.play()
+                      .then(() => console.log('✅ Remote video playing'))
+                      .catch(err => console.error('Video play error:', err));
+                  };
+                }
+              }, 100);
             }
           };
 
@@ -2676,4 +2676,5 @@ const startCall = async (targetUser) => {
   </script>
 </body>
 </html>
+
 
