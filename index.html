@@ -1301,21 +1301,47 @@ const startCall = async (targetUser) => {
               
               setRemoteStream(remoteStream);
               
-              // CRITICAL FIX: Force video to play
-              if (remoteVideoRef.current) {
-                remoteVideoRef.current.srcObject = remoteStream;
-                
-                const playVideo = () => {
-                  remoteVideoRef.current.play()
-                    .then(() => console.log('✅ Remote video playing'))
-                    .catch(err => {
-                      console.error('Retrying video play...');
-                      setTimeout(playVideo, 500);
-                    });
-                };
-                playVideo();
-              }
+              // CRITICAL FIX: Wait for element and stream, then attach and play
+              setTimeout(() => {
+                if (remoteVideoRef.current && remoteStream) {
+                  remoteVideoRef.current.srcObject = remoteStream;
+                  remoteVideoRef.current.load();
+                  
+                  remoteVideoRef.current.onloadedmetadata = () => {
+                    console.log('✅ Remote video metadata loaded');
+                    remoteVideoRef.current.play()
+                      .then(() => console.log('✅ Remote video playing'))
+                      .catch(err => console.error('Video play error:', err));
+                  };
+                }
+              }, 100);
             }
+          };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
           };
 
           // Handle ICE candidates
@@ -1433,31 +1459,57 @@ const startCall = async (targetUser) => {
           // Create peer connection
           const configuration = {
             iceServers: [
-              { urls: 'stun:stun.l.google.com:19302' },
-              { urls: 'stun:stun1.l.google.com:19302' },
-              { urls: 'stun:stun2.l.google.com:19302' },
-              { urls: 'stun:stun3.l.google.com:19302' }
-            ],
-            iceCandidatePoolSize: 10
-          };
-          const peerConnection = new RTCPeerConnection(configuration);
-          peerConnectionRef.current = peerConnection;
-          
-          // Monitor connection
-          peerConnection.onconnectionstatechange = () => {
-            console.log('🔌 Connection state:', peerConnection.connectionState);
-            if (peerConnection.connectionState === 'disconnected' || 
-                peerConnection.connectionState === 'failed' || 
-                peerConnection.connectionState === 'closed') {
-              endCall();
+          // Handle incoming tracks - FIXED
+          peerConnection.ontrack = (event) => {
+            console.log('🎥 RECEIVED REMOTE TRACK:', event.track.kind);
+            
+            if (event.streams && event.streams[0]) {
+              const remoteStream = event.streams[0];
+              console.log('Remote stream tracks:', remoteStream.getTracks().length);
+              
+              setRemoteStream(remoteStream);
+              
+              // CRITICAL FIX: Wait for element and stream, then attach and play
+              setTimeout(() => {
+                if (remoteVideoRef.current && remoteStream) {
+                  remoteVideoRef.current.srcObject = remoteStream;
+                  remoteVideoRef.current.load();
+                  
+                  remoteVideoRef.current.onloadedmetadata = () => {
+                    console.log('✅ Remote video metadata loaded');
+                    remoteVideoRef.current.play()
+                      .then(() => console.log('✅ Remote video playing'))
+                      .catch(err => console.error('Video play error:', err));
+                  };
+                }
+              }, 100);
             }
           };
 
-          // CRITICAL FIX: Add tracks BEFORE setting remote description
-          stream.getTracks().forEach(track => {
-            peerConnection.addTrack(track, stream);
-            console.log('✅ Added track:', track.kind);
-          });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
           // Handle incoming tracks - FIXED
           peerConnection.ontrack = (event) => {
