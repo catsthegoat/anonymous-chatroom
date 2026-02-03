@@ -1282,6 +1282,7 @@ const configuration = {
   iceCandidatePoolSize: 10,
   iceTransportPolicy: 'all'
 };
+          
         const peerConnection = new RTCPeerConnection(configuration);
           peerConnectionRef.current = peerConnection;
           
@@ -1444,6 +1445,15 @@ const configuration = {
             localVideoRef.current.srcObject = stream;
           }
 
+
+
+// Set call state immediately
+          setInCall(true);
+          setCallWith(caller);
+          setIncomingCall(null);
+
+
+          
           // Create peer connection
 const configuration = {
   iceServers: [
@@ -1467,7 +1477,8 @@ const configuration = {
   ],
   iceCandidatePoolSize: 10,
   iceTransportPolicy: 'all'
-};rConnection = new RTCPeerConnection(configuration);
+};
+          const peerConnection = new RTCPeerConnection(configuration);
           peerConnectionRef.current = peerConnection;
           
           // Monitor connection
@@ -2727,6 +2738,7 @@ const kickUser = async (targetUser) => {
   </script>
 </body>
 </html>
+
 
 
 
