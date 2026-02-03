@@ -1277,7 +1277,7 @@ const startCall = async (targetUser) => {
             if (peerConnection.connectionState === 'disconnected' || 
                 peerConnection.connectionState === 'failed' || 
                 peerConnection.connectionState === 'closed') {
-              ();
+              endCall();
             }
           };
           
@@ -1381,7 +1381,7 @@ const startCall = async (targetUser) => {
             const data = snapshot.val();
             if (data && data.from === targetUser) {
               console.log('📞 Remote peer hung up');
-              ();
+              endCall();
               alert(`${targetUser} ended the call`);
             }
           });
@@ -1391,7 +1391,7 @@ const startCall = async (targetUser) => {
           declineRef.on('value', (snapshot) => {
             if (snapshot.val() === true) {
               console.log('📞 Call declined');
-              ();
+              endCall();
               alert(`${targetUser} declined your call`);
               db.ref(`calls/${currentRoom}/${username}`).remove();
             }
@@ -1449,7 +1449,7 @@ const startCall = async (targetUser) => {
             if (peerConnection.connectionState === 'disconnected' || 
                 peerConnection.connectionState === 'failed' || 
                 peerConnection.connectionState === 'closed') {
-              ();
+              endCall();
             }
           };
 
@@ -2705,5 +2705,6 @@ const kickUser = async (userToKick) => {
   </script>
 </body>
 </html>
+
 
 
