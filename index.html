@@ -1263,24 +1263,24 @@ const configuration = {
   iceServers: [
     { urls: 'stun:stun.l.google.com:19302' },
     { urls: 'stun:stun1.l.google.com:19302' },
+    { urls: 'stun:stun2.l.google.com:19302' },
     {
-      urls: 'turn:openrelay.metered.ca:80',
-      username: 'openrelayproject',
-      credential: 'openrelayproject'
+      urls: 'turn:numb.viagenie.ca',
+      credential: 'muazkh',
+      username: 'webrtc@live.com'
     },
     {
-      urls: 'turn:openrelay.metered.ca:443',
-      username: 'openrelayproject',
-      credential: 'openrelayproject'
+      urls: 'turn:192.158.29.39:3478?transport=udp',
+      credential: 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
+      username: '28224511:1379330808'
     },
     {
-      urls: 'turn:openrelay.metered.ca:443?transport=tcp',
-      username: 'openrelayproject',
-      credential: 'openrelayproject'
+      urls: 'turn:192.158.29.39:3478?transport=tcp',
+      credential: 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
+      username: '28224511:1379330808'
     }
   ],
-  iceCandidatePoolSize: 10,
-  iceTransportPolicy: 'all'
+  iceCandidatePoolSize: 10
 };
           
         const peerConnection = new RTCPeerConnection(configuration);
@@ -1309,24 +1309,30 @@ const configuration = {
          // Handle incoming tracks - FIXED
 peerConnection.ontrack = (event) => {
   console.log('🎥 RECEIVED REMOTE TRACK:', event.track.kind);
+  console.log('Track enabled:', event.track.enabled);
+  console.log('Track readyState:', event.track.readyState);
   
   if (event.streams && event.streams[0]) {
     const remoteStream = event.streams[0];
     console.log('Remote stream tracks:', remoteStream.getTracks().length);
     
-    // Set React state
     setRemoteStream(remoteStream);
     
-    // CRITICAL: Set video element DIRECTLY, don't wait for React
-    if (remoteVideoRef.current) {
-      remoteVideoRef.current.srcObject = remoteStream;
-      console.log('✅ Remote video element set directly');
-      
-      // Force play
-      remoteVideoRef.current.play()
-        .then(() => console.log('✅ Remote video playing'))
-        .catch(err => console.error('Video play error:', err));
-    }
+    // Wait a bit for the UI to render, then set video
+    setTimeout(() => {
+      if (remoteVideoRef.current) {
+        remoteVideoRef.current.srcObject = remoteStream;
+        console.log('✅ Remote video srcObject set');
+        
+        // Wait for loadedmetadata before playing
+        remoteVideoRef.current.onloadedmetadata = () => {
+          console.log('✅ Remote video metadata loaded');
+          remoteVideoRef.current.play()
+            .then(() => console.log('✅ Remote video playing'))
+            .catch(err => console.error('Play error:', err));
+        };
+      }
+    }, 500); // Longer delay to ensure UI is ready
   }
 };
           
@@ -1456,24 +1462,24 @@ const configuration = {
   iceServers: [
     { urls: 'stun:stun.l.google.com:19302' },
     { urls: 'stun:stun1.l.google.com:19302' },
+    { urls: 'stun:stun2.l.google.com:19302' },
     {
-      urls: 'turn:openrelay.metered.ca:80',
-      username: 'openrelayproject',
-      credential: 'openrelayproject'
+      urls: 'turn:numb.viagenie.ca',
+      credential: 'muazkh',
+      username: 'webrtc@live.com'
     },
     {
-      urls: 'turn:openrelay.metered.ca:443',
-      username: 'openrelayproject',
-      credential: 'openrelayproject'
+      urls: 'turn:192.158.29.39:3478?transport=udp',
+      credential: 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
+      username: '28224511:1379330808'
     },
     {
-      urls: 'turn:openrelay.metered.ca:443?transport=tcp',
-      username: 'openrelayproject',
-      credential: 'openrelayproject'
+      urls: 'turn:192.158.29.39:3478?transport=tcp',
+      credential: 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
+      username: '28224511:1379330808'
     }
   ],
-  iceCandidatePoolSize: 10,
-  iceTransportPolicy: 'all'
+  iceCandidatePoolSize: 10
 };
           const peerConnection = new RTCPeerConnection(configuration);
           peerConnectionRef.current = peerConnection;
@@ -2735,6 +2741,7 @@ const kickUser = async (targetUser) => {
   </script>
 </body>
 </html>
+
 
 
 
