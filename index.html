@@ -1554,33 +1554,32 @@ const startCall = async (targetUser) => {
       };
 
 
-const endCall = async () => {
-  addLog('Ending call...', 'call');
+const endCall = () => {
+  console.log('📞 Ending call');
   
-  // Stop all local media tracks
+  // CRITICAL FIX: Notify the other person
+  if (currentRoom && username && callWith) {
+    db.ref(`calls/${currentRoom}/${callWith}/hangup`).set({
+      from: username,
+      timestamp: Date.now()
+    });
+  }
+  
+  // CRITICAL FIX: Stop all tracks AND clear video elements
   if (localStream) {
     localStream.getTracks().forEach(track => {
       track.stop();
-      addLog(`Stopped ${track.kind} track`, 'call');
+      console.log('Stopped track:', track.kind);
     });
-    setLocalStream(null);
   }
   
-  // Stop all remote media tracks
   if (remoteStream) {
     remoteStream.getTracks().forEach(track => {
       track.stop();
     });
-    setRemoteStream(null);
   }
   
-  // Close peer connection
-  if (peerConnection) {
-    peerConnection.close();
-    setPeerConnection(null);
-  }
-  
-  // Clear video elements
+  // Clear video element sources
   if (localVideoRef.current) {
     localVideoRef.current.srcObject = null;
   }
@@ -1588,20 +1587,27 @@ const endCall = async () => {
     remoteVideoRef.current.srcObject = null;
   }
   
-  // Clear call state in database
-  if (activeRoom && username) {
-    await rtdb.ref(`calls/${activeRoom}/${username}`).remove();
+  // Close peer connection
+  if (peerConnectionRef.current) {
+    peerConnectionRef.current.close();
+    peerConnectionRef.current = null;
+  }
+
+  // Clean up Firebase
+  if (currentRoom && username) {
+    db.ref(`calls/${currentRoom}/${username}`).remove();
     if (callWith) {
-      await rtdb.ref(`calls/${activeRoom}/${callWith}`).remove();
+      db.ref(`calls/${currentRoom}/${callWith}/candidates/${username}`).remove();
     }
   }
-  
+
   setInCall(false);
   setCallWith(null);
+  setLocalStream(null);
+  setRemoteStream(null);
   setIsMuted(false);
   setIsVideoOff(false);
-  
-  addLog('Call ended, all tracks stopped', 'call');
+  addDebugLog('Call ended', 'info');
 };
 
       const toggleMute = () => {
@@ -1644,16 +1650,6 @@ const endCall = async () => {
             video: { width: { ideal: 1280 }, height: { ideal: 720 } }, 
             audio: { echoCancellation: true, noiseSuppression: true }
           });
-
-
-
-// Set local video IMMEDIATELY after getting stream
-if (localVideoRef.current) {
-  localVideoRef.current.srcObject = stream;
-  addLog('Local video set for answerer', 'call');
-}
-setLocalStream(stream);
-          
           
           setLocalStream(stream);
           if (localVideoRef.current) {
@@ -1705,15 +1701,11 @@ setLocalStream(stream);
         localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
         
         pc.ontrack = (event) => {
-  addLog('Received remote track', 'call');
-  if (event.streams && event.streams[0]) {
-    setRemoteStream(event.streams[0]);
-    if (remoteVideoRef.current) {
-      remoteVideoRef.current.srcObject = event.streams[0];
-      addLog('Remote video element updated', 'call');
-    }
-  }
-};
+          if (event.streams[0]) {
+            participantStreamsRef.current[participant] = event.streams[0];
+            setGroupCallParticipants(prev => [...prev]);
+          }
+        };
         
         pc.onicecandidate = (event) => {
           if (event.candidate) {
@@ -1977,34 +1969,37 @@ setLocalStream(stream);
         }
       };
   
-const kickUser = async (userToKick) => {
-  if (!activeRoom || !username) return;
+const kickUser = async (targetUser) => {
+  const currentRoomData = rooms.find(r => r.id === currentRoom);
+  if (!currentRoomData || (currentRoomData.owner !== username && username !== 'emmaowner')) {
+    alert('❌ Only the room owner can kick users!');
+    addDebugLog('Kick denied: not owner', 'warning');
+    return;
+  }
+  if (!confirm(`⚠️ Kick ${targetUser} from the room?`)) return;
   
   try {
-    const roomRef = rtdb.ref(`rooms/${activeRoom}`);
-    const roomSnapshot = await roomRef.once('value');
-    const roomData = roomSnapshot.val();
+    // Remove user from room
+    await db.ref(`roomUsers/${currentRoom}/${targetUser}`).remove();
     
-    if (roomData && roomData.creator === username) {
-      // Remove user from room members
-      await rtdb.ref(`rooms/${activeRoom}/members/${userToKick}`).remove();
-      
-      // Set kicked flag for the user
-      await rtdb.ref(`rooms/${activeRoom}/kicked/${userToKick}`).set(true);
-      
-      // Send system message
-      await rtdb.ref(`rooms/${activeRoom}/messages`).push({
-        username: 'System',
-        message: `${userToKick} has been kicked from the room`,
-        timestamp: Date.now(),
-        isSystem: true
-      });
-      
-      addLog(`Kicked ${userToKick} from ${activeRoom}`, 'kick');
-      alert(`${userToKick} has been kicked from the room`);
-    }
-  } catch (error) {
-    addLog(`Error kicking user: ${error.message}`, 'error');
+    // Mark them as kicked so they can't rejoin
+    await db.ref(`kicked/${currentRoom}/${targetUser}`).set(true);
+    
+    // Send system message
+    const msgId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+    const systemMsg = {
+      id: msgId,
+      type: 'system',
+      text: `${targetUser} was kicked from the room`,
+      timestamp: Date.now()
+    };
+    await db.ref(`messages/${currentRoom}/${msgId}`).set(systemMsg);
+    
+    addDebugLog(`Kicked user: ${targetUser}`, 'success');
+    alert(`✅ ${targetUser} has been kicked!`);
+  } catch (err) {
+    setError('Failed to kick user');
+    addDebugLog(`Kick error: ${err.message}`, 'error');
   }
 };
 
@@ -2238,7 +2233,7 @@ const kickUser = async (userToKick) => {
                             </button>
                           )}
                           {isOwner && user !== username && (
-                            <button onClick={() => User(user)} style={{ background: 'transparent', border: 'none', color: '#ff6666', cursor: 'pointer', padding: '0 5px' }}>
+                            <button onClick={() => kickUser(user)} style={{ background: 'transparent', border: 'none', color: '#ff6666', cursor: 'pointer', padding: '0 5px' }}>
                               <UserX style={{ width: '14px', height: '14px' }} />
                             </button>
                           )}
@@ -2511,7 +2506,7 @@ const kickUser = async (userToKick) => {
                       {isVideoOff ? '📹' : '📷'}
                     </button>
                     <button 
-                      onClick={} 
+                      onClick={endCall} 
                       className="call-btn end"
                       title="End call"
                     >
@@ -2705,6 +2700,4 @@ const kickUser = async (userToKick) => {
   </script>
 </body>
 </html>
-
-
 
