@@ -1449,11 +1449,17 @@ const startCall = async (targetUser) => {
           const response = await fetch("https://anonymouschatrooms.metered.live/api/v1/turn/credentials?apiKey=fa754f2f657d2fc740d9678ec728daf430ad");
           const iceServers = await response.json();
           
+// Fetch TURN credentials dynamically
+          const response = await fetch("https://anonymouschatrooms.metered.live/api/v1/turn/credentials?apiKey=fa754f2f657d2fc740d9678ec728daf430ad");
+          const iceServers = await response.json();
+          
           // Create peer connection
           const configuration = {
             iceServers: iceServers,
             iceCandidatePoolSize: 10
           };
+          const peerConnection = new RTCPeerConnection(configuration);
+          peerConnectionRef.current = peerConnection;
           
           // Monitor connection
           peerConnection.onconnectionstatechange = () => {
@@ -2718,6 +2724,7 @@ const kickUser = async (targetUser) => {
   </script>
 </body>
 </html>
+
 
 
 
