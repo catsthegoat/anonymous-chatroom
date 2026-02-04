@@ -1259,29 +1259,16 @@ const startCall = async (targetUser) => {
           }
 
           // Create peer connection
-const configuration = {
-  iceServers: [
-    { urls: 'stun:stun.l.google.com:19302' },
-    { urls: 'stun:stun1.l.google.com:19302' },
-    { urls: 'stun:stun2.l.google.com:19302' },
-    {
-      urls: 'turn:numb.viagenie.ca',
-      credential: 'muazkh',
-      username: 'webrtc@live.com'
-    },
-    {
-      urls: 'turn:192.158.29.39:3478?transport=udp',
-      credential: 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
-      username: '28224511:1379330808'
-    },
-    {
-      urls: 'turn:192.158.29.39:3478?transport=tcp',
-      credential: 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
-      username: '28224511:1379330808'
-    }
-  ],
-  iceCandidatePoolSize: 10
-};
+// Create peer connection
+          const configuration = {
+            iceServers: [
+              { urls: 'stun:stun.l.google.com:19302' },
+              { urls: 'stun:stun1.l.google.com:19302' },
+              { urls: 'stun:stun2.l.google.com:19302' },
+              { urls: 'stun:stun3.l.google.com:19302' }
+            ],
+            iceCandidatePoolSize: 10
+          };
           
         const peerConnection = new RTCPeerConnection(configuration);
           peerConnectionRef.current = peerConnection;
@@ -1307,34 +1294,36 @@ const configuration = {
           });
 
          // Handle incoming tracks - FIXED
-peerConnection.ontrack = (event) => {
-  console.log('🎥 RECEIVED REMOTE TRACK:', event.track.kind);
-  console.log('Track enabled:', event.track.enabled);
-  console.log('Track readyState:', event.track.readyState);
-  
-  if (event.streams && event.streams[0]) {
-    const remoteStream = event.streams[0];
-    console.log('Remote stream tracks:', remoteStream.getTracks().length);
-    
-    setRemoteStream(remoteStream);
-    
-    // Wait a bit for the UI to render, then set video
-    setTimeout(() => {
-      if (remoteVideoRef.current) {
-        remoteVideoRef.current.srcObject = remoteStream;
-        console.log('✅ Remote video srcObject set');
-        
-        // Wait for loadedmetadata before playing
-        remoteVideoRef.current.onloadedmetadata = () => {
-          console.log('✅ Remote video metadata loaded');
-          remoteVideoRef.current.play()
-            .then(() => console.log('✅ Remote video playing'))
-            .catch(err => console.error('Play error:', err));
-        };
-      }
-    }, 500); // Longer delay to ensure UI is ready
-  }
-};
+// Handle incoming tracks - FIXED
+          peerConnection.ontrack = (event) => {
+            console.log('🎥 RECEIVED REMOTE TRACK:', event.track.kind);
+            console.log('Track enabled:', event.track.enabled);
+            console.log('Track readyState:', event.track.readyState);
+            
+            if (event.streams && event.streams[0]) {
+              const remoteStream = event.streams[0];
+              console.log('Remote stream tracks:', remoteStream.getTracks().length);
+              
+              setRemoteStream(remoteStream);
+              
+              // Force immediate attachment
+              if (remoteVideoRef.current) {
+                remoteVideoRef.current.srcObject = remoteStream;
+                console.log('✅ Remote video srcObject set');
+                
+                // Force play immediately
+                remoteVideoRef.current.play()
+                  .then(() => console.log('✅ Remote video playing'))
+                  .catch(err => {
+                    console.error('Play error:', err);
+                    // Retry after a short delay
+                    setTimeout(() => {
+                      remoteVideoRef.current.play().catch(e => console.error('Retry failed:', e));
+                    }, 500);
+                  });
+              }
+            }
+          };
           
           // Handle ICE candidates
           peerConnection.onicecandidate = (event) => {
@@ -1458,29 +1447,16 @@ peerConnection.ontrack = (event) => {
 
           
           // Create peer connection
-const configuration = {
-  iceServers: [
-    { urls: 'stun:stun.l.google.com:19302' },
-    { urls: 'stun:stun1.l.google.com:19302' },
-    { urls: 'stun:stun2.l.google.com:19302' },
-    {
-      urls: 'turn:numb.viagenie.ca',
-      credential: 'muazkh',
-      username: 'webrtc@live.com'
-    },
-    {
-      urls: 'turn:192.158.29.39:3478?transport=udp',
-      credential: 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
-      username: '28224511:1379330808'
-    },
-    {
-      urls: 'turn:192.158.29.39:3478?transport=tcp',
-      credential: 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
-      username: '28224511:1379330808'
-    }
-  ],
-  iceCandidatePoolSize: 10
-};
+// Create peer connection
+          const configuration = {
+            iceServers: [
+              { urls: 'stun:stun.l.google.com:19302' },
+              { urls: 'stun:stun1.l.google.com:19302' },
+              { urls: 'stun:stun2.l.google.com:19302' },
+              { urls: 'stun:stun3.l.google.com:19302' }
+            ],
+            iceCandidatePoolSize: 10
+          };
           const peerConnection = new RTCPeerConnection(configuration);
           peerConnectionRef.current = peerConnection;
           
@@ -2504,12 +2480,18 @@ const kickUser = async (targetUser) => {
             {inCall && (
               <div className="video-call-modal">
                 <div className="video-container">
-                  <video 
+<video 
                     ref={remoteVideoRef} 
                     autoPlay 
-                    playsInline 
+                    playsInline
+                    controls={false}
                     className="remote-video"
-                    style={{ display: remoteStream ? 'block' : 'none' }}
+                    style={{ 
+                      display: remoteStream ? 'block' : 'none',
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover'
+                    }}
                   />
                   {!remoteStream && (
                     <div className="call-status">
@@ -2741,6 +2723,7 @@ const kickUser = async (targetUser) => {
   </script>
 </body>
 </html>
+
 
 
 
