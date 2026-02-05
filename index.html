@@ -27,6 +27,17 @@
       50% { filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.8)); }
     }
 
+    @keyframes slideIn {
+      from {
+        transform: translateX(-100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
     .glow {
       animation: glow 2s ease-in-out infinite;
     }
@@ -1088,6 +1099,7 @@
       const [mediaRecorder, setMediaRecorder] = useState(null);
       const [recordingTime, setRecordingTime] = useState(0);
       const [captureMode, setCaptureMode] = useState('photo'); // 'photo' or 'video'
+      const [inCallNotifications, setInCallNotifications] = useState([]);
 
       const messagesEndRef = useRef(null);
       const typingTimeoutRef = useRef(null);
@@ -1200,6 +1212,34 @@
       useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
       }, [messages]);
+
+      // Show notification for new messages during calls
+      useEffect(() => {
+        if (inCall && messages.length > 0) {
+          const lastMessage = messages[messages.length - 1];
+          // Only show notification if it's not from the current user and it's a recent message
+          if (lastMessage.username !== username && Date.now() - lastMessage.timestamp < 2000) {
+            const notifId = Date.now().toString();
+            const newNotif = {
+              id: notifId,
+              from: lastMessage.username,
+              text: lastMessage.type === 'snap' ? '📸 Sent a snap' : lastMessage.text,
+              timestamp: Date.now()
+            };
+            
+            setInCallNotifications(prev => [...prev, newNotif]);
+            
+            // Auto-dismiss after 10 seconds
+            setTimeout(() => {
+              setInCallNotifications(prev => prev.filter(n => n.id !== notifId));
+            }, 10000);
+          }
+        }
+      }, [messages, inCall, username]);
+
+      const dismissNotification = (notifId) => {
+        setInCallNotifications(prev => prev.filter(n => n.id !== notifId));
+      };
 
       useEffect(() => {
         if (username && currentRoom) {
@@ -2788,7 +2828,7 @@ const kickUser = async (targetUser) => {
             {inCall && (
               <div className="video-call-modal">
                 <div className="video-container">
-<video 
+                  <video 
                     ref={remoteVideoRef} 
                     autoPlay 
                     playsInline
@@ -2808,19 +2848,119 @@ const kickUser = async (targetUser) => {
                       <div style={{ fontSize: '14px', color: '#999', marginTop: '10px' }}>Waiting for them to answer...</div>
                     </div>
                   )}
-                  <video 
-                    ref={localVideoRef} 
-                    autoPlay 
-                    playsInline 
-                    muted 
-                    className="local-video"
-                    
-                  />
-                  {isVideoOff && (
-                    <div className="local-video" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#1a1a1a' }}>
+                  
+                  {/* Local video - always show for both users */}
+                  {!isVideoOff ? (
+                    <video 
+                      ref={localVideoRef} 
+                      autoPlay 
+                      playsInline 
+                      muted 
+                      className="local-video"
+                      style={{
+                        position: 'absolute',
+                        top: '20px',
+                        right: '20px',
+                        width: '150px',
+                        height: '200px',
+                        borderRadius: '15px',
+                        border: '2px solid #fff',
+                        objectFit: 'cover',
+                        boxShadow: '0 4px 15px rgba(0,0,0,0.5)',
+                        zIndex: 10,
+                        display: 'block'
+                      }}
+                    />
+                  ) : (
+                    <div 
+                      className="local-video" 
+                      style={{ 
+                        position: 'absolute',
+                        top: '20px',
+                        right: '20px',
+                        width: '150px',
+                        height: '200px',
+                        borderRadius: '15px',
+                        border: '2px solid #fff',
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center', 
+                        background: '#1a1a1a',
+                        boxShadow: '0 4px 15px rgba(0,0,0,0.5)',
+                        zIndex: 10
+                      }}
+                    >
                       <span style={{ fontSize: '48px' }}>📹</span>
                     </div>
                   )}
+                  
+                  {/* In-call chat notifications */}
+                  {inCallNotifications.map(notif => (
+                    <div
+                      key={notif.id}
+                      style={{
+                        position: 'absolute',
+                        top: '20px',
+                        left: '20px',
+                        maxWidth: '300px',
+                        background: 'rgba(0, 0, 0, 0.9)',
+                        border: '1px solid rgba(255, 255, 255, 0.3)',
+                        borderRadius: '15px',
+                        padding: '15px',
+                        zIndex: 10,
+                        animation: 'slideIn 0.3s ease-out',
+                        backdropFilter: 'blur(10px)',
+                        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.5)'
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                        <div style={{ fontWeight: 'bold', fontSize: '14px' }}>💬 {notif.from}</div>
+                        <button
+                          onClick={() => dismissNotification(notif.id)}
+                          style={{
+                            background: 'transparent',
+                            border: 'none',
+                            color: '#999',
+                            cursor: 'pointer',
+                            fontSize: '16px',
+                            padding: '0 5px'
+                          }}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                      <div style={{ 
+                        fontSize: '13px', 
+                        color: '#ccc', 
+                        marginBottom: '10px',
+                        wordBreak: 'break-word',
+                        maxHeight: '60px',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis'
+                      }}>
+                        {notif.text}
+                      </div>
+                      <button
+                        onClick={() => dismissNotification(notif.id)}
+                        style={{
+                          background: 'rgba(255, 255, 255, 0.2)',
+                          border: '1px solid rgba(255, 255, 255, 0.3)',
+                          color: '#fff',
+                          padding: '6px 12px',
+                          borderRadius: '8px',
+                          fontSize: '12px',
+                          cursor: 'pointer',
+                          width: '100%',
+                          transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.3)'}
+                        onMouseLeave={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.2)'}
+                      >
+                        Dismiss
+                      </button>
+                    </div>
+                  ))}
+
                   <div className="call-controls">
                     <button 
                       onClick={toggleMute} 
