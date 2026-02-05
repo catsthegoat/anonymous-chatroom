@@ -1241,6 +1241,15 @@
         setInCallNotifications(prev => prev.filter(n => n.id !== notifId));
       };
 
+      // Ensure local video is attached when stream is available
+      useEffect(() => {
+        if (localStream && localVideoRef.current && inCall) {
+          console.log('🎥 Attaching local stream to video element');
+          localVideoRef.current.srcObject = localStream;
+          localVideoRef.current.play().catch(err => console.error('Local video play error:', err));
+        }
+      }, [localStream, inCall]);
+
       useEffect(() => {
         if (username && currentRoom) {
           addDebugLog(`Joined room ${currentRoom}`, 'success');
@@ -1287,6 +1296,24 @@
         roomsRef.on('value', handleRooms);
         return () => roomsRef.off('value', handleRooms);
       }, []);
+
+      // Prevent accidental tab closing when user is active in the chat
+      useEffect(() => {
+        const handleBeforeUnload = (e) => {
+          // Only show warning if user is logged in and in a room
+          if (username && currentRoom) {
+            e.preventDefault();
+            e.returnValue = ''; // Chrome requires returnValue to be set
+            return ''; // Some browsers show this message
+          }
+        };
+
+        window.addEventListener('beforeunload', handleBeforeUnload);
+        
+        return () => {
+          window.removeEventListener('beforeunload', handleBeforeUnload);
+        };
+      }, [username, currentRoom]);
 
       useEffect(() => {
         if (currentRoom) {
@@ -1605,9 +1632,15 @@ const startCall = async (targetUser) => {
           setCallWith(targetUser);
           
           setLocalStream(stream);
-          if (localVideoRef.current) {
-            localVideoRef.current.srcObject = stream;
-          }
+          
+          // Wait for React to render the video element, then attach stream
+          setTimeout(() => {
+            if (localVideoRef.current && stream) {
+              console.log('🎥 Attaching local stream to video element (caller)');
+              localVideoRef.current.srcObject = stream;
+              localVideoRef.current.play().catch(err => console.error('Local video play error:', err));
+            }
+          }, 100);
 
 // Fetch TURN credentials dynamically
           const response = await fetch("https://anonymouschatrooms.metered.live/api/v1/turn/credentials?apiKey=fa754f2f657d2fc740d9678ec728daf430ad");
@@ -1783,16 +1816,20 @@ const startCall = async (targetUser) => {
           
           console.log('✅ Got local stream');
           setLocalStream(stream);
-          if (localVideoRef.current) {
-            localVideoRef.current.srcObject = stream;
-          }
 
-
-
-// Set call state immediately
+          // Set call state immediately
           setInCall(true);
           setCallWith(caller);
           setIncomingCall(null);
+
+          // Wait for React to render the video element, then attach stream
+          setTimeout(() => {
+            if (localVideoRef.current && stream) {
+              console.log('🎥 Attaching local stream to video element (answerer)');
+              localVideoRef.current.srcObject = stream;
+              localVideoRef.current.play().catch(err => console.error('Local video play error:', err));
+            }
+          }, 100);
 
 
           
