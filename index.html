@@ -1545,9 +1545,10 @@ const startCall = async (targetUser) => {
           // Get local media stream with better constraints
           const stream = await navigator.mediaDevices.getUserMedia({ 
             video: {
-              width: { ideal: 1280 },
-              height: { ideal: 720 },
-              facingMode: 'user'
+              width: { ideal: 640 },
+              height: { ideal: 480 },
+              facingMode: 'user',
+              frameRate: { ideal: 24, max: 30 }
             }, 
             audio: {
               echoCancellation: true,
@@ -1728,9 +1729,10 @@ const startCall = async (targetUser) => {
           // Get local media stream
           const stream = await navigator.mediaDevices.getUserMedia({ 
             video: {
-              width: { ideal: 1280 },
-              height: { ideal: 720 },
-              facingMode: 'user'
+              width: { ideal: 640 },
+              height: { ideal: 480 },
+              facingMode: 'user',
+              frameRate: { ideal: 24, max: 30 }
             }, 
             audio: {
               echoCancellation: true,
@@ -2812,7 +2814,7 @@ const kickUser = async (targetUser) => {
                     playsInline 
                     muted 
                     className="local-video"
-                    style={{ display: isVideoOff ? 'none' : 'block' }}
+                    
                   />
                   {isVideoOff && (
                     <div className="local-video" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#1a1a1a' }}>
