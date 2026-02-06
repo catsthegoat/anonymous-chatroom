@@ -360,54 +360,6 @@
       border-radius: 20px;
       background: #000;
     }
-    .remote-video {
-      width: 80%;
-      max-width: 800px;
-      height: auto;
-      max-height: 70vh;
-      object-fit: contain;
-      border-radius: 20px;
-      background: #000;
-    }
-    .remote-video {
-      width: 80%;
-      max-width: 800px;
-      height: auto;
-      max-height: 70vh;
-      object-fit: contain;
-      border-radius: 20px;
-      background: #000;
-    }
-    .remote-video {
-      width: 80%;
-      max-width: 800px;
-      height: auto;
-      max-height: 70vh;
-      object-fit: contain;
-      border-radius: 20px;
-      background: #000;
-    }
-    .remote-video {
-      width: 80%;
-      max-width: 800px;
-      height: auto;
-      max-height: 70vh;
-      object-fit: contain;
-      border-radius: 20px;
-      background: #000;
-    }
-    .remote-video {
-      width: 80%;
-      max-width: 800px;
-      height: auto;
-      max-height: 70vh;
-      object-fit: contain;
-      border-radius: 20px;
-      background: #000;
-    }
-    .remote-video {
-      width: 80%;
-      max-width: 800px;
       height: auto;
       max-height: 70vh;
       object-fit: contain;
@@ -425,116 +377,7 @@
       border-radius: 15px;
       border: 3px solid #fff;
       box-shadow: 0 5px 30px rgba(0, 0, 0, 0.5);
-    }
-    .local-video {
-      position: absolute;
-      bottom: 140px;
-      right: 20px;
-      width: 150px;
-      height: 120px;
-      object-fit: cover;
-      border-radius: 15px;
-      border: 3px solid #fff;
-      box-shadow: 0 5px 30px rgba(0, 0, 0, 0.5);
-    }
-    .local-video {
-      position: absolute;
-      bottom: 140px;
-      right: 20px;
-      width: 150px;
-      height: 120px;
-      object-fit: cover;
-      border-radius: 15px;
-      border: 3px solid #fff;
-      box-shadow: 0 5px 30px rgba(0, 0, 0, 0.5);
-    }
-    .local-video {
-      position: absolute;
-      bottom: 140px;
-      right: 20px;
-      width: 150px;
-      height: 120px;
-      object-fit: cover;
-      border-radius: 15px;
-      border: 3px solid #fff;
-      box-shadow: 0 5px 30px rgba(0, 0, 0, 0.5);
-    }
-    .local-video {
-      position: absolute;
-      bottom: 140px;
-      right: 20px;
-      width: 150px;
-      height: 120px;
-      object-fit: cover;
-      border-radius: 15px;
-      border: 3px solid #fff;
-      box-shadow: 0 5px 30px rgba(0, 0, 0, 0.5);
-    }
-    .local-video {
-      position: absolute;
-      bottom: 140px;
-      right: 20px;
-      width: 150px;
-      height: 120px;
-      object-fit: cover;
-      border-radius: 15px;
-      border: 3px solid #fff;
-      box-shadow: 0 5px 30px rgba(0, 0, 0, 0.5);
-    }
-    .local-video {
-      position: absolute;
-      bottom: 140px;
-      right: 20px;
-      width: 150px;
-      height: 120px;
-      object-fit: cover;
-      border-radius: 15px;
-      border: 3px solid #fff;
-      box-shadow: 0 5px 30px rgba(0, 0, 0, 0.5);
-    }
-    .local-video {
-      position: absolute;
-      bottom: 140px;
-      right: 20px;
-      width: 150px;
-      height: 120px;
-      object-fit: cover;
-      border-radius: 15px;
-      border: 3px solid #fff;
-      box-shadow: 0 5px 30px rgba(0, 0, 0, 0.5);
-    }
-    .local-video {
-      position: absolute;
-      bottom: 140px;
-      right: 20px;
-      width: 150px;
-      height: 120px;
-      object-fit: cover;
-      border-radius: 15px;
-      border: 3px solid #fff;
-      box-shadow: 0 5px 30px rgba(0, 0, 0, 0.5);
-    }
-    .local-video {
-      position: absolute;
-      bottom: 140px;
-      right: 20px;
-      width: 150px;
-      height: 120px;
-      object-fit: cover;
-      border-radius: 15px;
-      border: 3px solid #fff;
-      box-shadow: 0 5px 30px rgba(0, 0, 0, 0.5);
-    }
-    .local-video {
-      position: absolute;
-      bottom: 140px;
-      right: 20px;
-      width: 150px;
-      height: 120px;
-      object-fit: cover;
-      border-radius: 15px;
-      border: 3px solid #fff;
-      box-shadow: 0 5px 30px rgba(0, 0, 0, 0.5);
+      transform: scaleX(-1);
     }
 
     .call-controls {
@@ -1085,7 +928,11 @@
       const [openGameWindows, setOpenGameWindows] = useState([]);
       const [inCall, setInCall] = useState(false);
       const [callWith, setCallWith] = useState(null);
+      const [groupCallParticipants, setGroupCallParticipants] = useState([]);
+      const [peerConnections, setPeerConnections] = useState({});
       const [incomingCall, setIncomingCall] = useState(null);
+
+      const [isGroupCall, setIsGroupCall] = useState(false);
       const [localStream, setLocalStream] = useState(null);
       const [remoteStream, setRemoteStream] = useState(null);
       const [isMuted, setIsMuted] = useState(false);
@@ -1109,6 +956,8 @@
       const snapVideoRef = useRef(null);
       const snapCanvasRef = useRef(null);
       const recordingIntervalRef = useRef(null);
+      const groupPeerConnectionsRef = useRef({});
+      const participantStreamsRef = useRef({});
 
       const addDebugLog = (message, type = 'info') => {
         addDebugLogGlobal(message, type);
@@ -2594,6 +2443,11 @@ const kickUser = async (targetUser) => {
                     </div>
                   </div>
                   <div style={{ display: 'flex', gap: '10px' }}>
+                    {!inCall && roomUsers.length > 2 && (
+                      <button onClick={startGroupCall} className="glow-button" style={{ background: '#1a1a1a', color: '#00ff88', padding: '10px 20px', borderRadius: '8px', border: '1px solid #00ff88', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        📞 Group Call
+                      </button>
+                    )}
                     {isOwner && (
                       <button onClick={clearAllMessages} style={{ background: '#2a0000', border: '1px solid #ff0000', color: '#ff6666', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <Trash /> Clear All
@@ -2863,6 +2717,71 @@ const kickUser = async (targetUser) => {
 
             {/* Video Call Modal */}
             {inCall && (
+
+            {/* Group Call Modal */}
+            {isGroupCall && inCall && (
+              <div className="video-call-modal">
+                <div style={{ padding: '20px', background: '#0a0a0a', borderBottom: '1px solid #333' }}>
+                  <h3 style={{ margin: 0, fontSize: '18px' }}>Group Call - {groupCallParticipants.length + 1} participants</h3>
+                </div>
+                <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '10px', padding: '20px', overflow: 'auto' }}>
+                  {/* Local video */}
+                  <div style={{ position: 'relative', background: '#000', borderRadius: '15px', overflow: 'hidden', aspectRatio: '4/3' }}>
+                    <video 
+                      ref={localVideoRef} 
+                      autoPlay 
+                      playsInline 
+                      muted 
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+                    <div style={{ position: 'absolute', bottom: '10px', left: '10px', background: 'rgba(0,0,0,0.7)', padding: '5px 10px', borderRadius: '8px', fontSize: '14px' }}>
+                      You
+                    </div>
+                  </div>
+                  {/* Remote videos */}
+                  {groupCallParticipants.map(participant => (
+                    <div key={participant} style={{ position: 'relative', background: '#1a1a1a', borderRadius: '15px', overflow: 'hidden', aspectRatio: '4/3', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {participantStreamsRef.current[participant] ? (
+                        <video 
+                          autoPlay 
+                          playsInline 
+                          ref={el => { if (el) el.srcObject = participantStreamsRef.current[participant]; }}
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        />
+                      ) : (
+                        <div style={{ fontSize: '48px' }}>📞</div>
+                      )}
+                      <div style={{ position: 'absolute', bottom: '10px', left: '10px', background: 'rgba(0,0,0,0.7)', padding: '5px 10px', borderRadius: '8px', fontSize: '14px' }}>
+                        {participant}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="call-controls">
+                  <button 
+                    onClick={toggleMute} 
+                    className={`call-btn mute ${isMuted ? 'active' : ''}`}
+                    title={isMuted ? 'Unmute' : 'Mute'}
+                  >
+                    {isMuted ? '🔇' : '🎤'}
+                  </button>
+                  <button 
+                    onClick={toggleVideo} 
+                    className={`call-btn video-toggle ${isVideoOff ? 'active' : ''}`}
+                    title={isVideoOff ? 'Turn on camera' : 'Turn off camera'}
+                  >
+                    {isVideoOff ? '📹' : '📷'}
+                  </button>
+                  <button 
+                    onClick={endGroupCall} 
+                    className="call-btn end"
+                    title="Leave call"
+                  >
+                    ☎️
+                  </button>
+                </div>
+              </div>
+            )}
               <div className="video-call-modal">
                 <div className="video-container">
                   <video 
