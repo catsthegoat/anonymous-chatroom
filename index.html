@@ -1795,6 +1795,7 @@ const startCall = async (targetUser) => {
           
           setInCall(true);
           setCallWith(targetUser);
+          setViewMode('videoCall');
           
           setLocalStream(stream);
           
@@ -1986,6 +1987,7 @@ const startCall = async (targetUser) => {
           setInCall(true);
           setCallWith(caller);
           setIncomingCall(null);
+          setViewMode('videoCall');
 
           // Wait for React to render the video element, then attach stream
           setTimeout(() => {
@@ -2229,6 +2231,8 @@ const endCall = () => {
           setIsGroupCall(true);
           setInCall(true);
           
+          setShowGroupCallModal(false);
+          setViewMode('videoCall');
           // Announce joining
           await db.ref(`groupCalls/${currentRoom}/participants/${username}`).set({
             joined: Date.now(),
