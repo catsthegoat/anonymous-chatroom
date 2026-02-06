@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Anonymous Chatrooms - Group Calls</title>
+  <title>Anonymous Chatrooms</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
@@ -194,90 +194,6 @@
       border-radius: 8px;
     }
 
-    /* Group Call Styles */
-    .group-call-grid {
-      display: grid;
-      gap: 10px;
-      padding: 10px;
-      height: calc(100% - 80px);
-      width: 100%;
-      grid-auto-rows: 1fr;
-    }
-
-    .group-call-grid.participants-1 {
-      grid-template-columns: 1fr;
-    }
-
-    .group-call-grid.participants-2 {
-      grid-template-columns: repeat(2, 1fr);
-    }
-
-    .group-call-grid.participants-3,
-    .group-call-grid.participants-4 {
-      grid-template-columns: repeat(2, 1fr);
-    }
-
-    .group-call-grid.participants-5,
-    .group-call-grid.participants-6 {
-      grid-template-columns: repeat(3, 1fr);
-    }
-
-    .group-call-grid.participants-7,
-    .group-call-grid.participants-8,
-    .group-call-grid.participants-9 {
-      grid-template-columns: repeat(3, 1fr);
-    }
-
-    .participant-video-container {
-      position: relative;
-      background: #1a1a1a;
-      border-radius: 15px;
-      overflow: hidden;
-      border: 2px solid rgba(255, 255, 255, 0.1);
-      transition: all 0.3s;
-    }
-
-    .participant-video-container:hover {
-      border-color: rgba(255, 255, 255, 0.3);
-      box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
-    }
-
-    .participant-video-container.speaking {
-      border-color: #00ff00;
-      box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
-    }
-
-    .participant-video {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .participant-info {
-      position: absolute;
-      bottom: 10px;
-      left: 10px;
-      background: rgba(0, 0, 0, 0.7);
-      padding: 5px 12px;
-      border-radius: 20px;
-      font-size: 14px;
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      backdrop-filter: blur(10px);
-    }
-
-    .participant-status {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .status-icon {
-      font-size: 12px;
-    }
-
     .snap-camera-modal {
       position: fixed;
       top: 0;
@@ -330,6 +246,12 @@
       border: 5px solid rgba(255, 255, 255, 0.3);
       cursor: pointer;
       transition: all 0.2s;
+      box-shadow: 0 4px 15px rgba(255, 255, 255, 0.4);
+    }
+
+    .snap-capture-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 20px rgba(255, 255, 255, 0.6);
     }
 
     .snap-capture-btn:active {
@@ -340,8 +262,8 @@
       width: 50px;
       height: 50px;
       border-radius: 50%;
-      background: rgba(255, 255, 255, 0.2);
-      border: 2px solid rgba(255, 255, 255, 0.3);
+      background: rgba(0, 0, 0, 0.6);
+      border: 2px solid #fff;
       color: #fff;
       font-size: 24px;
       cursor: pointer;
@@ -353,7 +275,32 @@
     }
 
     .snap-action-btn:hover {
-      background: rgba(255, 255, 255, 0.3);
+      background: rgba(255, 255, 255, 0.2);
+      transform: scale(1.1);
+    }
+
+    .snap-close-btn {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.6);
+      border: 2px solid #fff;
+      color: #fff;
+      font-size: 24px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      backdrop-filter: blur(10px);
+      z-index: 11;
+    }
+
+    .snap-close-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
       transform: scale(1.1);
     }
 
@@ -362,685 +309,1147 @@
       bottom: 30px;
       right: 30px;
       padding: 15px 30px;
-      background: #00ff00;
+      border-radius: 50px;
+      background: #fff;
       color: #000;
       border: none;
-      border-radius: 50px;
       font-size: 18px;
       font-weight: bold;
       cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 4px 15px rgba(255, 255, 255, 0.4);
       transition: all 0.2s;
-      box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+      z-index: 11;
     }
 
     .snap-send-btn:hover {
-      background: #00dd00;
+      background: #ffeb3b;
       transform: scale(1.05);
+      box-shadow: 0 6px 20px rgba(255, 255, 255, 0.6);
     }
 
-    .snap-close-btn {
+    .video-call-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.95);
+      z-index: 10000;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .video-container {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      padding: 20px;
+    }
+
+    .remote-video {
+      width: 80%;
+      max-width: 800px;
+      height: auto;
+      max-height: 70vh;
+      object-fit: contain;
+      border-radius: 20px;
+      background: #000;
+    }
+      height: auto;
+      max-height: 70vh;
+      object-fit: contain;
+      border-radius: 20px;
+      background: #000;
+    }
+
+    .local-video {
       position: absolute;
-      top: 20px;
-      left: 20px;
-      width: 40px;
-      height: 40px;
+      bottom: 140px;
+      right: 20px;
+      width: 150px;
+      height: 120px;
+      object-fit: cover;
+      border-radius: 15px;
+      border: 3px solid #fff;
+      box-shadow: 0 5px 30px rgba(0, 0, 0, 0.5);
+      transform: scaleX(-1);
+    }
+
+    .call-controls {
+      position: absolute;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 20px;
+      padding: 15px 25px;
+      background: rgba(0, 0, 0, 0.8);
+      border-radius: 50px;
+      backdrop-filter: blur(10px);
+      z-index: 100;
+    }
+    .call-controls {
+      position: absolute;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 20px;
+      padding: 15px 25px;
+      background: rgba(0, 0, 0, 0.8);
+      border-radius: 50px;
+      backdrop-filter: blur(10px);
+      z-index: 100;
+    }
+    .call-controls {
+      position: absolute;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 20px;
+      padding: 15px 25px;
+      background: rgba(0, 0, 0, 0.8);
+      border-radius: 50px;
+      backdrop-filter: blur(10px);
+      z-index: 100;
+    }
+    .call-controls {
+      position: absolute;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 20px;
+      padding: 15px 25px;
+      background: rgba(0, 0, 0, 0.8);
+      border-radius: 50px;
+      backdrop-filter: blur(10px);
+      z-index: 100;
+    }
+    .call-controls {
+      position: absolute;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 20px;
+      padding: 15px 25px;
+      background: rgba(0, 0, 0, 0.8);
+      border-radius: 50px;
+      backdrop-filter: blur(10px);
+      z-index: 100;
+    }
+    .call-controls {
+      position: absolute;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 20px;
+      padding: 15px 25px;
+      background: rgba(0, 0, 0, 0.8);
+      border-radius: 50px;
+      backdrop-filter: blur(10px);
+      z-index: 100;
+    }
+    .call-controls {
+      position: absolute;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 20px;
+      padding: 15px 25px;
+      background: rgba(0, 0, 0, 0.8);
+      border-radius: 50px;
+      backdrop-filter: blur(10px);
+      z-index: 100;
+    }
+    .call-controls {
+      position: absolute;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 20px;
+      padding: 15px 25px;
+      background: rgba(0, 0, 0, 0.8);
+      border-radius: 50px;
+      backdrop-filter: blur(10px);
+      z-index: 100;
+    }
+    .call-controls {
+      position: absolute;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 20px;
+      padding: 15px 25px;
+      background: rgba(0, 0, 0, 0.8);
+      border-radius: 50px;
+      backdrop-filter: blur(10px);
+      z-index: 100;
+    }
+    .call-controls {
+      position: absolute;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 20px;
+      padding: 15px 25px;
+      background: rgba(0, 0, 0, 0.8);
+      border-radius: 50px;
+      backdrop-filter: blur(10px);
+      z-index: 100;
+    }
+    .call-controls {
+      position: absolute;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 20px;
+      padding: 15px 25px;
+      background: rgba(0, 0, 0, 0.8);
+      border-radius: 50px;
+      backdrop-filter: blur(10px);
+      z-index: 100;
+    }
+    .call-controls {
+      position: absolute;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 20px;
+      padding: 15px 25px;
+      background: rgba(0, 0, 0, 0.8);
+      border-radius: 50px;
+      backdrop-filter: blur(10px);
+      z-index: 100;
+    }
+
+    .call-btn {
+      width: 60px;
+      height: 60px;
       border-radius: 50%;
-      background: rgba(0, 0, 0, 0.5);
-      color: #fff;
-      border: 2px solid rgba(255, 255, 255, 0.3);
-      font-size: 24px;
+      border: none;
       cursor: pointer;
+      font-size: 24px;
+      transition: all 0.3s;
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 11;
-      backdrop-filter: blur(10px);
-      transition: all 0.2s;
     }
 
-    .snap-close-btn:hover {
+    .call-btn:hover {
+      transform: scale(1.1);
+    }
+
+    .call-btn.end {
+      background: #ff3b30;
+      color: #fff;
+    }
+
+    .call-btn.mute {
       background: rgba(255, 255, 255, 0.2);
+      color: #fff;
+    }
+
+    .call-btn.video-toggle {
+      background: rgba(255, 255, 255, 0.2);
+      color: #fff;
+    }
+
+    /* Group Call Styles */
+    .group-call-grid {
+      display: grid;
+      gap: 10px;
+      padding: 20px;
+      height: calc(100% - 120px);
+      width: 100%;
+      grid-auto-rows: 1fr;
+    }
+
+    .group-call-grid.participants-1 {
+      grid-template-columns: 1fr;
+    }
+
+    .group-call-grid.participants-2 {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .group-call-grid.participants-3,
+    .group-call-grid.participants-4 {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .group-call-grid.participants-5,
+    .group-call-grid.participants-6 {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .group-call-grid.participants-7,
+    .group-call-grid.participants-8,
+    .group-call-grid.participants-9 {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .participant-video-container {
+      position: relative;
+      background: #1a1a1a;
+      border-radius: 15px;
+      overflow: hidden;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s;
+    }
+
+    .participant-video-container:hover {
+      border-color: rgba(255, 255, 255, 0.3);
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+    }
+
+    .participant-video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .participant-info {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      backdrop-filter: blur(10px);
+    }
+
+    .participant-status {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .status-icon {
+      font-size: 12px;
+    }
+
+    .incoming-call {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #1a1a1a;
+      padding: 40px;
+      border-radius: 20px;
+      border: 2px solid #fff;
+      text-align: center;
+      z-index: 10001;
+      box-shadow: 0 10px 50px rgba(0, 0, 0, 0.8);
+    }
+
+    .call-status {
+      text-align: center;
+      font-size: 18px;
+      color: #fff;
+      margin-bottom: 20px;
+    }
+
+    .reply-preview {
+      background: rgba(255, 255, 255, 0.05);
+      border-left: 3px solid #666;
+      padding: 10px 15px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+      font-size: 13px;
+    }
+
+    .reply-to {
+      background: rgba(255, 255, 255, 0.05);
+      border-left: 3px solid currentColor;
+      padding: 6px 10px;
+      margin-bottom: 8px;
+      border-radius: 3px;
+      font-size: 12px;
+      opacity: 0.8;
+    }
+
+    .debug-console {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(0, 0, 0, 0.95);
+      border: 1px solid #333;
+      border-radius: 10px;
+      padding: 15px;
+      max-width: 400px;
+      max-height: 300px;
+      overflow-y: auto;
+      font-size: 12px;
+      font-family: 'Courier New', monospace;
+      z-index: 999;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+    }
+
+    .debug-log {
+      margin-bottom: 8px;
+      padding: 6px 10px;
+      border-radius: 6px;
+      border-left: 3px solid;
+    }
+
+    .debug-log.info { border-color: #4a9eff; background: rgba(74, 158, 255, 0.1); }
+    .debug-log.success { border-color: #00ff00; background: rgba(0, 255, 0, 0.1); }
+    .debug-log.error { border-color: #ff0000; background: rgba(255, 0, 0, 0.1); }
+    .debug-log.warning { border-color: #ffaa00; background: rgba(255, 170, 0, 0.1); }
+
+    .debug-toggle {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(0, 0, 0, 0.9);
+      border: 1px solid #333;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      z-index: 998;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+    }
+
+    .debug-toggle:hover {
+      background: rgba(255, 255, 255, 0.2);
+      box-shadow: 0 0 30px rgba(255, 255, 255, 0.4);
+    }
+
+    /* Minimized window styles */
+    .minimized-window {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 300px;
+      background: #0a0a0a;
+      border: 1px solid #333;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+      z-index: 900;
+      transition: all 0.3s ease;
+    }
+
+    .minimized-window.maximized {
+      width: 90vw;
+      height: 90vh;
+      bottom: 5vh;
+      right: 5vw;
+      z-index: 950;
+    }
+
+    .minimized-window-header {
+      background: #1a1a1a;
+      padding: 10px 15px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: move;
+      border-bottom: 1px solid #333;
+    }
+
+    .minimized-window-title {
+      font-size: 14px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .minimized-window-controls {
+      display: flex;
+      gap: 8px;
+    }
+
+    .window-btn {
+      background: transparent;
+      border: none;
+      color: #999;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: all 0.2s;
+      font-size: 16px;
+      line-height: 1;
+    }
+
+    .window-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+
+    .minimized-window-content {
+      height: 200px;
+      overflow: hidden;
+    }
+
+    .minimized-window.maximized .minimized-window-content {
+      height: calc(90vh - 50px);
+    }
+
+    .game-iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
     }
   </style>
 </head>
 <body>
   <div id="root"></div>
+
   <script type="text/babel">
     const { useState, useEffect, useRef } = React;
 
-    // Firebase config - replace with your config
     const firebaseConfig = {
-      apiKey: "AIzaSyDW2zvI6kf2-lTIDLtE_e91Kb0dHhqJcmY",
-      authDomain: "anonymous-chatrooms-65c01.firebaseapp.com",
-      databaseURL: "https://anonymous-chatrooms-65c01-default-rtdb.firebaseio.com",
-      projectId: "anonymous-chatrooms-65c01",
-      storageBucket: "anonymous-chatrooms-65c01.firebasestorage.app",
-      messagingSenderId: "652093992384",
-      appId: "1:652093992384:web:f4a4f25ef48ed2f72b28e8"
+      apiKey: "AIzaSyCR9UiBA6mg3J5a6WGtPK9F76E_ul1D1_c",
+      authDomain: "chatroom-60410.firebaseapp.com",
+      databaseURL: "https://chatroom-60410-default-rtdb.firebaseio.com",
+      projectId: "chatroom-60410",
+      storageBucket: "chatroom-60410.firebasestorage.app",
+      messagingSenderId: "1074130659134",
+      appId: "1:1074130659134:web:06b77a69a0c1d2ee47ee6f",
+      measurementId: "G-ENN9HEXNDB"
     };
 
-    if (!firebase.apps.length) {
-      firebase.initializeApp(firebaseConfig);
+    let db = null;
+    const debugLogs = [];
+    
+    const addDebugLogGlobal = (message, type = 'info') => {
+      const timestamp = new Date().toLocaleTimeString();
+      debugLogs.push({ message, type, timestamp });
+      if (debugLogs.length > 50) debugLogs.shift();
+      console.log(`[${type.toUpperCase()}] ${message}`);
+    };
+
+    try {
+      if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+        addDebugLogGlobal('Firebase initialized', 'success');
+      }
+      db = firebase.database();
+      addDebugLogGlobal('Database connection established', 'success');
+    } catch (error) {
+      addDebugLogGlobal(`Firebase error: ${error.message}`, 'error');
     }
-    const database = firebase.database();
 
-    // Icons
-    const Bug = () => (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="M8 2v4M16 2v4M9 9h.01M15 9h.01M8 13h8M6 8h12a2 2 0 012 2v8a2 2 0 01-2 2H6a2 2 0 01-2-2v-8a2 2 0 012-2z" />
-      </svg>
-    );
+    const EMOJIS = ['👍', '❤️', '😂', '😮', '😢', '😡', '🎉', '🔥', '👀', '💯', '🙏', '✨'];
 
-    // Debug Console Component
-    function DebugConsole({ logs, onClose }) {
+    const MessageCircle = () => <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>;
+    const Send = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>;
+    const LogOut = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>;
+    const Plus = () => <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>;
+    const Trash = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>;
+    const Users = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>;
+    const UserX = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="18" y1="8" x2="23" y2="13"/><line x1="23" y1="8" x2="18" y2="13"/></svg>;
+    const Gamepad = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="6" y1="12" x2="10" y2="12"/><line x1="8" y1="10" x2="8" y2="14"/><line x1="15" y1="13" x2="15.01" y2="13"/><line x1="18" y1="11" x2="18.01" y2="11"/><rect x="2" y="6" width="20" height="12" rx="2"/></svg>;
+    const Bug = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="8" y="6" width="8" height="14" rx="4"/><path d="M6 12h4m8 0h4M8 6V4a2 2 0 0 1 4 0v2m4 0V4a2 2 0 0 1 4 0v2M8 18v2a2 2 0 0 0 4 0v-2m4 0v2a2 2 0 0 0 4 0v-2"/></svg>;
+    const Smile = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>;
+
+    // Minimized Window Component
+    const MinimizedWindow = ({ title, url, onClose, icon }) => {
+      const [isMaximized, setIsMaximized] = useState(false);
+      const [position, setPosition] = useState({ x: window.innerWidth - 320, y: window.innerHeight - 250 });
+      const [isDragging, setIsDragging] = useState(false);
+      const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+
+      const handleMouseDown = (e) => {
+        if (e.target.closest('.window-btn')) return;
+        setIsDragging(true);
+        setDragOffset({
+          x: e.clientX - position.x,
+          y: e.clientY - position.y
+        });
+      };
+
+      const handleMouseMove = (e) => {
+        if (isDragging && !isMaximized) {
+          setPosition({
+            x: e.clientX - dragOffset.x,
+            y: e.clientY - dragOffset.y
+          });
+        }
+      };
+
+      const handleMouseUp = () => {
+        setIsDragging(false);
+      };
+
+      useEffect(() => {
+        if (isDragging) {
+          document.addEventListener('mousemove', handleMouseMove);
+          document.addEventListener('mouseup', handleMouseUp);
+          return () => {
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+          };
+        }
+      }, [isDragging, dragOffset]);
+
       return (
-        <div style={{
-          position: 'fixed',
-          bottom: '20px',
-          right: '20px',
-          width: '400px',
-          maxHeight: '300px',
-          background: 'rgba(0, 0, 0, 0.95)',
-          border: '1px solid #333',
-          borderRadius: '10px',
-          padding: '15px',
-          zIndex: 10000,
-          backdropFilter: 'blur(10px)'
-        }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-            <h3 style={{ fontSize: '14px', color: '#00ff00' }}>Debug Console</h3>
-            <button onClick={onClose} style={{
-              background: 'transparent',
-              border: 'none',
-              color: '#fff',
-              cursor: 'pointer',
-              fontSize: '18px'
-            }}>✕</button>
+        <div 
+          className={`minimized-window ${isMaximized ? 'maximized' : ''}`}
+          style={!isMaximized ? { 
+            left: `${position.x}px`, 
+            top: `${position.y}px`,
+            right: 'auto',
+            bottom: 'auto'
+          } : {}}
+        >
+          <div 
+            className="minimized-window-header"
+            onMouseDown={handleMouseDown}
+          >
+            <div className="minimized-window-title">
+              <span>{icon}</span>
+              <span>{title}</span>
+            </div>
+            <div className="minimized-window-controls">
+              <button 
+                className="window-btn" 
+                onClick={() => setIsMaximized(!isMaximized)}
+                title={isMaximized ? "Minimize" : "Maximize"}
+              >
+                {isMaximized ? '🗗' : '🗖'}
+              </button>
+              <button 
+                className="window-btn" 
+                onClick={onClose}
+                title="Close"
+              >
+                ✕
+              </button>
+            </div>
           </div>
-          <div style={{
-            maxHeight: '250px',
-            overflowY: 'auto',
-            fontSize: '12px',
-            fontFamily: 'monospace'
-          }}>
-            {logs.map((log, i) => (
-              <div key={i} style={{
-                padding: '4px 0',
-                borderBottom: '1px solid #222',
-                color: log.type === 'error' ? '#ff4444' : log.type === 'success' ? '#00ff00' : '#999'
-              }}>
-                <span style={{ color: '#666' }}>[{log.timestamp}]</span> {log.message}
-              </div>
-            ))}
+          <div className="minimized-window-content">
+            <iframe 
+              src={url} 
+              className="game-iframe"
+              title={title}
+              allow="camera; microphone; fullscreen"
+            />
           </div>
         </div>
       );
-    }
+    };
+
+    const DebugConsole = ({ logs, onClose }) => (
+      <div className="debug-console">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', borderBottom: '1px solid #333', paddingBottom: '10px' }}>
+          <strong>🐛 Debug Console</strong>
+          <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: '#999', cursor: 'pointer', fontSize: '18px' }}>×</button>
+        </div>
+        <div style={{ marginBottom: '10px', padding: '10px', background: '#1a1a1a', borderRadius: '8px', fontSize: '12px' }}>
+          <strong style={{ color: '#4CAF50' }}>📋 Browser Console Instructions:</strong>
+          <div style={{ marginTop: '5px', color: '#999' }}>
+            Press <strong style={{ color: '#fff' }}>F12</strong> or <strong style={{ color: '#fff' }}>Ctrl+Shift+I</strong> (Windows) / <strong style={{ color: '#fff' }}>Cmd+Option+I</strong> (Mac)
+          </div>
+          <div style={{ color: '#999' }}>
+            Click the <strong style={{ color: '#fff' }}>"Console"</strong> tab to see detailed camera & snap debugging
+          </div>
+        </div>
+        <div>
+          {logs.slice(-20).map((log, i) => (
+            <div key={i} className={`debug-log ${log.type}`}>
+              <div style={{ fontSize: '10px', color: '#666', marginBottom: '2px' }}>{new Date(log.timestamp).toLocaleTimeString()}</div>
+              <div>{log.message}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
 
     function ChatroomApp() {
       const [username, setUsername] = useState('');
+      const [tempUsername, setTempUsername] = useState('');
+      const [currentView, setCurrentView] = useState('start');
       const [currentRoom, setCurrentRoom] = useState(null);
+      const [rooms, setRooms] = useState([]);
       const [messages, setMessages] = useState([]);
-      const [newMessage, setNewMessage] = useState('');
-      const [onlineUsers, setOnlineUsers] = useState([]);
-      const [inCall, setInCall] = useState(false);
-      const [localStream, setLocalStream] = useState(null);
-      const [remoteStreams, setRemoteStreams] = useState({});
-      const [peerConnections, setPeerConnections] = useState({});
-      const [isMuted, setIsMuted] = useState(false);
-      const [isVideoOff, setIsVideoOff] = useState(false);
-      const [incomingCall, setIncomingCall] = useState(null);
-      const [showSnapCamera, setShowSnapCamera] = useState(false);
-      const [capturedSnap, setCapturedSnap] = useState(null);
-      const [isFrontCamera, setIsFrontCamera] = useState(true);
-      const [captureMode, setCaptureMode] = useState('photo');
-      const [isRecording, setIsRecording] = useState(false);
-      const [recordedVideo, setRecordedVideo] = useState(null);
-      const [recordingTime, setRecordingTime] = useState(0);
-      const [notifications, setNotifications] = useState([]);
-      const [callParticipants, setCallParticipants] = useState([]);
-      const [speakingUsers, setSpeakingUsers] = useState(new Set());
+      const [message, setMessage] = useState('');
+      const [newRoomName, setNewRoomName] = useState('');
+      const [newRoomPassword, setNewRoomPassword] = useState('');
+      const [error, setError] = useState('');
+      const [roomUsers, setRoomUsers] = useState([]);
+      const [typingUsers, setTypingUsers] = useState([]);
+      const [replyTo, setReplyTo] = useState(null);
+      const [showEmojiPicker, setShowEmojiPicker] = useState(null);
       const [logs, setLogs] = useState([]);
       const [showDebug, setShowDebug] = useState(false);
+      const [showImageInput, setShowImageInput] = useState(false);
+      const [imageUrl, setImageUrl] = useState('');
+      const [showGamesMenu, setShowGamesMenu] = useState(false);
+      const [gameInvite, setGameInvite] = useState(null);
+      const [openGameWindows, setOpenGameWindows] = useState([]);
+      const [inCall, setInCall] = useState(false);
+      const [callWith, setCallWith] = useState(null);
+      const [groupCallParticipants, setGroupCallParticipants] = useState([]);
+      const [peerConnections, setPeerConnections] = useState({});
+      const [incomingCall, setIncomingCall] = useState(null);
 
-      const localVideoRef = useRef(null);
-      const remoteVideoRefs = useRef({});
-      const snapVideoRef = useRef(null);
-      const snapCanvasRef = useRef(null);
-      const mediaRecorderRef = useRef(null);
-      const recordedChunksRef = useRef([]);
-      const recordingIntervalRef = useRef(null);
+      const [isGroupCall, setIsGroupCall] = useState(false);
+      const [localStream, setLocalStream] = useState(null);
+      const [remoteStream, setRemoteStream] = useState(null);
+      const [isMuted, setIsMuted] = useState(false);
+      const [isVideoOff, setIsVideoOff] = useState(false);
+      const [showSnapCamera, setShowSnapCamera] = useState(false);
+      const [snapStream, setSnapStream] = useState(null);
+      const [capturedSnap, setCapturedSnap] = useState(null);
+      const [isFrontCamera, setIsFrontCamera] = useState(true);
+      const [isRecording, setIsRecording] = useState(false);
+      const [recordedVideo, setRecordedVideo] = useState(null);
+      const [mediaRecorder, setMediaRecorder] = useState(null);
+      const [recordingTime, setRecordingTime] = useState(0);
+      const [captureMode, setCaptureMode] = useState('photo'); // 'photo' or 'video'
+      const [inCallNotifications, setInCallNotifications] = useState([]);
+
       const messagesEndRef = useRef(null);
       const typingTimeoutRef = useRef(null);
+      const localVideoRef = useRef(null);
+      const remoteVideoRef = useRef(null);
+      const peerConnectionRef = useRef(null);
+      const snapVideoRef = useRef(null);
+      const snapCanvasRef = useRef(null);
+      const recordingIntervalRef = useRef(null);
+      const groupPeerConnectionsRef = useRef({});
+      const participantStreamsRef = useRef({});
 
-      const addLog = (message, type = 'info') => {
-        const timestamp = new Date().toLocaleTimeString();
-        setLogs(prev => [...prev.slice(-50), { timestamp, message, type }]);
+      const addDebugLog = (message, type = 'info') => {
+        addDebugLogGlobal(message, type);
       };
 
-      const addNotification = (text, type = 'info') => {
-        const id = Date.now();
-        setNotifications(prev => [...prev, { id, text, type }]);
-        setTimeout(() => dismissNotification(id), 5000);
-      };
+      useEffect(() => {
+        const interval = setInterval(() => {
+          setLogs([...debugLogs]);
+        }, 1000);
+        return () => clearInterval(interval);
+      }, []);
 
-      const dismissNotification = (id) => {
-        setNotifications(prev => prev.filter(n => n.id !== id));
-      };
+      useEffect(() => {
+        if (db) {
+          const connectedRef = db.ref('.info/connected');
+          connectedRef.on('value', (snap) => {
+            if (snap.val() === true) {
+              addDebugLog('Firebase connected', 'success');
+            } else {
+              addDebugLog('Firebase disconnected', 'error');
+            }
+          });
+          return () => connectedRef.off();
+        }
+      }, []);
+
+      useEffect(() => {
+        if (db) {
+          const roomsRef = db.ref('rooms');
+          const handleRooms = (snapshot) => {
+            const data = snapshot.val();
+            setRooms(data ? Object.values(data) : []);
+            addDebugLog(`Rooms loaded: ${data ? Object.keys(data).length : 0}`, 'info');
+          };
+          roomsRef.on('value', handleRooms);
+          return () => roomsRef.off('value', handleRooms);
+        }
+      }, []);
+
+      useEffect(() => {
+        if (username && currentRoom && db) {
+          addDebugLog(`Joined room ${currentRoom}`, 'success');
+          const userRef = db.ref(`roomUsers/${currentRoom}/${username}`);
+          userRef.set(Date.now());
+          userRef.onDisconnect().remove();
+
+          const usersRef = db.ref(`roomUsers/${currentRoom}`);
+          const handleUsers = (snapshot) => {
+            const data = snapshot.val();
+            setRoomUsers(data ? Object.keys(data) : []);
+          };
+          usersRef.on('value', handleUsers);
+
+          const typingRef = db.ref(`typing/${currentRoom}`);
+          const handleTyping = (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+              const now = Date.now();
+              const activeTypers = Object.entries(data)
+                .filter(([user, time]) => user !== username && now - time < 3000)
+                .map(([user]) => user);
+              setTypingUsers(activeTypers);
+            } else {
+              setTypingUsers([]);
+            }
+          };
+          const typingInterval = setInterval(() => typingRef.once('value', handleTyping), 1000);
+
+          return () => {
+            usersRef.off('value', handleUsers);
+            clearInterval(typingInterval);
+            userRef.remove();
+          };
+        }
+      }, [username, currentRoom]);
+
+      useEffect(() => {
+        if (currentRoom && db) {
+          const messagesRef = db.ref(`messages/${currentRoom}`);
+          const handleMessages = (snapshot) => {
+            const data = snapshot.val();
+            setMessages(data ? Object.values(data).sort((a, b) => a.timestamp - b.timestamp) : []);
+          };
+          messagesRef.on('value', handleMessages);
+          return () => messagesRef.off('value', handleMessages);
+        }
+      }, [currentRoom]);
+
+      useEffect(() => {
+        if (currentRoom && db) {
+          const inviteRef = db.ref(`gameInvites/${currentRoom}`);
+          const handleInvite = (snapshot) => {
+            const data = snapshot.val();
+            setGameInvite(data);
+          };
+          inviteRef.on('value', handleInvite);
+          return () => inviteRef.off('value', handleInvite);
+        }
+      }, [currentRoom]);
 
       useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
       }, [messages]);
 
-      // Initialize user
+      // Show notification for new messages during calls
       useEffect(() => {
-        const storedUsername = localStorage.getItem('username');
-        if (storedUsername) {
-          setUsername(storedUsername);
-        } else {
-          const randomUsername = `User${Math.floor(Math.random() * 10000)}`;
-          setUsername(randomUsername);
-          localStorage.setItem('username', randomUsername);
+        if (inCall && messages.length > 0) {
+          const lastMessage = messages[messages.length - 1];
+          // Only show notification if it's not from the current user and it's a recent message
+          if (lastMessage.username !== username && Date.now() - lastMessage.timestamp < 2000) {
+            const notifId = Date.now().toString();
+            const newNotif = {
+              id: notifId,
+              from: lastMessage.username,
+              text: lastMessage.type === 'snap' ? '📸 Sent a snap' : lastMessage.text,
+              timestamp: Date.now()
+            };
+            
+            setInCallNotifications(prev => [...prev, newNotif]);
+            
+            // Auto-dismiss after 10 seconds
+            setTimeout(() => {
+              setInCallNotifications(prev => prev.filter(n => n.id !== notifId));
+            }, 10000);
+          }
         }
+      }, [messages, inCall, username]);
+
+      const dismissNotification = (notifId) => {
+        setInCallNotifications(prev => prev.filter(n => n.id !== notifId));
+      };
+
+      // Ensure local video is attached when stream is available
+      useEffect(() => {
+        if (localStream && localVideoRef.current && inCall) {
+          console.log('🎥 Attaching local stream to video element');
+          localVideoRef.current.srcObject = localStream;
+          localVideoRef.current.play().catch(err => console.error('Local video play error:', err));
+        }
+      }, [localStream, inCall]);
+
+      useEffect(() => {
+        if (username && currentRoom) {
+          addDebugLog(`Joined room ${currentRoom}`, 'success');
+          const userRef = db.ref(`roomUsers/${currentRoom}/${username}`);
+          userRef.set(Date.now());
+          userRef.onDisconnect().remove();
+
+          const usersRef = db.ref(`roomUsers/${currentRoom}`);
+          const handleUsers = (snapshot) => {
+            const data = snapshot.val();
+            setRoomUsers(data ? Object.keys(data) : []);
+          };
+          usersRef.on('value', handleUsers);
+
+          const typingRef = db.ref(`typing/${currentRoom}`);
+          const handleTyping = (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+              const now = Date.now();
+              const activeTypers = Object.entries(data)
+                .filter(([user, time]) => user !== username && now - time < 3000)
+                .map(([user]) => user);
+              setTypingUsers(activeTypers);
+            } else {
+              setTypingUsers([]);
+            }
+          };
+          const typingInterval = setInterval(() => typingRef.once('value', handleTyping), 1000);
+
+          return () => {
+            usersRef.off('value', handleUsers);
+            clearInterval(typingInterval);
+            userRef.remove();
+          };
+        }
+      }, [username, currentRoom]);
+
+      useEffect(() => {
+        const roomsRef = db.ref('rooms');
+        const handleRooms = (snapshot) => {
+          const data = snapshot.val();
+          setRooms(data ? Object.values(data) : []);
+        };
+        roomsRef.on('value', handleRooms);
+        return () => roomsRef.off('value', handleRooms);
       }, []);
 
-      // Listen for group call updates
+      // Prevent accidental tab closing when user is active in the chat
       useEffect(() => {
-        if (!currentRoom || !username) return;
-
-        const callRef = database.ref(`rooms/${currentRoom}/groupCall`);
-        
-        const handleCallUpdate = (snapshot) => {
-          const callData = snapshot.val();
-          if (callData && callData.active) {
-            const participants = Object.keys(callData.participants || {});
-            setCallParticipants(participants);
-            addLog(`Group call participants: ${participants.join(', ')}`);
-          } else {
-            setCallParticipants([]);
+        const handleBeforeUnload = (e) => {
+          // Only show warning if user is logged in and in a room
+          if (username && currentRoom) {
+            e.preventDefault();
+            e.returnValue = ''; // Chrome requires returnValue to be set
+            return ''; // Some browsers show this message
           }
         };
 
-        callRef.on('value', handleCallUpdate);
-        return () => callRef.off('value', handleCallUpdate);
-      }, [currentRoom, username]);
-
-      // Join room
-      const joinRoom = (room) => {
-        if (!username) return;
+        window.addEventListener('beforeunload', handleBeforeUnload);
         
-        setCurrentRoom(room);
-        addLog(`Joining room: ${room}`, 'success');
+        return () => {
+          window.removeEventListener('beforeunload', handleBeforeUnload);
+        };
+      }, [username, currentRoom]);
 
-        const userRef = database.ref(`rooms/${room}/users/${username}`);
-        userRef.set({
-          username,
-          online: true,
-          lastSeen: Date.now()
-        });
-
-        userRef.onDisconnect().remove();
-
-        const messagesRef = database.ref(`rooms/${room}/messages`);
-        messagesRef.on('value', (snapshot) => {
-          const msgs = [];
-          snapshot.forEach((child) => {
-            msgs.push({ id: child.key, ...child.val() });
-          });
-          setMessages(msgs);
-        });
-
-        const usersRef = database.ref(`rooms/${room}/users`);
-        usersRef.on('value', (snapshot) => {
-          const users = [];
-          snapshot.forEach((child) => {
-            users.push(child.val());
-          });
-          setOnlineUsers(users);
-        });
-
-        // Listen for call signals
-        const signalsRef = database.ref(`rooms/${room}/signals/${username}`);
-        signalsRef.on('child_added', handleSignal);
-      };
-
-      // Handle WebRTC signals
-      const handleSignal = async (snapshot) => {
-        const signal = snapshot.val();
-        const { from, type, data } = signal;
-
-        addLog(`Received ${type} signal from ${from}`);
-
-        if (type === 'group-call-invite' && !inCall) {
-          setIncomingCall({ from, type: 'group' });
-        } else if (type === 'offer') {
-          await handleOffer(from, data);
-        } else if (type === 'answer') {
-          await handleAnswer(from, data);
-        } else if (type === 'ice-candidate') {
-          await handleIceCandidate(from, data);
-        }
-
-        snapshot.ref.remove();
-      };
-
-      // Start group call
-      const startGroupCall = async () => {
-        try {
-          addLog('Starting group call...', 'info');
-          
-          const stream = await navigator.mediaDevices.getUserMedia({ 
-            video: true, 
-            audio: true 
-          });
-          
-          setLocalStream(stream);
-          setInCall(true);
-          
-          if (localVideoRef.current) {
-            localVideoRef.current.srcObject = stream;
-          }
-
-          // Create/join group call in database
-          const callRef = database.ref(`rooms/${currentRoom}/groupCall`);
-          await callRef.update({
-            active: true,
-            [`participants/${username}`]: {
-              username,
-              muted: false,
-              videoOff: false,
-              joinedAt: Date.now()
-            }
-          });
-
-          // Invite all online users
-          onlineUsers.forEach(user => {
-            if (user.username !== username) {
-              sendSignal(user.username, 'group-call-invite', {});
-            }
-          });
-
-          addLog('Group call started successfully', 'success');
-          addNotification('Group call started! Others can now join.');
-          
-        } catch (err) {
-          addLog(`Error starting call: ${err.message}`, 'error');
-          addNotification('Failed to start call. Please check camera/mic permissions.', 'error');
-        }
-      };
-
-      // Join group call
-      const joinGroupCall = async () => {
-        try {
-          addLog('Joining group call...', 'info');
-          
-          const stream = await navigator.mediaDevices.getUserMedia({ 
-            video: true, 
-            audio: true 
-          });
-          
-          setLocalStream(stream);
-          setInCall(true);
-          setIncomingCall(null);
-          
-          if (localVideoRef.current) {
-            localVideoRef.current.srcObject = stream;
-          }
-
-          // Add self to group call
-          const callRef = database.ref(`rooms/${currentRoom}/groupCall`);
-          await callRef.update({
-            [`participants/${username}`]: {
-              username,
-              muted: false,
-              videoOff: false,
-              joinedAt: Date.now()
-            }
-          });
-
-          // Create peer connections with existing participants
-          const snapshot = await callRef.child('participants').once('value');
-          const participants = snapshot.val() || {};
-          
-          for (const participantName of Object.keys(participants)) {
-            if (participantName !== username) {
-              await createPeerConnection(participantName, stream, true);
-            }
-          }
-
-          addLog('Joined group call successfully', 'success');
-          addNotification('You joined the group call!');
-          
-        } catch (err) {
-          addLog(`Error joining call: ${err.message}`, 'error');
-          addNotification('Failed to join call. Please check camera/mic permissions.', 'error');
-        }
-      };
-
-      // Create peer connection
-      const createPeerConnection = async (peerUsername, stream, isInitiator = false) => {
-        try {
-          addLog(`Creating peer connection with ${peerUsername} (initiator: ${isInitiator})`);
-          
-          const configuration = {
-            iceServers: [
-              { urls: 'stun:stun.l.google.com:19302' },
-              { urls: 'stun:stun1.l.google.com:19302' }
-            ]
-          };
-
-          const pc = new RTCPeerConnection(configuration);
-
-          // Add local stream tracks
-          stream.getTracks().forEach(track => {
-            pc.addTrack(track, stream);
-          });
-
-          // Handle incoming tracks
-          pc.ontrack = (event) => {
-            addLog(`Received track from ${peerUsername}`);
-            setRemoteStreams(prev => ({
-              ...prev,
-              [peerUsername]: event.streams[0]
-            }));
-          };
-
-          // Handle ICE candidates
-          pc.onicecandidate = (event) => {
-            if (event.candidate) {
-              sendSignal(peerUsername, 'ice-candidate', event.candidate);
-            }
-          };
-
-          // Handle connection state changes
-          pc.onconnectionstatechange = () => {
-            addLog(`Connection with ${peerUsername}: ${pc.connectionState}`);
-            if (pc.connectionState === 'disconnected' || pc.connectionState === 'failed') {
-              handlePeerDisconnection(peerUsername);
-            }
-          };
-
-          setPeerConnections(prev => ({
-            ...prev,
-            [peerUsername]: pc
-          }));
-
-          // If initiator, create and send offer
-          if (isInitiator) {
-            const offer = await pc.createOffer();
-            await pc.setLocalDescription(offer);
-            sendSignal(peerUsername, 'offer', offer);
-          }
-
-          return pc;
-        } catch (err) {
-          addLog(`Error creating peer connection: ${err.message}`, 'error');
-        }
-      };
-
-      // Handle offer
-      const handleOffer = async (from, offer) => {
-        try {
-          if (!localStream) return;
-          
-          let pc = peerConnections[from];
-          if (!pc) {
-            pc = await createPeerConnection(from, localStream, false);
-          }
-
-          await pc.setRemoteDescription(new RTCSessionDescription(offer));
-          const answer = await pc.createAnswer();
-          await pc.setLocalDescription(answer);
-          sendSignal(from, 'answer', answer);
-        } catch (err) {
-          addLog(`Error handling offer: ${err.message}`, 'error');
-        }
-      };
-
-      // Handle answer
-      const handleAnswer = async (from, answer) => {
-        try {
-          const pc = peerConnections[from];
-          if (pc) {
-            await pc.setRemoteDescription(new RTCSessionDescription(answer));
-          }
-        } catch (err) {
-          addLog(`Error handling answer: ${err.message}`, 'error');
-        }
-      };
-
-      // Handle ICE candidate
-      const handleIceCandidate = async (from, candidate) => {
-        try {
-          const pc = peerConnections[from];
-          if (pc) {
-            await pc.addIceCandidate(new RTCIceCandidate(candidate));
-          }
-        } catch (err) {
-          addLog(`Error handling ICE candidate: ${err.message}`, 'error');
-        }
-      };
-
-      // Handle peer disconnection
-      const handlePeerDisconnection = (peerUsername) => {
-        addLog(`${peerUsername} disconnected from call`);
-        
-        setRemoteStreams(prev => {
-          const updated = { ...prev };
-          delete updated[peerUsername];
-          return updated;
-        });
-
-        setPeerConnections(prev => {
-          const updated = { ...prev };
-          if (updated[peerUsername]) {
-            updated[peerUsername].close();
-            delete updated[peerUsername];
-          }
-          return updated;
-        });
-      };
-
-      // Send signal
-      const sendSignal = (to, type, data) => {
-        const signalRef = database.ref(`rooms/${currentRoom}/signals/${to}`).push();
-        signalRef.set({
-          from: username,
-          to,
-          type,
-          data,
-          timestamp: Date.now()
-        });
-      };
-
-      // End call
-      const endCall = () => {
-        addLog('Ending call...', 'info');
-
-        // Stop local stream
-        if (localStream) {
-          localStream.getTracks().forEach(track => track.stop());
-          setLocalStream(null);
-        }
-
-        // Close all peer connections
-        Object.values(peerConnections).forEach(pc => pc.close());
-        setPeerConnections({});
-        setRemoteStreams({});
-
-        // Remove from group call
+      useEffect(() => {
         if (currentRoom) {
-          database.ref(`rooms/${currentRoom}/groupCall/participants/${username}`).remove();
+          const messagesRef = db.ref(`messages/${currentRoom}`);
+          const handleMessages = (snapshot) => {
+            const data = snapshot.val();
+            const msgs = data ? Object.values(data).sort((a, b) => a.timestamp - b.timestamp) : [];
+            console.log('=== MESSAGES LOADED FROM FIREBASE ===');
+            console.log('Total messages:', msgs.length);
+            const snapMessages = msgs.filter(m => m.type === 'snap');
+            console.log('Snap messages:', snapMessages.length);
+            snapMessages.forEach((snap, i) => {
+              console.log(`Snap ${i + 1}:`, {
+                id: snap.id,
+                username: snap.username,
+                hasImage: !!snap.image,
+                imageType: typeof snap.image,
+                imageLength: snap.image?.length,
+                imageStart: snap.image?.substring(0, 30)
+              });
+            });
+            setMessages(msgs);
+          };
+          messagesRef.on('value', handleMessages);
+          return () => messagesRef.off('value', handleMessages);
         }
+      }, [currentRoom]);
 
-        setInCall(false);
-        addNotification('You left the call');
-      };
+      useEffect(() => {
+        if (currentRoom) {
+          const inviteRef = db.ref(`gameInvites/${currentRoom}`);
+          const handleInvite = (snapshot) => {
+            const data = snapshot.val();
+            setGameInvite(data);
+          };
+          inviteRef.on('value', handleInvite);
+          return () => inviteRef.off('value', handleInvite);
+        }
+      }, [currentRoom]);
 
-      // Decline call
-      const declineCall = () => {
-        setIncomingCall(null);
-        addNotification('Call declined');
-      };
+      useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, [messages]);
 
-      // Toggle mute
-      const toggleMute = () => {
-        if (localStream) {
-          const audioTrack = localStream.getAudioTracks()[0];
-          if (audioTrack) {
-            audioTrack.enabled = !audioTrack.enabled;
-            setIsMuted(!audioTrack.enabled);
-            
-            // Update status in database
-            if (currentRoom) {
-              database.ref(`rooms/${currentRoom}/groupCall/participants/${username}/muted`)
-                .set(!audioTrack.enabled);
-            }
+
+      const sendImageUrl = async () => {
+        console.log('=== IMAGE URL SEND DEBUG ===');
+        console.log('Image URL:', imageUrl);
+        console.log('Current room:', currentRoom);
+        console.log('Username:', username);
+        
+        if (!imageUrl.trim() || !currentRoom || !username) {
+          console.error('Missing required data!');
+          return;
+        }
+        
+        let finalImageUrl = imageUrl.trim();
+        
+        // Convert Giphy page URLs to media URLs
+        if (finalImageUrl.includes('giphy.com/gifs/')) {
+          console.log('Detected Giphy page URL, converting...');
+          // Extract the GIF ID from URLs like: https://giphy.com/gifs/spongebob-boi-breathe-in-Mp4YvyzWMpXCWAD7mX
+          const gifIdMatch = finalImageUrl.match(/gifs\/[^\/]+-([A-Za-z0-9]+)$/);
+          if (gifIdMatch) {
+            const gifId = gifIdMatch[1];
+            // Convert to media URL
+            finalImageUrl = `https://media.giphy.com/media/${gifId}/giphy.gif`;
+            console.log('Converted to media URL:', finalImageUrl);
           }
         }
-      };
-
-      // Toggle video
-      const toggleVideo = () => {
-        if (localStream) {
-          const videoTrack = localStream.getVideoTracks()[0];
-          if (videoTrack) {
-            videoTrack.enabled = !videoTrack.enabled;
-            setIsVideoOff(!videoTrack.enabled);
-            
-            // Update status in database
-            if (currentRoom) {
-              database.ref(`rooms/${currentRoom}/groupCall/participants/${username}/videoOff`)
-                .set(!videoTrack.enabled);
-            }
-          }
+        
+        // Also handle tenor URLs
+        if (finalImageUrl.includes('tenor.com/view/')) {
+          console.log('Detected Tenor page URL - please use "Copy GIF Link" instead');
+          setError('For Tenor, right-click the GIF and select "Copy image address"');
+          return;
         }
-      };
-
-      // Send message
-      const sendMessage = () => {
-        if (newMessage.trim() && currentRoom) {
-          const messageRef = database.ref(`rooms/${currentRoom}/messages`).push();
-          messageRef.set({
-            text: newMessage,
-            sender: username,
-            timestamp: Date.now(),
-            reactions: {}
-          });
-          setNewMessage('');
+        
+        const msgId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+        const newMsg = {
+          id: msgId,
+          username,
+          type: 'snap',
+          image: finalImageUrl,
+          timestamp: Date.now(),
+          reactions: {}
+        };
+        
+        console.log('Message object:', newMsg);
+        console.log('Firebase path:', `messages/${currentRoom}/${msgId}`);
+        
+        try {
+          console.log('Sending to Firebase...');
+          await db.ref(`messages/${currentRoom}/${msgId}`).set(newMsg);
+          console.log('✅ SUCCESS! Image URL sent');
+          addDebugLog('Image sent', 'success');
+          setImageUrl('');
+          setShowImageInput(false);
+        } catch (err) {
+          console.error('❌ FIREBASE ERROR:', err);
+          console.error('Error message:', err.message);
+          setError('Failed to send image: ' + err.message);
+          addDebugLog(`Image send error: ${err.message}`, 'error');
         }
+        
+        console.log('=== IMAGE URL SEND END ===');
       };
 
-      // Snap camera functions
+      // Snap Camera Functions
       const openSnapCamera = async () => {
         try {
           const stream = await navigator.mediaDevices.getUserMedia({ 
-            video: { facingMode: isFrontCamera ? 'user' : 'environment' },
-            audio: false
+            video: { facingMode: isFrontCamera ? 'user' : 'environment' }, 
+            audio: true // Need audio for video recording
           });
-          
+          setSnapStream(stream);
+          setShowSnapCamera(true);
+          setCaptureMode('photo'); // Default to photo mode
           if (snapVideoRef.current) {
             snapVideoRef.current.srcObject = stream;
           }
-          
-          setShowSnapCamera(true);
         } catch (err) {
-          addNotification('Failed to access camera', 'error');
+          console.error('Camera access error:', err);
+          setError('Could not access camera');
         }
       };
 
       const closeSnapCamera = () => {
-        if (snapVideoRef.current && snapVideoRef.current.srcObject) {
-          snapVideoRef.current.srcObject.getTracks().forEach(track => track.stop());
+        if (snapStream) {
+          snapStream.getTracks().forEach(track => track.stop());
+          setSnapStream(null);
+        }
+        if (mediaRecorder && mediaRecorder.state === 'recording') {
+          mediaRecorder.stop();
+        }
+        if (recordingIntervalRef.current) {
+          clearInterval(recordingIntervalRef.current);
         }
         setShowSnapCamera(false);
         setCapturedSnap(null);
         setRecordedVideo(null);
         setIsRecording(false);
         setRecordingTime(0);
-      };
-
-      const flipCamera = async () => {
-        const stream = snapVideoRef.current?.srcObject;
-        if (stream) {
-          stream.getTracks().forEach(track => track.stop());
-        }
-        
-        const newFacingMode = !isFrontCamera;
-        setIsFrontCamera(newFacingMode);
-        
-        try {
-          const newStream = await navigator.mediaDevices.getUserMedia({ 
-            video: { facingMode: newFacingMode ? 'user' : 'environment' },
-            audio: false
-          });
-          
-          if (snapVideoRef.current) {
-            snapVideoRef.current.srcObject = newStream;
-          }
-        } catch (err) {
-          addNotification('Failed to flip camera', 'error');
-        }
+        setMediaRecorder(null);
       };
 
       const captureSnap = () => {
-        const video = snapVideoRef.current;
-        const canvas = snapCanvasRef.current;
-        
-        if (video && canvas) {
+        if (snapVideoRef.current && snapCanvasRef.current) {
+          const video = snapVideoRef.current;
+          const canvas = snapCanvasRef.current;
           canvas.width = video.videoWidth;
           canvas.height = video.videoHeight;
           const ctx = canvas.getContext('2d');
-          
-          if (isFrontCamera) {
-            ctx.translate(canvas.width, 0);
-            ctx.scale(-1, 1);
-          }
-          
           ctx.drawImage(video, 0, 0);
           const imageData = canvas.toDataURL('image/jpeg', 0.8);
           setCapturedSnap(imageData);
         }
       };
 
-      const toggleCaptureMode = () => {
-        setCaptureMode(prev => prev === 'photo' ? 'video' : 'photo');
-      };
-
-      const startRecording = async () => {
-        const stream = snapVideoRef.current?.srcObject;
-        if (!stream) return;
-
-        recordedChunksRef.current = [];
-        const mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+      const startRecording = () => {
+        if (!snapStream) return;
         
-        mediaRecorder.ondataavailable = (event) => {
-          if (event.data.size > 0) {
-            recordedChunksRef.current.push(event.data);
+        const recorder = new MediaRecorder(snapStream, {
+          mimeType: 'video/webm;codecs=vp9'
+        });
+        
+        const chunks = [];
+        recorder.ondataavailable = (e) => {
+          if (e.data.size > 0) {
+            chunks.push(e.data);
           }
         };
-
-        mediaRecorder.onstop = () => {
-          const blob = new Blob(recordedChunksRef.current, { type: 'video/webm' });
+        
+        recorder.onstop = () => {
+          const blob = new Blob(chunks, { type: 'video/webm' });
           const videoUrl = URL.createObjectURL(blob);
-          setRecordedVideo(videoUrl);
+          
+          // Convert blob to base64 for Firebase
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            setRecordedVideo(reader.result);
+          };
+          reader.readAsDataURL(blob);
+          
+          clearInterval(recordingIntervalRef.current);
         };
-
-        mediaRecorderRef.current = mediaRecorder;
-        mediaRecorder.start();
+        
+        recorder.start();
+        setMediaRecorder(recorder);
         setIsRecording(true);
         setRecordingTime(0);
-
+        
+        // Update recording time every second
         recordingIntervalRef.current = setInterval(() => {
-          setRecordingTime(prev => prev + 1);
+          setRecordingTime(prev => {
+            const newTime = prev + 1;
+            if (newTime >= 60) { // Max 60 seconds
+              stopRecording();
+            }
+            return newTime;
+          });
         }, 1000);
       };
 
       const stopRecording = () => {
-        if (mediaRecorderRef.current && isRecording) {
-          mediaRecorderRef.current.stop();
+        if (mediaRecorder && mediaRecorder.state === 'recording') {
+          mediaRecorder.stop();
           setIsRecording(false);
-          clearInterval(recordingIntervalRef.current);
         }
       };
 
@@ -1049,465 +1458,1612 @@
         setRecordedVideo(null);
       };
 
-      const sendSnap = () => {
-        if (currentRoom && (capturedSnap || recordedVideo)) {
-          const messageRef = database.ref(`rooms/${currentRoom}/messages`).push();
-          messageRef.set({
-            type: capturedSnap ? 'snap' : 'video',
-            data: capturedSnap || recordedVideo,
-            sender: username,
-            timestamp: Date.now(),
-            reactions: {}
+      const flipCamera = async () => {
+        const newFacingMode = !isFrontCamera;
+        setIsFrontCamera(newFacingMode);
+        
+        if (snapStream) {
+          snapStream.getTracks().forEach(track => track.stop());
+        }
+        
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ 
+            video: { facingMode: newFacingMode ? 'user' : 'environment' }, 
+            audio: true
           });
-          closeSnapCamera();
-          addNotification(capturedSnap ? 'Snap sent!' : 'Video sent!');
+          setSnapStream(stream);
+          if (snapVideoRef.current) {
+            snapVideoRef.current.srcObject = stream;
+          }
+        } catch (err) {
+          console.error('Camera flip error:', err);
+          setError('Could not flip camera');
         }
       };
 
-      // Render participant videos
-      useEffect(() => {
-        Object.entries(remoteStreams).forEach(([peerUsername, stream]) => {
-          const videoElement = remoteVideoRefs.current[peerUsername];
-          if (videoElement && videoElement.srcObject !== stream) {
-            videoElement.srcObject = stream;
+      const sendSnap = async () => {
+        if ((!capturedSnap && !recordedVideo) || !currentRoom || !username) return;
+        
+        const msgId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+        
+        if (capturedSnap) {
+          // Send photo
+          const newMsg = {
+            id: msgId,
+            username,
+            type: 'snap',
+            image: capturedSnap,
+            timestamp: Date.now(),
+            reactions: {}
+          };
+          
+          try {
+            await db.ref(`messages/${currentRoom}/${msgId}`).set(newMsg);
+            addDebugLog('Snap sent', 'success');
+            closeSnapCamera();
+          } catch (err) {
+            console.error('Snap send error:', err);
+            setError('Failed to send snap');
+          }
+        } else if (recordedVideo) {
+          // Send video
+          const newMsg = {
+            id: msgId,
+            username,
+            type: 'video',
+            videoUrl: recordedVideo,
+            timestamp: Date.now(),
+            reactions: {}
+          };
+          
+          try {
+            await db.ref(`messages/${currentRoom}/${msgId}`).set(newMsg);
+            addDebugLog('Video sent', 'success');
+            closeSnapCamera();
+          } catch (err) {
+            console.error('Video send error:', err);
+            setError('Failed to send video');
+          }
+        }
+      };
+
+      const toggleCaptureMode = () => {
+        setCaptureMode(prev => prev === 'photo' ? 'video' : 'photo');
+      };
+
+      // Video Call Functions
+const startCall = async (targetUser) => {
+        try {
+          console.log('=== START CALL ===');
+          console.log('Calling:', targetUser);
+          
+          // Get local media stream with better constraints
+          const stream = await navigator.mediaDevices.getUserMedia({ 
+            video: {
+              width: { ideal: 640 },
+              height: { ideal: 480 },
+              facingMode: 'user',
+              frameRate: { ideal: 24, max: 30 }
+            }, 
+            audio: {
+              echoCancellation: true,
+              noiseSuppression: true,
+              autoGainControl: true
+            }
+          });
+          
+          console.log('✅ Got local stream');
+          console.log('Video tracks:', stream.getVideoTracks().length);
+          console.log('Audio tracks:', stream.getAudioTracks().length);
+          
+          setInCall(true);
+          setCallWith(targetUser);
+          
+          setLocalStream(stream);
+          
+          // Wait for React to render the video element, then attach stream
+          setTimeout(() => {
+            if (localVideoRef.current && stream) {
+              console.log('🎥 Attaching local stream to video element (caller)');
+              localVideoRef.current.srcObject = stream;
+              localVideoRef.current.play().catch(err => console.error('Local video play error:', err));
+            }
+          }, 100);
+
+// Fetch TURN credentials dynamically
+          const response = await fetch("https://anonymouschatrooms.metered.live/api/v1/turn/credentials?apiKey=fa754f2f657d2fc740d9678ec728daf430ad");
+          const iceServers = await response.json();
+          
+          // Create peer connection
+          const configuration = {
+            iceServers: iceServers,
+            iceCandidatePoolSize: 10
+          };
+          
+        const peerConnection = new RTCPeerConnection(configuration);
+          peerConnectionRef.current = peerConnection;
+          
+          // Monitor connection state
+          peerConnection.onconnectionstatechange = () => {
+            console.log('🔌 Connection state:', peerConnection.connectionState);
+            if (peerConnection.connectionState === 'disconnected' || 
+                peerConnection.connectionState === 'failed' || 
+                peerConnection.connectionState === 'closed') {
+              endCall();
+            }
+          };
+          
+          peerConnection.oniceconnectionstatechange = () => {
+            console.log('🧊 ICE state:', peerConnection.iceConnectionState);
+          };
+
+          // CRITICAL FIX: Add tracks BEFORE creating offer
+          stream.getTracks().forEach(track => {
+            peerConnection.addTrack(track, stream);
+            console.log('✅ Added track:', track.kind, 'enabled:', track.enabled);
+          });
+
+         // Handle incoming tracks - FIXED
+// Handle incoming tracks - FIXED
+          peerConnection.ontrack = (event) => {
+            console.log('🎥 RECEIVED REMOTE TRACK:', event.track.kind);
+            console.log('Track enabled:', event.track.enabled);
+            console.log('Track readyState:', event.track.readyState);
+            
+            if (event.streams && event.streams[0]) {
+              const remoteStream = event.streams[0];
+              console.log('Remote stream tracks:', remoteStream.getTracks().length);
+              
+              setRemoteStream(remoteStream);
+              
+              // Force immediate attachment
+              if (remoteVideoRef.current) {
+                remoteVideoRef.current.srcObject = remoteStream;
+                console.log('✅ Remote video srcObject set');
+                
+                // Force play immediately
+                remoteVideoRef.current.play()
+                  .then(() => console.log('✅ Remote video playing'))
+                  .catch(err => {
+                    console.error('Play error:', err);
+                    // Retry after a short delay
+                    setTimeout(() => {
+                      remoteVideoRef.current.play().catch(e => console.error('Retry failed:', e));
+                    }, 500);
+                  });
+              }
+            }
+          };
+          
+          // Handle ICE candidates
+          peerConnection.onicecandidate = (event) => {
+            if (event.candidate) {
+              console.log('📡 Sending ICE candidate');
+              db.ref(`calls/${currentRoom}/${targetUser}/candidates/${username}`).push({
+                candidate: event.candidate.toJSON()
+              });
+            }
+          };
+
+          // Create offer with proper options
+          console.log('Creating offer...');
+          const offer = await peerConnection.createOffer({
+            offerToReceiveAudio: true,
+            offerToReceiveVideo: true
+          });
+          await peerConnection.setLocalDescription(offer);
+          console.log('✅ Offer created');
+
+          // Send offer to Firebase
+          await db.ref(`calls/${currentRoom}/${targetUser}/offer`).set({
+            from: username,
+            offer: {
+              type: offer.type,
+              sdp: offer.sdp
+            },
+            timestamp: Date.now()
+          });
+          console.log('✅ Offer sent');
+
+          addDebugLog(`Calling ${targetUser}...`, 'info');
+
+          // Listen for answer
+          const answerRef = db.ref(`calls/${currentRoom}/${username}/answer`);
+          answerRef.on('value', async (snapshot) => {
+            const data = snapshot.val();
+            if (data && data.from === targetUser && peerConnectionRef.current) {
+              console.log('✅ Answer received');
+              const answer = new RTCSessionDescription(data.answer);
+              await peerConnectionRef.current.setRemoteDescription(answer);
+            }
+          });
+
+          // Listen for ICE candidates from remote peer
+          const candidatesRef = db.ref(`calls/${currentRoom}/${username}/candidates/${targetUser}`);
+          candidatesRef.on('child_added', async (snapshot) => {
+            const data = snapshot.val();
+            if (data && data.candidate && peerConnectionRef.current) {
+              try {
+                await peerConnectionRef.current.addIceCandidate(new RTCIceCandidate(data.candidate));
+                console.log('✅ Added ICE candidate');
+              } catch (err) {
+                console.error('ICE error:', err);
+              }
+            }
+          });
+
+          // CRITICAL FIX: Listen for hang-up
+          const hangupRef = db.ref(`calls/${currentRoom}/${username}/hangup`);
+          hangupRef.on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data && data.from === targetUser) {
+              console.log('📞 Remote peer hung up');
+              endCall();
+              alert(`${targetUser} ended the call`);
+            }
+          });
+
+          // Listen for decline
+          const declineRef = db.ref(`calls/${currentRoom}/${username}/declined`);
+          declineRef.on('value', (snapshot) => {
+            if (snapshot.val() === true) {
+              console.log('📞 Call declined');
+              endCall();
+              alert(`${targetUser} declined your call`);
+              db.ref(`calls/${currentRoom}/${username}`).remove();
+            }
+          });
+
+        } catch (err) {
+          console.error('CALL ERROR:', err);
+          setError('Failed to start call: ' + err.message);
+          setInCall(false);
+          setCallWith(null);
+          addDebugLog(`Call error: ${err.message}`, 'error');
+        }
+      };
+
+ const answerCall = async (caller) => {
+        try {
+          console.log('📞 Answering call from:', caller);
+          
+          // Get local media stream
+          const stream = await navigator.mediaDevices.getUserMedia({ 
+            video: {
+              width: { ideal: 640 },
+              height: { ideal: 480 },
+              facingMode: 'user',
+              frameRate: { ideal: 24, max: 30 }
+            }, 
+            audio: {
+              echoCancellation: true,
+              noiseSuppression: true,
+              autoGainControl: true
+            }
+          });
+          
+          console.log('✅ Got local stream');
+          setLocalStream(stream);
+
+          // Set call state immediately
+          setInCall(true);
+          setCallWith(caller);
+          setIncomingCall(null);
+
+          // Wait for React to render the video element, then attach stream
+          setTimeout(() => {
+            if (localVideoRef.current && stream) {
+              console.log('🎥 Attaching local stream to video element (answerer)');
+              localVideoRef.current.srcObject = stream;
+              localVideoRef.current.play().catch(err => console.error('Local video play error:', err));
+            }
+          }, 100);
+
+
+          
+// Fetch TURN credentials dynamically
+          const response = await fetch("https://anonymouschatrooms.metered.live/api/v1/turn/credentials?apiKey=fa754f2f657d2fc740d9678ec728daf430ad");
+          const iceServers = await response.json();
+          
+          // Create peer connection
+          const configuration = {
+            iceServers: iceServers,
+            iceCandidatePoolSize: 10
+          };
+          const peerConnection = new RTCPeerConnection(configuration);
+          peerConnectionRef.current = peerConnection;
+          
+          // Monitor connection
+          peerConnection.onconnectionstatechange = () => {
+            console.log('🔌 Connection state:', peerConnection.connectionState);
+            if (peerConnection.connectionState === 'disconnected' || 
+                peerConnection.connectionState === 'failed' || 
+                peerConnection.connectionState === 'closed') {
+              endCall();
+            }
+          };
+
+          // CRITICAL FIX: Add tracks BEFORE setting remote description
+          stream.getTracks().forEach(track => {
+            peerConnection.addTrack(track, stream);
+            console.log('✅ Added track:', track.kind);
+          });
+
+         // Handle incoming tracks - FIXED
+          peerConnection.ontrack = (event) => {
+            console.log('🎥 RECEIVED REMOTE TRACK:', event.track.kind);
+            
+            if (event.streams && event.streams[0]) {
+              const remoteStream = event.streams[0];
+              console.log('Remote stream tracks:', remoteStream.getTracks().length);
+              
+              setRemoteStream(remoteStream);
+              
+              // CRITICAL FIX: Wait for element and stream, then attach and play
+              setTimeout(() => {
+                if (remoteVideoRef.current && remoteStream) {
+                  remoteVideoRef.current.srcObject = remoteStream;
+                  remoteVideoRef.current.load();
+                  
+                  remoteVideoRef.current.onloadedmetadata = () => {
+                    console.log('✅ Remote video metadata loaded');
+                    remoteVideoRef.current.play()
+                      .then(() => console.log('✅ Remote video playing'))
+                      .catch(err => console.error('Video play error:', err));
+                  };
+                }
+              }, 100);
+            }
+          };
+
+          // Handle ICE candidates
+          peerConnection.onicecandidate = (event) => {
+            if (event.candidate) {
+              console.log('📡 Sending ICE candidate');
+              db.ref(`calls/${currentRoom}/${caller}/candidates/${username}`).push({
+                candidate: event.candidate.toJSON()
+              });
+            }
+          };
+
+          // Set remote description from offer
+          const offerData = incomingCall.offer;
+          await peerConnection.setRemoteDescription(new RTCSessionDescription(offerData));
+          console.log('✅ Set remote description');
+
+          // Create and send answer
+          const answer = await peerConnection.createAnswer();
+          await peerConnection.setLocalDescription(answer);
+          console.log('✅ Answer created');
+
+          await db.ref(`calls/${currentRoom}/${caller}/answer`).set({
+            from: username,
+            answer: {
+              type: answer.type,
+              sdp: answer.sdp
+            },
+            timestamp: Date.now()
+          });
+          console.log('✅ Answer sent');
+
+          setInCall(true);
+          setCallWith(caller);
+          setIncomingCall(null);
+          addDebugLog(`In call with ${caller}`, 'success');
+
+          // Listen for ICE candidates
+          const candidatesRef = db.ref(`calls/${currentRoom}/${username}/candidates/${caller}`);
+          candidatesRef.on('child_added', async (snapshot) => {
+            const data = snapshot.val();
+            if (data && data.candidate && peerConnectionRef.current) {
+              try {
+                await peerConnectionRef.current.addIceCandidate(new RTCIceCandidate(data.candidate));
+                console.log('✅ Added ICE candidate');
+              } catch (err) {
+                console.error('ICE error:', err);
+              }
+            }
+          });
+
+          // CRITICAL FIX: Listen for hang-up
+          const hangupRef = db.ref(`calls/${currentRoom}/${username}/hangup`);
+          hangupRef.on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data && data.from === caller) {
+              console.log('📞 Remote peer hung up');
+              endCall();
+              alert(`${caller} ended the call`);
+            }
+          });
+
+        } catch (err) {
+          console.error('❌ Error answering call:', err);
+          setError('Failed to answer call: ' + err.message);
+          setIncomingCall(null);
+        }
+      };
+
+
+const endCall = () => {
+  console.log('📞 Ending call');
+  
+  // CRITICAL FIX: Notify the other person
+  if (currentRoom && username && callWith) {
+    db.ref(`calls/${currentRoom}/${callWith}/hangup`).set({
+      from: username,
+      timestamp: Date.now()
+    });
+  }
+  
+  // CRITICAL FIX: Stop all tracks AND clear video elements
+  if (localStream) {
+    localStream.getTracks().forEach(track => {
+      track.stop();
+      console.log('Stopped track:', track.kind);
+    });
+  }
+  
+  if (remoteStream) {
+    remoteStream.getTracks().forEach(track => {
+      track.stop();
+    });
+  }
+  
+  // Clear video element sources
+  if (localVideoRef.current) {
+    localVideoRef.current.srcObject = null;
+  }
+  if (remoteVideoRef.current) {
+    remoteVideoRef.current.srcObject = null;
+  }
+  
+  // Close peer connection
+  if (peerConnectionRef.current) {
+    peerConnectionRef.current.close();
+    peerConnectionRef.current = null;
+  }
+
+  // Clean up Firebase
+  if (currentRoom && username) {
+    db.ref(`calls/${currentRoom}/${username}`).remove();
+    if (callWith) {
+      db.ref(`calls/${currentRoom}/${callWith}/candidates/${username}`).remove();
+    }
+  }
+
+  setInCall(false);
+  setCallWith(null);
+  setLocalStream(null);
+  setRemoteStream(null);
+  setIsMuted(false);
+  setIsVideoOff(false);
+  addDebugLog('Call ended', 'info');
+};
+
+      const toggleMute = () => {
+        if (localStream) {
+          const audioTrack = localStream.getAudioTracks()[0];
+          if (audioTrack) {
+            audioTrack.enabled = !audioTrack.enabled;
+            setIsMuted(!audioTrack.enabled);
+          }
+        }
+      };
+
+      const toggleVideo = () => {
+        if (localStream) {
+          const videoTrack = localStream.getVideoTracks()[0];
+          if (videoTrack) {
+            videoTrack.enabled = !videoTrack.enabled;
+            setIsVideoOff(!videoTrack.enabled);
+          }
+        }
+      };
+
+  const declineCall = () => {
+        console.log('📞 Declining call');
+        if (incomingCall) {
+          // CRITICAL FIX: Notify caller
+          db.ref(`calls/${currentRoom}/${incomingCall.from}/declined`).set(true);
+          
+          // Clean up
+          db.ref(`calls/${currentRoom}/${username}/offer`).remove();
+        }
+        setIncomingCall(null);
+        addDebugLog('Call declined', 'info');
+      };
+ const startGroupCall = async () => {
+        try {
+          console.log('📞 Starting group call');
+          
+          const stream = await navigator.mediaDevices.getUserMedia({ 
+            video: { width: { ideal: 1280 }, height: { ideal: 720 } }, 
+            audio: { echoCancellation: true, noiseSuppression: true }
+          });
+          
+          setLocalStream(stream);
+          if (localVideoRef.current) {
+            localVideoRef.current.srcObject = stream;
+          }
+          
+          setIsGroupCall(true);
+          setInCall(true);
+          
+          // Announce joining
+          await db.ref(`groupCalls/${currentRoom}/participants/${username}`).set({
+            joined: Date.now(),
+            online: true
+          });
+          
+          // Listen for participants
+          db.ref(`groupCalls/${currentRoom}/participants`).on('value', async (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+              const participants = Object.keys(data).filter(p => p !== username && data[p].online);
+              setGroupCallParticipants(participants);
+              
+              for (const participant of participants) {
+                if (!groupPeerConnectionsRef.current[participant]) {
+                  await createPeerForParticipant(participant, stream);
+                }
+              }
+            }
+          });
+          
+          addDebugLog('Joined group call', 'success');
+          
+        } catch (err) {
+          console.error('Group call error:', err);
+          setError('Failed to start group call');
+        }
+      };
+
+      const createPeerForParticipant = async (participant, localStream) => {
+        const pc = new RTCPeerConnection({
+          iceServers: [
+            { urls: 'stun:stun.l.google.com:19302' },
+            { urls: 'stun:stun1.l.google.com:19302' }
+          ]
+        });
+        
+        groupPeerConnectionsRef.current[participant] = pc;
+        
+        localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+        
+        pc.ontrack = (event) => {
+          if (event.streams[0]) {
+            participantStreamsRef.current[participant] = event.streams[0];
+            setGroupCallParticipants(prev => [...prev]);
+          }
+        };
+        
+        pc.onicecandidate = (event) => {
+          if (event.candidate) {
+            db.ref(`groupCalls/${currentRoom}/signals/${participant}/${username}/candidates`).push({
+              candidate: event.candidate.toJSON()
+            });
+          }
+        };
+        
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+        
+        await db.ref(`groupCalls/${currentRoom}/signals/${participant}/${username}/offer`).set({
+          type: offer.type,
+          sdp: offer.sdp
+        });
+        
+        db.ref(`groupCalls/${currentRoom}/signals/${username}/${participant}/answer`).on('value', async (snap) => {
+          const data = snap.val();
+          if (data && !pc.remoteDescription) {
+            await pc.setRemoteDescription(new RTCSessionDescription(data));
           }
         });
-      }, [remoteStreams]);
+        
+        db.ref(`groupCalls/${currentRoom}/signals/${username}/${participant}/candidates`).on('child_added', async (snap) => {
+          const data = snap.val();
+          if (data?.candidate) {
+            await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
+          }
+        });
+      };
 
-      // Render
-      if (!username) {
-        return <div style={{ padding: '20px' }}>Loading...</div>;
-      }
+      const endGroupCall = () => {
+        if (localStream) {
+          localStream.getTracks().forEach(track => track.stop());
+        }
+        
+        Object.values(groupPeerConnectionsRef.current).forEach(pc => pc.close());
+        groupPeerConnectionsRef.current = {};
+        participantStreamsRef.current = {};
+        
+        if (currentRoom && username) {
+          db.ref(`groupCalls/${currentRoom}/participants/${username}`).remove();
+        }
+        
+        setIsGroupCall(false);
+        setInCall(false);
+        setGroupCallParticipants([]);
+        setLocalStream(null);
+      };
 
-      if (!currentRoom) {
+
+      // Listen for incoming calls
+      useEffect(() => {
+        if (username && currentRoom && db) {
+          console.log('📞 Setting up incoming call listener for:', username);
+          const callRef = db.ref(`calls/${currentRoom}/${username}/offer`);
+          callRef.on('value', (snapshot) => {
+            const data = snapshot.val();
+            console.log('📞 Incoming call data received:', data);
+            if (data && data.from !== username && !inCall) {
+              console.log('📞 INCOMING CALL FROM:', data.from);
+              setIncomingCall(data);
+              addDebugLog(`Incoming call from ${data.from}`, 'info');
+            } else if (data) {
+              console.log('📞 Call data ignored - from:', data.from, 'inCall:', inCall);
+            }
+          });
+          return () => {
+            console.log('📞 Removing incoming call listener');
+            callRef.off();
+          };
+        }
+      }, [username, currentRoom, inCall]);
+
+      // Debug: Log when inCall changes
+      useEffect(() => {
+        console.log('=== inCall STATE CHANGED ===');
+        console.log('inCall:', inCall);
+        console.log('callWith:', callWith);
+        if (inCall) {
+          console.log('🎥 Call UI should be showing NOW!');
+        } else {
+          console.log('❌ Call UI should be hidden');
+        }
+      }, [inCall, callWith]);
+
+      const updateTyping = () => {
+        if (!currentRoom || !username || !db) return;
+        db.ref(`typing/${currentRoom}/${username}`).set(Date.now());
+        if (typingTimeoutRef.current) {
+          clearTimeout(typingTimeoutRef.current);
+        }
+        typingTimeoutRef.current = setTimeout(() => {
+          db.ref(`typing/${currentRoom}/${username}`).remove();
+        }, 3000);
+      };
+
+      const createRoom = async () => {
+        if (!newRoomName.trim()) {
+          setError('Room name required');
+          addDebugLog('Room creation failed: name required', 'error');
+          return;
+        }
+        const roomId = Date.now().toString();
+        const room = {
+          id: roomId,
+          name: newRoomName.trim(),
+          password: newRoomPassword,
+          createdAt: Date.now(),
+          owner: username
+        };
+        try {
+          await db.ref(`rooms/${roomId}`).set(room);
+          addDebugLog(`Room created: ${newRoomName}`, 'success');
+          setCurrentRoom(roomId);
+          setNewRoomName('');
+          setNewRoomPassword('');
+          setError('');
+          setCurrentView('room');
+        } catch (err) {
+          setError('Failed to create room');
+          addDebugLog(`Room creation error: ${err.message}`, 'error');
+        }
+      };
+
+      // Game invite handlers
+      const sendGameInvite = async (gameType) => {
+        const msgId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+        try {
+          await db.ref(`gameInvites/${currentRoom}`).set({
+            sender: username,
+            gameType: gameType,
+            timestamp: Date.now()
+          });
+          addDebugLog(`Sent ${gameType} invite`, 'success');
+          setShowGamesMenu(false);
+        } catch (err) {
+          addDebugLog(`Game invite error: ${err.message}`, 'error');
+        }
+      };
+
+      const acceptGameInvite = async () => {
+        if (!gameInvite) return;
+        
+        const gameUrls = {
+          'gartic': 'https://garlicphone.vercel.app',
+          'uno': 'https://unoonline-delta.vercel.app'
+        };
+
+        const gameIcons = {
+          'gartic': '🎨',
+          'uno': '🃏'
+        };
+
+        const gameTitles = {
+          'gartic': 'Gartic Phone',
+          'uno': 'Uno Online'
+        };
+
+        const url = gameUrls[gameInvite.gameType];
+        if (url) {
+          const newWindow = {
+            id: Date.now().toString(),
+            title: gameTitles[gameInvite.gameType],
+            url: url,
+            icon: gameIcons[gameInvite.gameType]
+          };
+          setOpenGameWindows(prev => [...prev, newWindow]);
+        }
+        
+        await db.ref(`gameInvites/${currentRoom}`).remove();
+        setGameInvite(null);
+      };
+
+      const declineGameInvite = async () => {
+        await db.ref(`gameInvites/${currentRoom}`).remove();
+        setGameInvite(null);
+      };
+
+      const closeGameWindow = (windowId) => {
+        setOpenGameWindows(prev => prev.filter(w => w.id !== windowId));
+      };
+
+      const joinRoom = (room, password = '') => {
+        if (room.password && room.password !== password) {
+          setError('Incorrect password');
+          addDebugLog(`Failed to join ${room.name}: wrong password`, 'error');
+          return;
+        }
+        setCurrentRoom(room.id);
+        setCurrentView('room');
+        setError('');
+        addDebugLog(`Joining room: ${room.name}`, 'info');
+      };
+
+      const sendMessage = async () => {
+        if (!message.trim() || !currentRoom || !username) return;
+        const msgId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+        const newMsg = {
+          id: msgId,
+          username,
+          text: message,
+          timestamp: Date.now(),
+          reactions: {},
+          ...(replyTo && { replyTo: replyTo.id })
+        };
+        try {
+          await db.ref(`messages/${currentRoom}/${msgId}`).set(newMsg);
+          setMessage('');
+          setReplyTo(null);
+          addDebugLog('Message sent', 'success');
+          if (typingTimeoutRef.current) {
+            clearTimeout(typingTimeoutRef.current);
+            db.ref(`typing/${currentRoom}/${username}`).remove();
+          }
+        } catch (err) {
+          setError('Failed to send message');
+          addDebugLog(`Message send error: ${err.message}`, 'error');
+        }
+      };
+
+      const addReaction = async (messageId, emoji) => {
+        if (!currentRoom || !db) return;
+        try {
+          const reactionPath = `messages/${currentRoom}/${messageId}/reactions/${emoji}`;
+          const reactionRef = db.ref(reactionPath);
+          const snapshot = await reactionRef.once('value');
+          const users = snapshot.val() || [];
+          if (users.includes(username)) {
+            const newUsers = users.filter(u => u !== username);
+            if (newUsers.length === 0) {
+              await reactionRef.remove();
+            } else {
+              await reactionRef.set(newUsers);
+            }
+            addDebugLog(`Removed reaction ${emoji}`, 'info');
+          } else {
+            await reactionRef.set([...users, username]);
+            addDebugLog(`Added reaction ${emoji}`, 'success');
+          }
+        } catch (err) {
+          addDebugLog(`Reaction error: ${err.message}`, 'error');
+        }
+      };
+
+      const clearAllMessages = async () => {
+        const currentRoomData = rooms.find(r => r.id === currentRoom);
+        if (!currentRoomData || currentRoomData.owner !== username) {
+          alert('❌ Only the room owner can clear messages!');
+          addDebugLog('Clear messages denied: not owner', 'warning');
+          return;
+        }
+        if (!confirm('⚠️ Clear all messages in this room?')) return;
+        try {
+          await db.ref(`messages/${currentRoom}`).remove();
+          addDebugLog('All messages cleared', 'success');
+        } catch (err) {
+          setError('Failed to clear messages');
+          addDebugLog(`Clear messages error: ${err.message}`, 'error');
+        }
+      };
+  
+const kickUser = async (targetUser) => {
+  const currentRoomData = rooms.find(r => r.id === currentRoom);
+  if (!currentRoomData || (currentRoomData.owner !== username && username !== 'emmaowner')) {
+    alert('❌ Only the room owner can kick users!');
+    addDebugLog('Kick denied: not owner', 'warning');
+    return;
+  }
+  if (!confirm(`⚠️ Kick ${targetUser} from the room?`)) return;
+  
+  try {
+    // Remove user from room
+    await db.ref(`roomUsers/${currentRoom}/${targetUser}`).remove();
+    
+    // Mark them as kicked so they can't rejoin
+    await db.ref(`kicked/${currentRoom}/${targetUser}`).set(true);
+    
+    // Send system message
+    const msgId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+    const systemMsg = {
+      id: msgId,
+      type: 'system',
+      text: `${targetUser} was kicked from the room`,
+      timestamp: Date.now()
+    };
+    await db.ref(`messages/${currentRoom}/${msgId}`).set(systemMsg);
+    
+    addDebugLog(`Kicked user: ${targetUser}`, 'success');
+    alert(`✅ ${targetUser} has been kicked!`);
+  } catch (err) {
+    setError('Failed to kick user');
+    addDebugLog(`Kick error: ${err.message}`, 'error');
+  }
+};
+
+      const leaveRoom = async () => {
+        if (!currentRoom || !username) return;
+        const msgId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+        const systemMsg = {
+          id: msgId,
+          type: 'system',
+          text: `${username} left the room`,
+          timestamp: Date.now()
+        };
+        try {
+          await db.ref(`messages/${currentRoom}/${msgId}`).set(systemMsg);
+          await db.ref(`roomUsers/${currentRoom}/${username}`).remove();
+          addDebugLog('Left room', 'info');
+        } catch (err) {
+          addDebugLog(`Leave room error: ${err.message}`, 'error');
+        }
+        setCurrentRoom(null);
+        setCurrentView('lobby');
+        setMessages([]);
+      };
+
+      const deleteRoom = async (roomId, e) => {
+        e.stopPropagation();
+        const room = rooms.find(r => r.id === roomId);
+        if (room && room.owner !== username && username !== 'emmaowner') {
+          alert('❌ Only the room owner can delete this room!');
+          addDebugLog('Delete denied: not owner', 'warning');
+          return;
+        }
+        if (!confirm('⚠️ Delete this room and all messages?')) return;
+        try {
+          await db.ref(`rooms/${roomId}`).remove();
+          await db.ref(`messages/${roomId}`).remove();
+          await db.ref(`roomUsers/${roomId}`).remove();
+          await db.ref(`typing/${roomId}`).remove();
+          addDebugLog(`Room deleted: ${room.name}`, 'success');
+        } catch (err) {
+          setError('Failed to delete room');
+          addDebugLog(`Delete room error: ${err.message}`, 'error');
+        }
+      };
+
+      const formatTime = (timestamp) => {
+        const date = new Date(timestamp);
+        return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+      };
+
+      const getReplyMessage = (replyToId) => {
+        return messages.find(m => m.id === replyToId);
+      };
+
+      if (currentView === 'start') {
         return (
-          <div style={{ 
-            minHeight: '100vh',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '20px'
-          }}>
-            <h1 className="glow-text" style={{ fontSize: '48px', marginBottom: '20px' }}>
-              Anonymous Chatrooms
-            </h1>
-            <p style={{ fontSize: '18px', color: '#999', marginBottom: '40px' }}>
-              Welcome, {username}
-            </p>
-            <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap', justifyContent: 'center' }}>
-              {['General', 'Gaming', 'Music', 'Tech', 'Random'].map(room => (
-                <button
-                  key={room}
-                  onClick={() => joinRoom(room)}
-                  className="glow-button"
-                  style={{
-                    padding: '15px 30px',
-                    fontSize: '18px',
-                    background: '#222',
-                    color: '#fff',
-                    border: '2px solid #444',
-                    borderRadius: '10px',
-                    cursor: 'pointer'
-                  }}
-                >
-                  {room}
-                </button>
-              ))}
+          <>
+            <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+              <div className="glow-border" style={{ background: '#0a0a0a', borderRadius: '20px', padding: '40px', width: '100%', maxWidth: '400px', border: '1px solid #333' }}>
+                <div style={{ textAlign: 'center', marginBottom: '30px' }}>
+                  <div className="glow" style={{ display: 'inline-block' }}><MessageCircle /></div>
+                  <h1 className="glow-text" style={{ fontSize: '32px', fontWeight: 'bold', marginTop: '20px', marginBottom: '10px' }}>CHATROOMS</h1>
+                  <p style={{ color: '#999' }}>Enter the void</p>
+                </div>
+                <input
+                  type="text"
+                  value={tempUsername}
+                  onChange={(e) => setTempUsername(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && tempUsername.trim() && (setUsername(tempUsername.trim()), setCurrentView('lobby'))}
+                  placeholder="Choose username..."
+                  style={{ width: '100%', padding: '15px', background: '#1a1a1a', border: '1px solid #333', borderRadius: '10px', color: '#fff', fontSize: '16px', marginBottom: '20px' }}
+                />
+                <div style={{ display: 'grid', gap: '10px' }}>
+                  <button onClick={() => tempUsername.trim() ? (setUsername(tempUsername.trim()), setCurrentView('lobby')) : setError('Enter a username')} className="glow-button" style={{ width: '100%', background: '#fff', color: '#000', padding: '15px', borderRadius: '10px', border: 'none', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>JOIN ROOM</button>
+                  <button onClick={() => tempUsername.trim() ? (setUsername(tempUsername.trim()), setCurrentView('create')) : setError('Enter a username')} className="glow-button" style={{ width: '100%', background: '#1a1a1a', color: '#fff', padding: '15px', borderRadius: '10px', border: '1px solid #333', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>CREATE ROOM</button>
+                </div>
+                {error && <div style={{ background: '#2a0000', border: '1px solid #ff0000', color: '#ff6666', padding: '15px', borderRadius: '10px', marginTop: '15px' }}>{error}</div>}
+              </div>
             </div>
-          </div>
+            {!showDebug && (
+              <div className="debug-toggle" onClick={() => setShowDebug(true)}>
+                <Bug />
+              </div>
+            )}
+            {showDebug && <DebugConsole logs={logs} onClose={() => setShowDebug(false)} />}
+          </>
         );
       }
 
-      return (
-        <>
-          <div style={{ 
-            height: '100vh',
-            display: 'flex',
-            flexDirection: 'column',
-            background: '#000'
-          }}>
-            {/* Header */}
-            <div style={{
-              padding: '15px 20px',
-              background: '#111',
-              borderBottom: '1px solid #333',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center'
-            }}>
-              <div>
-                <h2 style={{ fontSize: '20px' }}>#{currentRoom}</h2>
-                <p style={{ fontSize: '12px', color: '#666' }}>
-                  {onlineUsers.length} online
-                  {callParticipants.length > 0 && (
-                    <span style={{ marginLeft: '10px', color: '#00ff00' }}>
-                      • {callParticipants.length} in call
-                    </span>
-                  )}
-                </p>
+      if (currentView === 'create') {
+        return (
+          <>
+            <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+              <div className="glow-border" style={{ background: '#0a0a0a', borderRadius: '20px', padding: '40px', width: '100%', maxWidth: '500px', border: '1px solid #333' }}>
+                <div style={{ textAlign: 'center', marginBottom: '30px' }}>
+                  <div className="glow" style={{ display: 'inline-block' }}><Plus /></div>
+                  <h1 className="glow-text" style={{ fontSize: '28px', fontWeight: 'bold', marginTop: '20px', marginBottom: '10px' }}>CREATE ROOM</h1>
+                  <p style={{ color: '#999' }}>User: {username}</p>
+                </div>
+                <input type="text" value={newRoomName} onChange={(e) => setNewRoomName(e.target.value)} placeholder="Room name..." style={{ width: '100%', padding: '15px', background: '#1a1a1a', border: '1px solid #333', borderRadius: '10px', color: '#fff', fontSize: '16px', marginBottom: '15px' }} />
+                <input type="password" value={newRoomPassword} onChange={(e) => setNewRoomPassword(e.target.value)} placeholder="Password (optional)..." style={{ width: '100%', padding: '15px', background: '#1a1a1a', border: '1px solid #333', borderRadius: '10px', color: '#fff', fontSize: '16px', marginBottom: '20px' }} />
+                <div style={{ display: 'grid', gap: '10px' }}>
+                  <button onClick={createRoom} className="glow-button" style={{ width: '100%', background: '#fff', color: '#000', padding: '15px', borderRadius: '10px', border: 'none', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>CREATE & ENTER</button>
+                  <button onClick={() => setCurrentView('lobby')} style={{ width: '100%', background: '#1a1a1a', color: '#fff', padding: '15px', borderRadius: '10px', border: '1px solid #333', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>BACK</button>
+                </div>
+                {error && <div style={{ background: '#2a0000', border: '1px solid #ff0000', color: '#ff6666', padding: '15px', borderRadius: '10px', marginTop: '15px' }}>{error}</div>}
               </div>
-              <div style={{ display: 'flex', gap: '10px' }}>
-                {!inCall && callParticipants.length === 0 && (
-                  <button
-                    onClick={startGroupCall}
-                    className="glow-button"
-                    style={{
-                      padding: '10px 20px',
-                      background: '#00ff00',
-                      color: '#000',
-                      border: 'none',
-                      borderRadius: '8px',
-                      fontWeight: 'bold',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    📞 Start Group Call
-                  </button>
-                )}
-                {!inCall && callParticipants.length > 0 && (
-                  <button
-                    onClick={joinGroupCall}
-                    className="glow-button"
-                    style={{
-                      padding: '10px 20px',
-                      background: '#4CAF50',
-                      color: '#fff',
-                      border: 'none',
-                      borderRadius: '8px',
-                      fontWeight: 'bold',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    📞 Join Call ({callParticipants.length})
-                  </button>
-                )}
-                <button
-                  onClick={() => {
-                    setCurrentRoom(null);
-                    setMessages([]);
-                    if (inCall) endCall();
-                  }}
-                  style={{
-                    padding: '10px 20px',
-                    background: '#222',
-                    color: '#fff',
-                    border: '1px solid #444',
-                    borderRadius: '8px',
-                    cursor: 'pointer'
-                  }}
-                >
-                  Leave Room
-                </button>
+            </div>
+            {!showDebug && (
+              <div className="debug-toggle" onClick={() => setShowDebug(true)}>
+                <Bug />
+              </div>
+            )}
+            {showDebug && <DebugConsole logs={logs} onClose={() => setShowDebug(false)} />}
+          </>
+        );
+      }
+
+      if (currentView === 'lobby') {
+        return (
+          <>
+            <div style={{ minHeight: '100vh', padding: '20px' }}>
+              <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+                <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+                  <h1 className="glow-text" style={{ fontSize: '36px', fontWeight: 'bold', marginBottom: '10px' }}>ACTIVE ROOMS</h1>
+                  <p style={{ color: '#999', fontSize: '16px' }}>User: {username}</p>
+                </div>
+                <div style={{ display: 'grid', gap: '15px', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
+                  {rooms.length === 0 ? (
+                    <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '60px 20px', background: '#0a0a0a', borderRadius: '15px', border: '1px solid #333' }}>
+                      <p style={{ color: '#666', fontSize: '18px', marginBottom: '20px' }}>No rooms yet. Create one!</p>
+                      <button onClick={() => setCurrentView('create')} className="glow-button" style={{ background: '#fff', color: '#000', padding: '15px 30px', borderRadius: '10px', border: 'none', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>CREATE ROOM</button>
+                    </div>
+                  ) : (
+                    rooms.map(room => (
+                      <div key={room.id} className="glow-border" style={{ background: '#0a0a0a', padding: '20px', borderRadius: '15px', border: '1px solid #333', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                        <div>
+                          <h3 style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '8px' }}>{room.name}</h3>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#999', fontSize: '13px', flexWrap: 'wrap' }}>
+                            <span>by {room.owner}</span>
+                            {room.password && <span style={{ background: '#1a1a1a', padding: '4px 8px', borderRadius: '6px', border: '1px solid #333' }}>🔒 Private</span>}
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '10px' }}>
+                          <button onClick={() => room.password ? (() => {
+                            const pwd = prompt('Enter password:');
+                            if (pwd !== null) joinRoom(room, pwd);
+                          })() : joinRoom(room)} className="glow-button" style={{ flex: 1, background: '#fff', color: '#000', padding: '12px', borderRadius: '8px', border: 'none', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer' }}>
+                            JOIN
+                          </button>
+                          {(room.owner === username || username === 'emmaowner') && (
+                            <button onClick={(e) => deleteRoom(room.id, e)}
+                              style={{ background: '#2a0000', border: '1px solid #ff0000', color: '#ff6666', padding: '10px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                              <Trash /> Delete
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+            {!showDebug && (
+              <div className="debug-toggle" onClick={() => setShowDebug(true)}>
+                <Bug />
+              </div>
+            )}
+            {showDebug && <DebugConsole logs={logs} onClose={() => setShowDebug(false)} />}
+          </>
+        );
+      }
+
+      if (currentView === 'room') {
+        const currentRoomData = rooms.find(r => r.id === currentRoom);
+        const isOwner = currentRoomData && currentRoomData.owner === username;
+
+        return (
+          <>
+            <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+              <div className="glow-border" style={{ background: '#0a0a0a', padding: '20px', borderBottom: '1px solid #333' }}>
+                <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '15px' }}>
+                  <div>
+                    <h2 className="glow-text" style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '5px' }}>
+                      {currentRoomData?.name || 'Room'}
+                    </h2>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#999', fontSize: '13px' }}>
+                      <span>{roomUsers.length} {roomUsers.length === 1 ? 'user' : 'users'} in room</span>
+                      {isOwner && <span style={{ background: '#1a1a1a', padding: '4px 10px', borderRadius: '6px', border: '1px solid #333' }}>👑 Owner</span>}
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    {!inCall && roomUsers.length > 2 && (
+                      <button onClick={startGroupCall} className="glow-button" style={{ background: '#1a1a1a', color: '#00ff88', padding: '10px 20px', borderRadius: '8px', border: '1px solid #00ff88', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        📞 Group Call
+                      </button>
+                    )}
+                    {isOwner && (
+                      <button onClick={clearAllMessages} style={{ background: '#2a0000', border: '1px solid #ff0000', color: '#ff6666', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Trash /> Clear All
+                      </button>
+                    )}
+                    <button onClick={() => setShowGamesMenu(!showGamesMenu)} className="glow-button" style={{ background: '#1a1a1a', color: '#fff', padding: '10px 20px', borderRadius: '8px', border: '1px solid #333', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Gamepad /> Games
+                    </button>
+                    <button onClick={leaveRoom} className="glow-button" style={{ background: '#1a1a1a', color: '#fff', padding: '10px 20px', borderRadius: '8px', border: '1px solid #333', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <LogOut /> Leave
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {roomUsers.length > 1 && (
+                <div style={{ background: '#0a0a0a', padding: '10px 20px', borderBottom: '1px solid #333' }}>
+                  <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                    <Users style={{ width: '16px', height: '16px' }} />
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                      {roomUsers.map(user => (
+                        <div key={user} style={{ background: '#1a1a1a', padding: '6px 12px', borderRadius: '8px', border: '1px solid #333', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span>{user}</span>
+                          {user === currentRoomData?.owner && <span>👑</span>}
+                          {user !== username && !inCall && (
+                            <button 
+                              onClick={() => startCall(user)} 
+                              style={{ 
+                                background: 'transparent', 
+                                border: 'none', 
+                                color: '#00ff88', 
+                                cursor: 'pointer', 
+                                padding: '0 5px',
+                                fontSize: '16px'
+                              }}
+                              title={`Call ${user}`}
+                            >
+                              📞
+                            </button>
+                          )}
+                          {isOwner && user !== username && (
+                            <button onClick={() => kickUser(user)} style={{ background: 'transparent', border: 'none', color: '#ff6666', cursor: 'pointer', padding: '0 5px' }}>
+                              <UserX style={{ width: '14px', height: '14px' }} />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div style={{ flex: 1, overflow: 'auto', background: '#000', padding: '20px' }}>
+                <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+                  
+                  {gameInvite && (
+                    <div className="glow-border" style={{ background: '#0a0a0a', padding: '20px', marginBottom: '20px', borderRadius: '15px', border: '2px solid #4a9eff', animation: 'glow 2s ease-in-out infinite' }}>
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{ fontSize: '24px', marginBottom: '10px' }}>🎮</div>
+                        <div style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '10px' }}>
+                          {gameInvite.sender} wants to play {gameInvite.gameType === 'gartic' ? 'Gartic Phone' : 'Uno'}!
+                        </div>
+                        <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+                          <button onClick={acceptGameInvite} className="glow-button" style={{ background: '#00ff00', color: '#000', padding: '12px 24px', borderRadius: '8px', border: 'none', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer' }}>
+                            ✓ Accept
+                          </button>
+                          <button onClick={declineGameInvite} style={{ background: '#2a0000', border: '1px solid #ff0000', color: '#ff6666', padding: '12px 24px', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: 'bold' }}>
+                            ✕ Decline
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {showGamesMenu && (
+                    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={() => setShowGamesMenu(false)}>
+                      <div className="glow-border" style={{ background: '#0a0a0a', padding: '30px', borderRadius: '20px', maxWidth: '400px', width: '90%' }} onClick={(e) => e.stopPropagation()}>
+                        <h3 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '20px', textAlign: 'center' }}>🎮 Choose a Game</h3>
+                        <div style={{ display: 'grid', gap: '10px' }}>
+                          <button onClick={() => sendGameInvite('gartic')} className="glow-button" style={{ width: '100%', background: '#1a1a1a', color: '#fff', padding: '15px', borderRadius: '10px', border: '1px solid #333', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>
+                            🎨 Gartic Phone
+                          </button>
+                          <button onClick={() => sendGameInvite('uno')} className="glow-button" style={{ width: '100%', background: '#1a1a1a', color: '#fff', padding: '15px', borderRadius: '10px', border: '1px solid #333', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>
+                            🃏 Uno Online
+                          </button>
+                          <button onClick={() => setShowGamesMenu(false)} style={{ width: '100%', background: '#2a0000', border: '1px solid #ff0000', color: '#ff6666', padding: '15px', borderRadius: '10px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {messages.map((msg) => {
+                    if (msg.type === 'system') {
+                      return <div key={msg.id} className="system-message">{msg.text}</div>;
+                    }
+
+
+                    const replyMsg = msg.replyTo ? getReplyMessage(msg.replyTo) : null;
+                    const userColor = `hsl(${msg.username.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % 360}, 70%, 60%)`;
+
+                    return (
+                      <div key={msg.id} className="message-bubble" style={{ marginBottom: '15px', background: msg.username === username ? '#1a1a1a' : '#0a0a0a', padding: '15px', borderRadius: '15px', border: '1px solid #333' }}>
+                        <div className="message-actions">
+                          <button onClick={() => setReplyTo(msg)} className="action-btn">Reply</button>
+                          <button onClick={() => setShowEmojiPicker(showEmojiPicker === msg.id ? null : msg.id)} className="action-btn">
+                            <Smile />
+                          </button>
+                        </div>
+
+                        {showEmojiPicker === msg.id && (
+                          <div className="emoji-picker">
+                            {EMOJIS.map(emoji => (
+                              <button key={emoji} onClick={() => {
+                                addReaction(msg.id, emoji);
+                                setShowEmojiPicker(null);
+                              }} className="emoji-btn">
+                                {emoji}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', marginBottom: '8px' }}>
+                          <span style={{ color: userColor, fontWeight: 'bold', fontSize: '14px' }}>{msg.username}</span>
+                          <span style={{ color: '#666', fontSize: '12px' }}>{formatTime(msg.timestamp)}</span>
+                        </div>
+
+                        {replyMsg && (
+                          <div className="reply-to" style={{ borderColor: userColor }}>
+                            <div style={{ fontSize: '11px', color: '#999', marginBottom: '4px' }}>Replying to {replyMsg.username}</div>
+                            <div style={{ fontSize: '12px', opacity: 0.7 }}>{replyMsg.text.substring(0, 50)}{replyMsg.text.length > 50 ? '...' : ''}</div>
+                          </div>
+                        )}
+
+                        {msg.type === 'snap' && msg.image ? (
+                          <div style={{ marginTop: '8px' }}>
+                            <img 
+                              src={msg.image} 
+                              alt="Snap" 
+                              style={{ 
+                                maxWidth: '100%', 
+                                maxHeight: '400px', 
+                                borderRadius: '10px',
+                                cursor: 'pointer'
+                              }} 
+                            />
+                          </div>
+                        ) : msg.type === 'video' && msg.videoUrl ? (
+                          <div style={{ marginTop: '8px' }}>
+                            <video 
+                              src={msg.videoUrl} 
+                              controls 
+                              style={{ 
+                                maxWidth: '100%', 
+                                maxHeight: '400px', 
+                                borderRadius: '10px'
+                              }} 
+                            />
+                          </div>
+                        ) : (
+                          <div style={{ fontSize: '15px', lineHeight: '1.5', wordBreak: 'break-word' }}>{msg.text}</div>
+                        )}
+
+                        {msg.reactions && Object.keys(msg.reactions).length > 0 && (
+                          <div className="reaction-container">
+                            {Object.entries(msg.reactions).map(([emoji, users]) => (
+                              <div key={emoji} onClick={() => addReaction(msg.id, emoji)} className={`reaction ${users.includes(username) ? 'active' : ''}`}>
+                                <span>{emoji}</span>
+                                <span>{users.length}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+
+                  {typingUsers.length > 0 && (
+                    <div className="typing-indicator">
+                      {typingUsers.join(', ')} {typingUsers.length === 1 ? 'is' : 'are'} typing...
+                    </div>
+                  )}
+
+                  <div ref={messagesEndRef} />
+                </div>
+              </div>
+
+              <div className="glow-border" style={{ background: '#0a0a0a', padding: '20px', borderTop: '1px solid #333' }}>
+                <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+                  {replyTo && (
+                    <div className="reply-preview">
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '5px' }}>
+                        <span style={{ fontSize: '12px', color: '#999' }}>Replying to {replyTo.username}</span>
+                        <button onClick={() => setReplyTo(null)} style={{ background: 'transparent', border: 'none', color: '#666', cursor: 'pointer', fontSize: '18px', lineHeight: 1 }}>×</button>
+                      </div>
+                      <div style={{ fontSize: '13px', opacity: 0.8 }}>{replyTo.text.substring(0, 80)}{replyTo.text.length > 80 ? '...' : ''}</div>
+                    </div>
+                  )}
+
+
+                  {showImageInput && (
+                    <div style={{ marginBottom: '15px', background: '#1a1a1a', padding: '20px', borderRadius: '15px', border: '1px solid #333' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                        <h3 style={{ fontSize: '16px', fontWeight: 'bold' }}>🖼️ Send Image/GIF</h3>
+                        <button onClick={() => setShowImageInput(false)} style={{ background: 'transparent', border: 'none', color: '#999', cursor: 'pointer', fontSize: '24px' }}>×</button>
+                      </div>
+                      <div style={{ marginBottom: '10px', padding: '8px', background: '#0a2a0a', border: '1px solid #00ff88', borderRadius: '8px', color: '#88ffcc', fontSize: '12px' }}>
+                        💡 <strong>Tip:</strong> You can paste Giphy page URLs directly! Or use "Share" → "Copy GIF Link" from Giphy/Tenor
+                      </div>
+                      <input
+                        type="text"
+                        value={imageUrl}
+                        onChange={(e) => setImageUrl(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && sendImageUrl()}
+                        placeholder="Paste image or GIF URL..."
+                        style={{ width: '100%', padding: '15px', background: '#0a0a0a', border: '1px solid #333', borderRadius: '10px', color: '#fff', fontSize: '15px', marginBottom: '15px' }}
+                      />
+                      {imageUrl && (
+                        <div style={{ marginBottom: '15px', textAlign: 'center' }}>
+                          <img src={imageUrl} alt="Preview" style={{ maxWidth: '100%', maxHeight: '200px', borderRadius: '10px' }} onError={(e) => e.target.style.display = 'none'} />
+                        </div>
+                      )}
+                      <button onClick={sendImageUrl} className="glow-button" style={{ width: '100%', background: '#fff', color: '#000', padding: '15px', borderRadius: '10px', border: 'none', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>
+                        📤 SEND IMAGE
+                      </button>
+                    </div>
+                  )}
+
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <input
+                      type="text"
+                      value={message}
+                      onChange={(e) => {
+                        setMessage(e.target.value);
+                        updateTyping();
+                      }}
+                      onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
+                      placeholder="Type a message..."
+                      style={{ flex: 1, padding: '15px', background: '#1a1a1a', border: '1px solid #333', borderRadius: '10px', color: '#fff', fontSize: '15px' }}
+                    />
+                    <button onClick={sendMessage} className="glow-button" style={{ background: '#fff', color: '#000', padding: '15px 30px', borderRadius: '10px', border: 'none', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Send /> Send
+                    </button>
+                    <button onClick={openSnapCamera} className="glow-button" style={{ background: '#ffeb3b', color: '#000', padding: '15px 30px', borderRadius: '10px', border: 'none', fontSize: '20px', fontWeight: 'bold', cursor: 'pointer' }} title="Take a snap">
+                      📸
+                    </button>
+                    <button onClick={() => setShowImageInput(!showImageInput)} className="glow-button" style={{ background: '#1a1a1a', color: '#fff', padding: '15px 30px', borderRadius: '10px', border: '1px solid #333', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>
+                      🖼️
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Messages */}
-            {!inCall && (
-              <div style={{ 
-                flex: 1,
-                overflowY: 'auto',
-                padding: '20px'
-              }}>
-                {messages.map(msg => (
-                  <div key={msg.id} style={{ marginBottom: '15px' }}>
-                    {msg.type === 'snap' || msg.type === 'video' ? (
-                      <div>
-                        <p style={{ fontSize: '12px', color: '#666', marginBottom: '5px' }}>
-                          {msg.sender}
-                        </p>
-                        {msg.type === 'snap' ? (
-                          <img src={msg.data} style={{ maxWidth: '300px', borderRadius: '10px' }} alt="Snap" />
-                        ) : (
-                          <video src={msg.data} controls style={{ maxWidth: '300px', borderRadius: '10px' }} />
-                        )}
-                      </div>
-                    ) : (
-                      <div className="message-bubble" style={{
-                        background: msg.sender === username ? '#0084ff' : '#333',
-                        color: '#fff',
-                        padding: '10px 15px',
-                        borderRadius: '18px',
-                        maxWidth: '70%',
-                        marginLeft: msg.sender === username ? 'auto' : '0'
-                      }}>
-                        {msg.sender !== username && (
-                          <div style={{ fontSize: '12px', opacity: 0.7, marginBottom: '4px' }}>
-                            {msg.sender}
-                          </div>
-                        )}
-                        <div>{msg.text}</div>
-                      </div>
-                    )}
-                  </div>
-                ))}
-                <div ref={messagesEndRef} />
-              </div>
-            )}
+            {/* Render open game windows */}
+            {openGameWindows.map(window => (
+              <MinimizedWindow 
+                key={window.id}
+                title={window.title}
+                url={window.url}
+                icon={window.icon}
+                onClose={() => closeGameWindow(window.id)}
+              />
+            ))}
 
-            {/* Group Call View */}
+            {/* Video Call Modal */}
             {inCall && (
-              <div style={{
-                flex: 1,
-                background: '#000',
-                position: 'relative'
-              }}>
-                <div className={`group-call-grid participants-${Object.keys(remoteStreams).length + 1}`}>
+
+            {/* Group Call Modal */}
+            {isGroupCall && inCall && (
+              <div className="video-call-modal">
+                <div style={{ padding: '20px', background: '#0a0a0a', borderBottom: '1px solid #333' }}>
+                  <h3 style={{ margin: 0, fontSize: '18px' }}>Group Call - {groupCallParticipants.length + 1} participants</h3>
+                </div>
+                <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '10px', padding: '20px', overflow: 'auto' }}>
                   {/* Local video */}
-                  <div className="participant-video-container">
-                    <video
-                      ref={localVideoRef}
-                      autoPlay
-                      playsInline
-                      muted
-                      className="participant-video"
-                      style={{ transform: 'scaleX(-1)' }}
+                  <div style={{ position: 'relative', background: '#000', borderRadius: '15px', overflow: 'hidden', aspectRatio: '4/3' }}>
+                    <video 
+                      ref={localVideoRef} 
+                      autoPlay 
+                      playsInline 
+                      muted 
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     />
-                    <div className="participant-info">
-                      <span>{username} (You)</span>
-                      <div className="participant-status">
-                        {isMuted && <span className="status-icon">🔇</span>}
-                        {isVideoOff && <span className="status-icon">📹</span>}
-                      </div>
+                    <div style={{ position: 'absolute', bottom: '10px', left: '10px', background: 'rgba(0,0,0,0.7)', padding: '5px 10px', borderRadius: '8px', fontSize: '14px' }}>
+                      You
                     </div>
                   </div>
-
                   {/* Remote videos */}
-                  {Object.entries(remoteStreams).map(([peerUsername, stream]) => (
-                    <div key={peerUsername} className="participant-video-container">
-                      <video
-                        ref={el => remoteVideoRefs.current[peerUsername] = el}
-                        autoPlay
-                        playsInline
-                        className="participant-video"
-                      />
-                      <div className="participant-info">
-                        <span>{peerUsername}</span>
+                  {groupCallParticipants.map(participant => (
+                    <div key={participant} style={{ position: 'relative', background: '#1a1a1a', borderRadius: '15px', overflow: 'hidden', aspectRatio: '4/3', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {participantStreamsRef.current[participant] ? (
+                        <video 
+                          autoPlay 
+                          playsInline 
+                          ref={el => { if (el) el.srcObject = participantStreamsRef.current[participant]; }}
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        />
+                      ) : (
+                        <div style={{ fontSize: '48px' }}>📞</div>
+                      )}
+                      <div style={{ position: 'absolute', bottom: '10px', left: '10px', background: 'rgba(0,0,0,0.7)', padding: '5px 10px', borderRadius: '8px', fontSize: '14px' }}>
+                        {participant}
                       </div>
                     </div>
                   ))}
                 </div>
-
-                {/* Call controls */}
-                <div style={{
-                  position: 'absolute',
-                  bottom: '20px',
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  display: 'flex',
-                  gap: '15px',
-                  background: 'rgba(0, 0, 0, 0.8)',
-                  padding: '15px 25px',
-                  borderRadius: '50px',
-                  backdropFilter: 'blur(10px)'
-                }}>
-                  <button
-                    onClick={toggleMute}
-                    style={{
-                      width: '50px',
-                      height: '50px',
-                      borderRadius: '50%',
-                      background: isMuted ? '#ff3b30' : 'rgba(255, 255, 255, 0.2)',
-                      border: 'none',
-                      fontSize: '24px',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s'
-                    }}
+                <div className="call-controls">
+                  <button 
+                    onClick={toggleMute} 
+                    className={`call-btn mute ${isMuted ? 'active' : ''}`}
                     title={isMuted ? 'Unmute' : 'Mute'}
                   >
                     {isMuted ? '🔇' : '🎤'}
                   </button>
-                  <button
-                    onClick={toggleVideo}
-                    style={{
-                      width: '50px',
-                      height: '50px',
-                      borderRadius: '50%',
-                      background: isVideoOff ? '#ff3b30' : 'rgba(255, 255, 255, 0.2)',
-                      border: 'none',
-                      fontSize: '24px',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s'
-                    }}
+                  <button 
+                    onClick={toggleVideo} 
+                    className={`call-btn video-toggle ${isVideoOff ? 'active' : ''}`}
                     title={isVideoOff ? 'Turn on camera' : 'Turn off camera'}
                   >
                     {isVideoOff ? '📹' : '📷'}
                   </button>
-                  <button
-                    onClick={endCall}
-                    style={{
-                      width: '50px',
-                      height: '50px',
-                      borderRadius: '50%',
-                      background: '#ff3b30',
-                      border: 'none',
-                      fontSize: '24px',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s'
-                    }}
-                    title="End call"
+                  <button 
+                    onClick={endGroupCall} 
+                    className="call-btn end"
+                    title="Leave call"
                   >
                     ☎️
                   </button>
                 </div>
-
-                {/* Notifications in call */}
-                {notifications.length > 0 && (
-                  <div style={{
-                    position: 'absolute',
-                    top: '20px',
-                    right: '20px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '10px',
-                    maxWidth: '300px'
-                  }}>
-                    {notifications.map(notif => (
-                      <div
-                        key={notif.id}
-                        style={{
-                          background: 'rgba(0, 0, 0, 0.9)',
-                          border: '1px solid rgba(255, 255, 255, 0.2)',
-                          borderRadius: '10px',
-                          padding: '12px',
-                          backdropFilter: 'blur(10px)'
-                        }}
-                      >
-                        <div style={{ marginBottom: '8px' }}>{notif.text}</div>
+              </div>
+            )}
+              <div className="video-call-modal">
+                <div className="video-container">
+                  <video 
+                    ref={remoteVideoRef} 
+                    autoPlay 
+                    playsInline
+                    controls={false}
+                    className="remote-video"
+                    style={{ 
+                      display: remoteStream ? 'block' : 'none',
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover'
+                    }}
+                  />
+                  {!remoteStream && (
+                    <div className="call-status">
+                      <div style={{ fontSize: '48px', marginBottom: '20px' }}>📞</div>
+                      <div>Calling {callWith}...</div>
+                      <div style={{ fontSize: '14px', color: '#999', marginTop: '10px' }}>Waiting for them to answer...</div>
+                    </div>
+                  )}
+                  
+                  {/* Local video - always show for both users */}
+                  {!isVideoOff ? (
+                    <video 
+                      ref={localVideoRef} 
+                      autoPlay 
+                      playsInline 
+                      muted 
+                      className="local-video"
+                      style={{
+                        position: 'absolute',
+                        top: '20px',
+                        right: '20px',
+                        width: '150px',
+                        height: '200px',
+                        borderRadius: '15px',
+                        border: '2px solid #fff',
+                        objectFit: 'cover',
+                        boxShadow: '0 4px 15px rgba(0,0,0,0.5)',
+                        zIndex: 10,
+                        display: 'block'
+                      }}
+                    />
+                  ) : (
+                    <div 
+                      className="local-video" 
+                      style={{ 
+                        position: 'absolute',
+                        top: '20px',
+                        right: '20px',
+                        width: '150px',
+                        height: '200px',
+                        borderRadius: '15px',
+                        border: '2px solid #fff',
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center', 
+                        background: '#1a1a1a',
+                        boxShadow: '0 4px 15px rgba(0,0,0,0.5)',
+                        zIndex: 10
+                      }}
+                    >
+                      <span style={{ fontSize: '48px' }}>📹</span>
+                    </div>
+                  )}
+                  
+                  {/* In-call chat notifications */}
+                  {inCallNotifications.map(notif => (
+                    <div
+                      key={notif.id}
+                      style={{
+                        position: 'absolute',
+                        top: '20px',
+                        left: '20px',
+                        maxWidth: '300px',
+                        background: 'rgba(0, 0, 0, 0.9)',
+                        border: '1px solid rgba(255, 255, 255, 0.3)',
+                        borderRadius: '15px',
+                        padding: '15px',
+                        zIndex: 10,
+                        animation: 'slideIn 0.3s ease-out',
+                        backdropFilter: 'blur(10px)',
+                        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.5)'
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                        <div style={{ fontWeight: 'bold', fontSize: '14px' }}>💬 {notif.from}</div>
                         <button
                           onClick={() => dismissNotification(notif.id)}
                           style={{
-                            background: 'rgba(255, 255, 255, 0.2)',
-                            border: '1px solid rgba(255, 255, 255, 0.3)',
-                            color: '#fff',
-                            padding: '6px 12px',
-                            borderRadius: '8px',
-                            fontSize: '12px',
+                            background: 'transparent',
+                            border: 'none',
+                            color: '#999',
                             cursor: 'pointer',
-                            width: '100%'
+                            fontSize: '16px',
+                            padding: '0 5px'
                           }}
                         >
-                          Dismiss
+                          ✕
                         </button>
                       </div>
-                    ))}
+                      <div style={{ 
+                        fontSize: '13px', 
+                        color: '#ccc', 
+                        marginBottom: '10px',
+                        wordBreak: 'break-word',
+                        maxHeight: '60px',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis'
+                      }}>
+                        {notif.text}
+                      </div>
+                      <button
+                        onClick={() => dismissNotification(notif.id)}
+                        style={{
+                          background: 'rgba(255, 255, 255, 0.2)',
+                          border: '1px solid rgba(255, 255, 255, 0.3)',
+                          color: '#fff',
+                          padding: '6px 12px',
+                          borderRadius: '8px',
+                          fontSize: '12px',
+                          cursor: 'pointer',
+                          width: '100%',
+                          transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.3)'}
+                        onMouseLeave={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.2)'}
+                      >
+                        Dismiss
+                      </button>
+                    </div>
+                  ))}
+
+                  <div className="call-controls">
+                    <button 
+                      onClick={toggleMute} 
+                      className={`call-btn mute ${isMuted ? 'active' : ''}`}
+                      title={isMuted ? 'Unmute' : 'Mute'}
+                    >
+                      {isMuted ? '🔇' : '🎤'}
+                    </button>
+                    <button 
+                      onClick={toggleVideo} 
+                      className={`call-btn video-toggle ${isVideoOff ? 'active' : ''}`}
+                      title={isVideoOff ? 'Turn on camera' : 'Turn off camera'}
+                    >
+                      {isVideoOff ? '📹' : '📷'}
+                    </button>
+                    <button 
+                      onClick={endCall} 
+                      className="call-btn end"
+                      title="End call"
+                    >
+                      ☎️
+                    </button>
                   </div>
-                )}
+                </div>
               </div>
             )}
 
-            {/* Message input */}
-            {!inCall && (
-              <div style={{
-                padding: '15px 20px',
-                background: '#111',
-                borderTop: '1px solid #333',
-                display: 'flex',
-                gap: '10px'
-              }}>
-                <button
-                  onClick={openSnapCamera}
-                  style={{
-                    padding: '10px 20px',
-                    background: '#ffeb3b',
-                    color: '#000',
-                    border: 'none',
-                    borderRadius: '8px',
-                    fontWeight: 'bold',
-                    cursor: 'pointer',
-                    fontSize: '18px'
-                  }}
-                >
-                  📸
-                </button>
-                <input
-                  type="text"
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-                  placeholder="Type a message..."
-                  style={{
-                    flex: 1,
-                    padding: '12px 20px',
-                    background: '#222',
-                    border: '1px solid #444',
-                    borderRadius: '25px',
-                    color: '#fff',
-                    fontSize: '16px'
-                  }}
-                />
-                <button
-                  onClick={sendMessage}
-                  className="glow-button"
-                  style={{
-                    padding: '10px 30px',
-                    background: '#0084ff',
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: '25px',
-                    fontWeight: 'bold',
-                    cursor: 'pointer'
-                  }}
-                >
-                  Send
-                </button>
-              </div>
-            )}
-
-            {/* Incoming Call Modal */}
+            {/* Incoming Call */}
             {incomingCall && !inCall && (
-              <div style={{
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                background: 'rgba(0,0,0,0.9)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                zIndex: 10001
-              }}>
-                <div style={{
-                  background: '#111',
-                  padding: '40px',
-                  borderRadius: '20px',
-                  textAlign: 'center',
-                  border: '2px solid #333'
-                }}>
-                  <div style={{ fontSize: '64px', marginBottom: '20px' }} className="glow">📞</div>
-                  <h2 style={{ fontSize: '24px', marginBottom: '10px' }}>Incoming Group Call</h2>
-                  <p style={{ fontSize: '18px', color: '#999', marginBottom: '30px' }}>
-                    {callParticipants.length} {callParticipants.length === 1 ? 'person' : 'people'} in the call
-                  </p>
+              <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10001 }}>
+                <div className="incoming-call">
+                  <div style={{ fontSize: '64px', marginBottom: '20px', animation: 'glow 1s ease-in-out infinite' }}>📞</div>
+                  <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '10px' }}>Incoming Call</h2>
+                  <p style={{ fontSize: '18px', color: '#999', marginBottom: '30px' }}>{incomingCall.from} is calling you...</p>
                   <div style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
-                    <button
-                      onClick={joinGroupCall}
-                      className="glow-button"
-                      style={{
-                        padding: '15px 40px',
-                        background: '#00ff00',
-                        color: '#000',
-                        border: 'none',
-                        borderRadius: '50px',
-                        fontSize: '18px',
-                        fontWeight: 'bold',
-                        cursor: 'pointer'
+                    <button 
+                      onClick={() => answerCall(incomingCall.from)} 
+                      className="glow-button" 
+                      style={{ 
+                        background: '#00ff00', 
+                        color: '#000', 
+                        padding: '15px 40px', 
+                        borderRadius: '50px', 
+                        border: 'none', 
+                        fontSize: '18px', 
+                        fontWeight: 'bold', 
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px'
                       }}
                     >
-                      📞 Join
+                      📞 Answer
                     </button>
-                    <button
-                      onClick={declineCall}
-                      style={{
-                        padding: '15px 40px',
-                        background: '#ff3b30',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: '50px',
-                        fontSize: '18px',
-                        fontWeight: 'bold',
-                        cursor: 'pointer'
+                    <button 
+                      onClick={declineCall} 
+                      style={{ 
+                        background: '#ff3b30', 
+                        color: '#fff', 
+                        padding: '15px 40px', 
+                        borderRadius: '50px', 
+                        border: 'none', 
+                        fontSize: '18px', 
+                        fontWeight: 'bold', 
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px'
                       }}
                     >
                       ❌ Decline
@@ -1520,8 +3076,11 @@
             {/* Snap Camera Modal */}
             {showSnapCamera && (
               <div className="snap-camera-modal">
-                <button onClick={closeSnapCamera} className="snap-close-btn">✕</button>
+                <button onClick={closeSnapCamera} className="snap-close-btn">
+                  ✕
+                </button>
                 
+                {/* Mode toggle button */}
                 <button 
                   onClick={toggleCaptureMode}
                   style={{
@@ -1536,7 +3095,11 @@
                     fontSize: '14px',
                     fontWeight: 'bold',
                     cursor: 'pointer',
-                    zIndex: 11
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    zIndex: 11,
+                    transition: 'all 0.2s'
                   }}
                 >
                   {captureMode === 'photo' ? '📸 Photo' : '🎥 Video'}
@@ -1546,14 +3109,15 @@
                   {!capturedSnap && !recordedVideo ? (
                     <>
                       <video 
-                        ref={snapVideoRef}
-                        autoPlay
-                        playsInline
+                        ref={snapVideoRef} 
+                        autoPlay 
+                        playsInline 
                         muted
                         className="snap-video"
                         style={{ transform: isFrontCamera ? 'scaleX(-1)' : 'none' }}
                       />
                       
+                      {/* Recording indicator */}
                       {isRecording && (
                         <div style={{
                           position: 'absolute',
@@ -1566,17 +3130,29 @@
                           borderRadius: '50px',
                           fontSize: '16px',
                           fontWeight: 'bold',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '10px',
                           zIndex: 11
                         }}>
-                          🔴 {Math.floor(recordingTime / 60)}:{(recordingTime % 60).toString().padStart(2, '0')}
+                          <div style={{
+                            width: '12px',
+                            height: '12px',
+                            borderRadius: '50%',
+                            background: '#fff',
+                            animation: 'glow 1s ease-in-out infinite'
+                          }} />
+                          {Math.floor(recordingTime / 60)}:{(recordingTime % 60).toString().padStart(2, '0')}
                         </div>
                       )}
                       
                       <div className="snap-controls">
-                        <button onClick={flipCamera} className="snap-action-btn">🔄</button>
+                        <button onClick={flipCamera} className="snap-action-btn" title="Flip camera">
+                          🔄
+                        </button>
                         
                         {captureMode === 'photo' ? (
-                          <button onClick={captureSnap} className="snap-capture-btn" />
+                          <button onClick={captureSnap} className="snap-capture-btn" title="Capture photo" />
                         ) : (
                           <button 
                             onClick={isRecording ? stopRecording : startRecording}
@@ -1585,16 +3161,23 @@
                               background: isRecording ? '#ff4444' : '#fff',
                               border: isRecording ? '5px solid #fff' : '5px solid rgba(255, 255, 255, 0.3)'
                             }}
+                            title={isRecording ? 'Stop recording' : 'Start recording'}
                           />
                         )}
                       </div>
                     </>
                   ) : (
                     <>
-                      {capturedSnap && <img src={capturedSnap} className="snap-preview-image" alt="Snap" />}
-                      {recordedVideo && <video src={recordedVideo} className="snap-preview-image" controls autoPlay loop />}
+                      {capturedSnap && (
+                        <img src={capturedSnap} className="snap-preview-image" alt="Captured snap" />
+                      )}
+                      {recordedVideo && (
+                        <video src={recordedVideo} className="snap-preview-image" controls autoPlay loop />
+                      )}
                       <div className="snap-controls">
-                        <button onClick={retakeSnap} className="snap-action-btn">↺</button>
+                        <button onClick={retakeSnap} className="snap-action-btn" title="Retake">
+                          ↺
+                        </button>
                       </div>
                       <button onClick={sendSnap} className="snap-send-btn">
                         📤 Send {capturedSnap ? 'Snap' : 'Video'}
@@ -1607,34 +3190,28 @@
             )}
 
             {!showDebug && (
-              <div 
-                onClick={() => setShowDebug(true)}
-                style={{
-                  position: 'fixed',
-                  bottom: '20px',
-                  left: '20px',
-                  width: '40px',
-                  height: '40px',
-                  background: '#222',
-                  border: '1px solid #444',
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: 'pointer',
-                  zIndex: 9999
-                }}
-              >
+              <div className="debug-toggle" onClick={() => setShowDebug(true)}>
                 <Bug />
               </div>
             )}
             {showDebug && <DebugConsole logs={logs} onClose={() => setShowDebug(false)} />}
-          </div>
-        </>
-      );
+          </>
+        );
+      }
+
+      return null;
     }
 
     ReactDOM.render(<ChatroomApp />, document.getElementById('root'));
   </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
