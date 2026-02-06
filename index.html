@@ -2701,7 +2701,7 @@ const kickUser = async (targetUser) => {
                 <div style={{ background: '#0a0a0a', padding: '10px 20px', borderBottom: '1px solid #333' }}>
                   <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
                     <Users style={{ width: '16px', height: '16px' }} />
-                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', flex: 1 }}>
                       {roomUsers.map(user => (
                         <div key={user} style={{ background: '#1a1a1a', padding: '6px 12px', borderRadius: '8px', border: '1px solid #333', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <span>{user}</span>
@@ -2730,6 +2730,29 @@ const kickUser = async (targetUser) => {
                         </div>
                       ))}
                     </div>
+                    {roomUsers.length > 2 && !inCall && (
+                      <button 
+                        onClick={() => setShowGroupCallModal(true)}
+                        className="glow-button"
+                        style={{ 
+                          background: '#00ff88', 
+                          color: '#000', 
+                          padding: '8px 16px', 
+                          borderRadius: '8px', 
+                          border: 'none', 
+                          fontSize: '14px', 
+                          fontWeight: 'bold', 
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          whiteSpace: 'nowrap'
+                        }}
+                        title="Start group call"
+                      >
+                        📞 Group Call
+                      </button>
+                    )}
                   </div>
                 </div>
               )}
