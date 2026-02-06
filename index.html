@@ -978,80 +978,6 @@
       font-size: 12px;
       font-weight: bold;
     }
-    @keyframes speakingPulse {
-      0%, 100% {
-        box-shadow: 0 0 0 0 rgba(0, 255, 0, 0.7);
-      }
-      50% {
-        box-shadow: 0 0 0 8px rgba(0, 255, 0, 0);
-      }
-    }
-
-    .speaking {
-      border: 3px solid #00ff00 !important;
-      animation: speakingPulse 1.5s ease-in-out infinite;
-    }
-
-    /* GROUP CALL VIDEO GRID */
-    .group-call-video-modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: #000;
-      z-index: 10000;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .group-video-grid {
-      flex: 1;
-      display: grid;
-      gap: 10px;
-      padding: 10px;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      grid-auto-rows: minmax(200px, 1fr);
-      overflow-y: auto;
-    }
-
-    .group-video-tile {
-      position: relative;
-      background: #1a1a1a;
-      border-radius: 15px;
-      overflow: hidden;
-      border: 3px solid transparent;
-      transition: border 0.3s ease;
-    }
-
-    .group-video-tile video {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .group-video-label {
-      position: absolute;
-      bottom: 10px;
-      left: 10px;
-      background: rgba(0, 0, 0, 0.7);
-      color: #fff;
-      padding: 5px 10px;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: bold;
-      z-index: 10;
-    }
-
-    .group-call-controls {
-      position: absolute;
-      bottom: 40px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      gap: 20px;
-      z-index: 10;
-    }
   </style>
 </head>
 <body>
@@ -1259,7 +1185,6 @@
       const [inCallNotifications, setInCallNotifications] = useState([]);
       const [isGroupCall, setIsGroupCall] = useState(false);
       const [groupCallParticipants, setGroupCallParticipants] = useState([]);
-      const [speakingUsers, setSpeakingUsers] = useState(new Set());
       const [showGroupCallModal, setShowGroupCallModal] = useState(false);
       const [selectedGroupMembers, setSelectedGroupMembers] = useState([]);
 
@@ -1272,8 +1197,6 @@
       const snapVideoRef = useRef(null);
       const snapCanvasRef = useRef(null);
       const recordingIntervalRef = useRef(null);
-      const audioContextRef = useRef(null);
-      const analyserNodesRef = useRef({});
 
       const addDebugLog = (message, type = 'info') => {
         addDebugLogGlobal(message, type);
@@ -1795,7 +1718,6 @@ const startCall = async (targetUser) => {
           
           setInCall(true);
           setCallWith(targetUser);
-          setViewMode('videoCall');
           
           setLocalStream(stream);
           
@@ -1987,7 +1909,6 @@ const startCall = async (targetUser) => {
           setInCall(true);
           setCallWith(caller);
           setIncomingCall(null);
-          setViewMode('videoCall');
 
           // Wait for React to render the video element, then attach stream
           setTimeout(() => {
@@ -2225,14 +2146,9 @@ const endCall = () => {
             localVideoRef.current.srcObject = stream;
           }
           
-          // Detect local speaking
-          detectSpeaking(stream, username);
-          
           setIsGroupCall(true);
           setInCall(true);
           
-          setShowGroupCallModal(false);
-          setViewMode('videoCall');
           // Announce joining
           await db.ref(`groupCalls/${currentRoom}/participants/${username}`).set({
             joined: Date.now(),
@@ -2278,9 +2194,6 @@ const endCall = () => {
           if (event.streams[0]) {
             participantStreamsRef.current[participant] = event.streams[0];
             setGroupCallParticipants(prev => [...prev]);
-            
-            // Detect speaking for this participant
-            detectSpeaking(event.streams[0], participant);
           }
         };
         
@@ -2333,45 +2246,6 @@ const endCall = () => {
         setGroupCallParticipants([]);
         setLocalStream(null);
       };
-
-      const detectSpeaking = (stream, participantId) => {
-        if (!audioContextRef.current) {
-          audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
-        }
-        
-        const audioContext = audioContextRef.current;
-        const analyser = audioContext.createAnalyser();
-        const microphone = audioContext.createMediaStreamSource(stream);
-        
-        analyser.fftSize = 512;
-        analyser.smoothingTimeConstant = 0.8;
-        microphone.connect(analyser);
-        
-        analyserNodesRef.current[participantId] = analyser;
-        
-        const bufferLength = analyser.frequencyBinCount;
-        const dataArray = new Uint8Array(bufferLength);
-        
-        const checkAudio = () => {
-          analyser.getByteFrequencyData(dataArray);
-          const average = dataArray.reduce((a, b) => a + b) / bufferLength;
-          
-          setSpeakingUsers(prev => {
-            const newSet = new Set(prev);
-            if (average > 15) {
-              newSet.add(participantId);
-            } else {
-              newSet.delete(participantId);
-            }
-            return newSet;
-          });
-          
-          requestAnimationFrame(checkAudio);
-        };
-        
-        checkAudio();
-      };
-
 
 
       // Listen for incoming calls
@@ -3099,7 +2973,7 @@ const kickUser = async (targetUser) => {
             ))}
 
             {/* Video Call Modal */}
-            {inCall && !isGroupCall && (
+            {inCall && (
               <div className="video-call-modal">
                 <div className="video-container">
                   <video 
@@ -3258,70 +3132,6 @@ const kickUser = async (targetUser) => {
                       ☎️
                     </button>
                   </div>
-                </div>
-              </div>
-            )}
-
-
-            {/* Group Call Video Modal */}
-            {isGroupCall && inCall && (
-              <div className="group-call-video-modal">
-                <div className="group-video-grid">
-                  {/* Local video tile */}
-                  <div className={`group-video-tile ${speakingUsers.has(username) ? 'speaking' : ''}`}>
-                    <video
-                      ref={localVideoRef}
-                      autoPlay
-                      playsInline
-                      muted
-                      style={{ transform: 'scaleX(-1)' }}
-                    />
-                    <div className="group-video-label">You</div>
-                  </div>
-                  
-                  {/* Remote participant tiles */}
-                  {groupCallParticipants.map(participant => (
-                    <div 
-                      key={participant} 
-                      className={`group-video-tile ${speakingUsers.has(participant) ? 'speaking' : ''}`}
-                    >
-                      <video
-                        ref={el => {
-                          if (el && participantStreamsRef.current[participant]) {
-                            el.srcObject = participantStreamsRef.current[participant];
-                            el.play().catch(err => console.error('Video play error:', err));
-                          }
-                        }}
-                        autoPlay
-                        playsInline
-                      />
-                      <div className="group-video-label">{participant}</div>
-                    </div>
-                  ))}
-                </div>
-                
-                <div className="group-call-controls">
-                  <button 
-                    onClick={toggleMute} 
-                    className={`call-btn mute ${isMuted ? 'active' : ''}`}
-                    title={isMuted ? 'Unmute' : 'Mute'}
-                  >
-                    {isMuted ? '🔇' : '🎤'}
-                  </button>
-                  <button 
-                    onClick={toggleVideo} 
-                    className={`call-btn video-toggle ${isVideoOff ? 'active' : ''}`}
-                    title={isVideoOff ? 'Turn on camera' : 'Turn off camera'}
-                  >
-                    {isVideoOff ? '📹' : '📷'}
-                  </button>
-                  <button 
-                    onClick={endGroupCall} 
-                    className="call-btn end"
-                    title="End call"
-                  >
-                    ☎️
-                  </button>
                 </div>
               </div>
             )}
