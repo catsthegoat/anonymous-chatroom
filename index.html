@@ -1643,8 +1643,16 @@ const startCall = async (targetUser) => {
           }, 100);
 
 // Fetch TURN credentials dynamically
-          const response = await fetch("https://anonymouschatrooms.metered.live/api/v1/turn/credentials?apiKey=fa754f2f657d2fc740d9678ec728daf430ad");
-          const iceServers = await response.json();
+          const response = await fetch("https://global.xirsys.net/_turn/anonymouschatrooms", {
+            method: "PUT",
+            headers: {
+              "Authorization": "Basic " + btoa("anonymouschatrooms:c654b5a8-0831-11f1-9e71-0242ac150003"),
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ format: "urls" })
+          });
+          const data = await response.json();
+          const iceServers = data.v.iceServers;
           
           // Create peer connection
           const configuration = {
@@ -1834,8 +1842,16 @@ const startCall = async (targetUser) => {
 
           
 // Fetch TURN credentials dynamically
-          const response = await fetch("https://anonymouschatrooms.metered.live/api/v1/turn/credentials?apiKey=fa754f2f657d2fc740d9678ec728daf430ad");
-          const iceServers = await response.json();
+          const response = await fetch("https://global.xirsys.net/_turn/anonymouschatrooms", {
+            method: "PUT",
+            headers: {
+              "Authorization": "Basic " + btoa("anonymouschatrooms:c654b5a8-0831-11f1-9e71-0242ac150003"),
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ format: "urls" })
+          });
+          const data = await response.json();
+          const iceServers = data.v.iceServers;
           
           // Create peer connection
           const configuration = {
