@@ -2125,7 +2125,6 @@ const endCall = () => {
           setIsGroupCall(true);
           setInCall(true);
 
-          // Attach local stream after render
           setTimeout(() => {
             if (localVideoRef.current) {
               localVideoRef.current.srcObject = stream;
@@ -2133,70 +2132,56 @@ const endCall = () => {
             }
           }, 100);
 
-          // Announce presence
+          // Write our presence FIRST, then snapshot to see who else is here
           await db.ref(`groupCalls/${currentRoom}/participants/${username}`).set({ joined: Date.now(), online: true });
           db.ref(`groupCalls/${currentRoom}/participants/${username}`).onDisconnect().remove();
-
-          // Announce room-level flag so others see an active group call
           await db.ref(`groupCalls/${currentRoom}/active`).set(true);
 
-          // Snapshot existing participants BEFORE attaching child_added listener
-          // to avoid re-processing them when the listener fires for existing keys
-          const snap = await db.ref(`groupCalls/${currentRoom}/participants`).once('value');
-          const existing = snap.val() ? Object.keys(snap.val()).filter(p => p !== username) : [];
           const iceServers = await getIceServers();
 
-          // Connect to all currently present participants (we are the initiator)
+          // ── Core rule: the alphabetically "smaller" username is ALWAYS the initiator.
+          // This guarantees exactly one side sends the offer for every pair, regardless
+          // of who joined first.
+          const iAmInitiator = (other) => username < other;
+
+          // Snapshot who is already in the call
+          const snap = await db.ref(`groupCalls/${currentRoom}/participants`).once('value');
+          const existing = snap.val() ? Object.keys(snap.val()).filter(p => p !== username) : [];
+
           for (const participant of existing) {
-            await createGroupPeer(participant, stream, iceServers, true);
+            await createGroupPeer(participant, stream, iceServers, iAmInitiator(participant));
           }
 
-          // Listen for NEW participants joining AFTER us → we send them offers
-          // Use the snapshot so child_added only fires for keys added after this point
+          // Watch for new participants (and departures)
           const participantsRef = db.ref(`groupCalls/${currentRoom}/participants`);
+
           const handleChildAdded = async (childSnap) => {
             const newUser = childSnap.key;
             if (newUser === username) return;
-            // Skip users we already connected to in the snapshot above
-            if (existing.includes(newUser)) return;
             if (groupPeerConnectionsRef.current[newUser]) return;
+            // Skip people we already handled in the snapshot loop above
+            if (existing.includes(newUser)) return;
             const ice = await getIceServers();
-            await createGroupPeer(newUser, groupLocalStreamRef.current, ice, true);
+            await createGroupPeer(newUser, groupLocalStreamRef.current, ice, iAmInitiator(newUser));
           };
-          participantsRef.on('child_added', handleChildAdded);
 
-          // Listen for participant leaving
           const handleChildRemoved = (childSnap) => {
             const leftUser = childSnap.key;
             if (groupPeerConnectionsRef.current[leftUser]) {
-              groupPeerConnectionsRef.current[leftUser].close();
+              try { groupPeerConnectionsRef.current[leftUser].close(); } catch(e) {}
               delete groupPeerConnectionsRef.current[leftUser];
             }
             delete participantStreamsRef.current[leftUser];
             setGroupCallParticipants(prev => prev.filter(p => p !== leftUser));
           };
+
+          participantsRef.on('child_added', handleChildAdded);
           participantsRef.on('child_removed', handleChildRemoved);
 
-          // Listen for incoming offers from other participants
-          // Path: groupCalls/{room}/signals/{ourUsername}/{senderUsername}/offer
-          const incomingSignalsRef = db.ref(`groupCalls/${currentRoom}/signals/${username}`);
-          const handleIncomingSignal = async (senderSnap) => {
-            const fromUser = senderSnap.key;
-            if (fromUser === username) return;
-            if (groupPeerConnectionsRef.current[fromUser]) return; // already connected
-            const offerData = senderSnap.child('offer').val();
-            if (offerData) {
-              const ice = await getIceServers();
-              await createGroupPeer(fromUser, groupLocalStreamRef.current, ice, false, offerData);
-            }
-          };
-          incomingSignalsRef.on('child_added', handleIncomingSignal);
-
-          // Store all listeners so endGroupCall can detach them
+          // Store listeners for cleanup
           groupCallListenersRef.current = [
             { ref: participantsRef, event: 'child_added', fn: handleChildAdded },
             { ref: participantsRef, event: 'child_removed', fn: handleChildRemoved },
-            { ref: incomingSignalsRef, event: 'child_added', fn: handleIncomingSignal },
           ];
 
           addDebugLog('Group call started', 'success');
@@ -2209,33 +2194,27 @@ const endCall = () => {
         }
       };
 
-      const createGroupPeer = async (participant, stream, iceServers, isInitiator, incomingOffer = null) => {
+      const createGroupPeer = async (participant, stream, iceServers, isInitiator) => {
         if (groupPeerConnectionsRef.current[participant]) return;
 
         const pc = new RTCPeerConnection({ iceServers, iceCandidatePoolSize: 10 });
         groupPeerConnectionsRef.current[participant] = pc;
 
-        // Add local tracks
         if (stream) {
           stream.getTracks().forEach(track => pc.addTrack(track, stream));
         }
 
-        // Receive remote stream
         pc.ontrack = (event) => {
           if (event.streams && event.streams[0]) {
             const rs = event.streams[0];
             participantStreamsRef.current[participant] = rs;
             setGroupCallParticipants(prev => prev.includes(participant) ? prev : [...prev, participant]);
-            // attach to video element if already rendered
             const vidEl = participantVideoRefs.current[participant];
-            if (vidEl) {
-              vidEl.srcObject = rs;
-              vidEl.play().catch(() => {});
-            }
+            if (vidEl) { vidEl.srcObject = rs; vidEl.play().catch(() => {}); }
           }
         };
 
-        // ICE candidates
+        // Both sides send ICE candidates to: signals/{theirName}/{ourName}/candidates
         pc.onicecandidate = (event) => {
           if (event.candidate) {
             db.ref(`groupCalls/${currentRoom}/signals/${participant}/${username}/candidates`).push({
@@ -2244,8 +2223,16 @@ const endCall = () => {
           }
         };
 
+        // Both sides listen for ICE candidates from the other side
+        const iceCandidatesRef = db.ref(`groupCalls/${currentRoom}/signals/${username}/${participant}/candidates`);
+        iceCandidatesRef.on('child_added', async (snap) => {
+          const data = snap.val();
+          if (data && data.candidate) {
+            try { await pc.addIceCandidate(new RTCIceCandidate(data.candidate)); } catch (e) {}
+          }
+        });
+
         pc.onconnectionstatechange = () => {
-          console.log(`Group peer ${participant}:`, pc.connectionState);
           if (pc.connectionState === 'failed' || pc.connectionState === 'closed') {
             delete groupPeerConnectionsRef.current[participant];
             delete participantStreamsRef.current[participant];
@@ -2253,43 +2240,47 @@ const endCall = () => {
           }
         };
 
-        // Listen for ICE candidates from the other side
-        db.ref(`groupCalls/${currentRoom}/signals/${username}/${participant}/candidates`).on('child_added', async (snap) => {
-          const data = snap.val();
-          if (data && data.candidate) {
-            try { await pc.addIceCandidate(new RTCIceCandidate(data.candidate)); } catch (e) {}
-          }
-        });
+        // Signaling paths (always relative to the pair, not caller/callee):
+        //   Offer  lives at: signals/{answerer}/{initiator}/offer
+        //   Answer lives at: signals/{initiator}/{answerer}/answer
+        const offerPath   = `groupCalls/${currentRoom}/signals/${participant}/${username}/offer`;
+        const answerPath  = `groupCalls/${currentRoom}/signals/${username}/${participant}/answer`;
 
         if (isInitiator) {
-          // Create and send offer
+          // Create offer and write it where the answerer will find it
           const offer = await pc.createOffer({ offerToReceiveAudio: true, offerToReceiveVideo: true });
           await pc.setLocalDescription(offer);
-          await db.ref(`groupCalls/${currentRoom}/signals/${participant}/${username}/offer`).set({ type: offer.type, sdp: offer.sdp });
+          await db.ref(offerPath).set({ type: offer.type, sdp: offer.sdp });
 
-          // Wait for answer
-          db.ref(`groupCalls/${currentRoom}/signals/${username}/${participant}/answer`).on('value', async (snap) => {
+          // Wait for the answerer to write their answer
+          db.ref(answerPath).on('value', async (snap) => {
             const data = snap.val();
             if (data && pc.signalingState === 'have-local-offer') {
-              await pc.setRemoteDescription(new RTCSessionDescription(data));
+              try { await pc.setRemoteDescription(new RTCSessionDescription(data)); } catch(e) {}
             }
           });
+
         } else {
-          // Received an offer — create answer
-          await pc.setRemoteDescription(new RTCSessionDescription(incomingOffer));
+          // We are the answerer — poll for the offer that the initiator will write
+          // (it might already be there, or arrive shortly)
+          const waitForOffer = () => new Promise((resolve) => {
+            const offerRef = db.ref(offerPath);
+            offerRef.on('value', (snap) => {
+              const data = snap.val();
+              if (data) {
+                offerRef.off();
+                resolve(data);
+              }
+            });
+          });
+
+          const offerData = await waitForOffer();
+          await pc.setRemoteDescription(new RTCSessionDescription(offerData));
           const answer = await pc.createAnswer();
           await pc.setLocalDescription(answer);
-          await db.ref(`groupCalls/${currentRoom}/signals/${participant}/${username}/answer`).set({ type: answer.type, sdp: answer.sdp });
-
+          // Write our answer where the initiator is listening
+          await db.ref(answerPath).set({ type: answer.type, sdp: answer.sdp });
           setGroupCallParticipants(prev => prev.includes(participant) ? prev : [...prev, participant]);
-
-          // Also listen for late ICE candidates from initiator
-          db.ref(`groupCalls/${currentRoom}/signals/${username}/${participant}/candidates`).on('child_added', async (snap) => {
-            const data = snap.val();
-            if (data && data.candidate) {
-              try { await pc.addIceCandidate(new RTCIceCandidate(data.candidate)); } catch (e) {}
-            }
-          });
         }
       };
 
