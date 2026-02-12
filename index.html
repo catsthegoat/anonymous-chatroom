@@ -1643,17 +1643,32 @@ const startCall = async (targetUser) => {
           }, 100);
 
 // Fetch TURN credentials dynamically
-          const response = await fetch("https://global.xirsys.net/_turn/anonymouschatrooms", {
-            method: "PUT",
-            headers: {
-              "Authorization": "Basic " + btoa("anonymouschatrooms:c654b5a8-0831-11f1-9e71-0242ac150003"),
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ format: "urls" })
-          });
-          const data = await response.json();
-          const iceServers = data.v.iceServers;
-          
+          let iceServers = [{ urls: "stun:stun.l.google.com:19302" }]; // fallback
+          try {
+            const response = await fetch("https://global.xirsys.net/_turn/anonymouschatrooms", {
+              method: "PUT",
+              headers: {
+                "Authorization": "Basic " + btoa("anonymouschatrooms:c654b5a8-0831-11f1-9e71-0242ac150003"),
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({ format: "urls" })
+            });
+            if (!response.ok) {
+              const errText = await response.text();
+              console.error("❌ Xirsys error:", response.status, errText);
+            } else {
+              const data = await response.json();
+              console.log("✅ Xirsys response:", data);
+              if (data.v && data.v.iceServers) {
+                iceServers = data.v.iceServers;
+              } else {
+                console.error("❌ Xirsys bad response:", data);
+              }
+            }
+          } catch (err) {
+            console.error("❌ Xirsys fetch failed:", err);
+          }
+
           // Create peer connection
           const configuration = {
             iceServers: iceServers,
@@ -1842,17 +1857,32 @@ const startCall = async (targetUser) => {
 
           
 // Fetch TURN credentials dynamically
-          const response = await fetch("https://global.xirsys.net/_turn/anonymouschatrooms", {
-            method: "PUT",
-            headers: {
-              "Authorization": "Basic " + btoa("anonymouschatrooms:c654b5a8-0831-11f1-9e71-0242ac150003"),
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ format: "urls" })
-          });
-          const data = await response.json();
-          const iceServers = data.v.iceServers;
-          
+          let iceServers = [{ urls: "stun:stun.l.google.com:19302" }]; // fallback
+          try {
+            const response = await fetch("https://global.xirsys.net/_turn/anonymouschatrooms", {
+              method: "PUT",
+              headers: {
+                "Authorization": "Basic " + btoa("anonymouschatrooms:c654b5a8-0831-11f1-9e71-0242ac150003"),
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({ format: "urls" })
+            });
+            if (!response.ok) {
+              const errText = await response.text();
+              console.error("❌ Xirsys error:", response.status, errText);
+            } else {
+              const data = await response.json();
+              console.log("✅ Xirsys response:", data);
+              if (data.v && data.v.iceServers) {
+                iceServers = data.v.iceServers;
+              } else {
+                console.error("❌ Xirsys bad response:", data);
+              }
+            }
+          } catch (err) {
+            console.error("❌ Xirsys fetch failed:", err);
+          }
+
           // Create peer connection
           const configuration = {
             iceServers: iceServers,
