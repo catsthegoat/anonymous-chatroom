@@ -336,7 +336,7 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(0, 0, 0, 0.95);
+      background: #000;
       z-index: 10000;
       display: flex;
       flex-direction: column;
@@ -2094,8 +2094,14 @@ const endCall = () => {
         if (localStream) {
           const videoTrack = localStream.getVideoTracks()[0];
           if (videoTrack) {
-            videoTrack.enabled = !videoTrack.enabled;
-            setIsVideoOff(!videoTrack.enabled);
+            const newState = !videoTrack.enabled;
+            videoTrack.enabled = newState;
+            setIsVideoOff(!newState);
+            // Re-attach stream to video element when turning back on
+            if (newState && localVideoRef.current) {
+              localVideoRef.current.srcObject = localStream;
+              localVideoRef.current.play().catch(err => console.error('Video re-attach error:', err));
+            }
           }
         }
       };
@@ -2954,37 +2960,35 @@ const kickUser = async (targetUser) => {
                     </div>
                   )}
                   
-                  {/* Local video - always show for both users */}
-                  {!isVideoOff ? (
-                    <video 
-                      ref={localVideoRef} 
-                      autoPlay 
-                      playsInline 
-                      muted 
-                      className="local-video"
-                      style={{
-                        position: 'absolute',
-                        top: '20px',
-                        right: '20px',
-                        width: '150px',
-                        height: '200px',
-                        borderRadius: '15px',
-                        border: '2px solid #fff',
-                        objectFit: 'cover',
-                        boxShadow: '0 4px 15px rgba(0,0,0,0.5)',
-                        zIndex: 10,
-                        display: 'block'
-                      }}
-                    />
-                  ) : (
+                  {/* Local video - always keep in DOM so ref stays valid */}
+                  <video 
+                    ref={localVideoRef} 
+                    autoPlay 
+                    playsInline 
+                    muted 
+                    className="local-video"
+                    style={{
+                      position: 'absolute',
+                      top: '20px',
+                      right: '20px',
+                      width: '220px',
+                      height: '280px',
+                      borderRadius: '15px',
+                      border: '2px solid #fff',
+                      objectFit: 'cover',
+                      boxShadow: '0 4px 15px rgba(0,0,0,0.5)',
+                      zIndex: 10,
+                      display: isVideoOff ? 'none' : 'block'
+                    }}
+                  />
+                  {isVideoOff && (
                     <div 
-                      className="local-video" 
                       style={{ 
                         position: 'absolute',
                         top: '20px',
                         right: '20px',
-                        width: '150px',
-                        height: '200px',
+                        width: '220px',
+                        height: '280px',
                         borderRadius: '15px',
                         border: '2px solid #fff',
                         display: 'flex', 
