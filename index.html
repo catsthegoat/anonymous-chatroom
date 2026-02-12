@@ -1100,6 +1100,9 @@
       const [recordingTime, setRecordingTime] = useState(0);
       const [captureMode, setCaptureMode] = useState('photo'); // 'photo' or 'video'
       const [inCallNotifications, setInCallNotifications] = useState([]);
+      const [isGroupCall, setIsGroupCall] = useState(false);
+      const [groupCallParticipants, setGroupCallParticipants] = useState([]);
+      const [groupCallActive, setGroupCallActive] = useState(false);
 
       const messagesEndRef = useRef(null);
       const typingTimeoutRef = useRef(null);
@@ -1109,6 +1112,10 @@
       const snapVideoRef = useRef(null);
       const snapCanvasRef = useRef(null);
       const recordingIntervalRef = useRef(null);
+      const groupPeerConnectionsRef = useRef({});
+      const participantStreamsRef = useRef({});
+      const participantVideoRefs = useRef({});
+      const groupLocalStreamRef = useRef(null);
 
       const addDebugLog = (message, type = 'info') => {
         addDebugLogGlobal(message, type);
@@ -2118,71 +2125,142 @@ const endCall = () => {
         setIncomingCall(null);
         addDebugLog('Call declined', 'info');
       };
- const startGroupCall = async () => {
+
+      // ─── Helper: fetch Xirsys TURN servers ───────────────────────────────────
+      const getIceServers = async () => {
+        let iceServers = [{ urls: "stun:stun.l.google.com:19302" }];
         try {
-          console.log('📞 Starting group call');
-          
-          const stream = await navigator.mediaDevices.getUserMedia({ 
-            video: { width: { ideal: 1280 }, height: { ideal: 720 } }, 
+          const response = await fetch("https://global.xirsys.net/_turn/chatrooms", {
+            method: "PUT",
+            headers: {
+              "Authorization": "Basic " + btoa("preachcalls:c654b5a8-0831-11f1-9e71-0242ac150003"),
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ format: "urls" })
+          });
+          if (response.ok) {
+            const data = await response.json();
+            if (data.v && data.v.iceServers) {
+              const list = Array.isArray(data.v.iceServers) ? data.v.iceServers : [data.v.iceServers];
+              const mapped = list.filter(s => s.url || s.urls).map(s => {
+                const e = { urls: s.urls || s.url };
+                if (s.username) e.username = s.username;
+                if (s.credential) e.credential = s.credential;
+                return e;
+              });
+              if (mapped.length) iceServers = mapped;
+            }
+          }
+        } catch (e) { console.warn("Xirsys fallback to STUN", e); }
+        return iceServers;
+      };
+
+      // ─── Group Call ───────────────────────────────────────────────────────────
+      const startGroupCall = async () => {
+        try {
+          addDebugLog('Starting group call...', 'info');
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' },
             audio: { echoCancellation: true, noiseSuppression: true }
           });
-          
+          groupLocalStreamRef.current = stream;
           setLocalStream(stream);
-          if (localVideoRef.current) {
-            localVideoRef.current.srcObject = stream;
-          }
-          
           setIsGroupCall(true);
           setInCall(true);
-          
-          // Announce joining
-          await db.ref(`groupCalls/${currentRoom}/participants/${username}`).set({
-            joined: Date.now(),
-            online: true
+
+          // Attach local stream after render
+          setTimeout(() => {
+            if (localVideoRef.current) {
+              localVideoRef.current.srcObject = stream;
+              localVideoRef.current.play().catch(() => {});
+            }
+          }, 100);
+
+          // Announce presence
+          await db.ref(`groupCalls/${currentRoom}/participants/${username}`).set({ joined: Date.now(), online: true });
+          db.ref(`groupCalls/${currentRoom}/participants/${username}`).onDisconnect().remove();
+
+          // Announce room-level flag so others see an active group call
+          await db.ref(`groupCalls/${currentRoom}/active`).set(true);
+
+          // Get existing participants and send them offers
+          const snap = await db.ref(`groupCalls/${currentRoom}/participants`).once('value');
+          const existing = snap.val() ? Object.keys(snap.val()).filter(p => p !== username) : [];
+          const iceServers = await getIceServers();
+
+          for (const participant of existing) {
+            await createGroupPeer(participant, stream, iceServers, true);
+          }
+
+          // Listen for NEW participants joining after us → send them offers
+          db.ref(`groupCalls/${currentRoom}/participants`).on('child_added', async (childSnap) => {
+            const newUser = childSnap.key;
+            if (newUser === username) return;
+            if (groupPeerConnectionsRef.current[newUser]) return;
+            const ice = await getIceServers();
+            await createGroupPeer(newUser, groupLocalStreamRef.current, ice, true);
           });
-          
-          // Listen for participants
-          db.ref(`groupCalls/${currentRoom}/participants`).on('value', async (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-              const participants = Object.keys(data).filter(p => p !== username && data[p].online);
-              setGroupCallParticipants(participants);
-              
-              for (const participant of participants) {
-                if (!groupPeerConnectionsRef.current[participant]) {
-                  await createPeerForParticipant(participant, stream);
-                }
-              }
+
+          // Listen for participant leaving
+          db.ref(`groupCalls/${currentRoom}/participants`).on('child_removed', (childSnap) => {
+            const leftUser = childSnap.key;
+            if (groupPeerConnectionsRef.current[leftUser]) {
+              groupPeerConnectionsRef.current[leftUser].close();
+              delete groupPeerConnectionsRef.current[leftUser];
+            }
+            delete participantStreamsRef.current[leftUser];
+            setGroupCallParticipants(prev => prev.filter(p => p !== leftUser));
+          });
+
+          // Listen for incoming offers (from participants who joined before us and are now sending offers to us)
+          db.ref(`groupCalls/${currentRoom}/signals/${username}`).on('child_added', async (fromSnap) => {
+            const fromUser = fromSnap.key;
+            if (fromUser === username) return;
+            if (groupPeerConnectionsRef.current[fromUser]) return; // already connected
+            const offerData = fromSnap.child('offer').val();
+            if (offerData) {
+              const ice = await getIceServers();
+              await createGroupPeer(fromUser, groupLocalStreamRef.current, ice, false, offerData);
             }
           });
-          
-          addDebugLog('Joined group call', 'success');
-          
+
+          addDebugLog('Group call started', 'success');
         } catch (err) {
           console.error('Group call error:', err);
-          setError('Failed to start group call');
+          setError('Failed to start group call: ' + err.message);
+          setIsGroupCall(false);
+          setInCall(false);
+          addDebugLog('Group call error: ' + err.message, 'error');
         }
       };
 
-      const createPeerForParticipant = async (participant, localStream) => {
-        const pc = new RTCPeerConnection({
-          iceServers: [
-            { urls: 'stun:stun.l.google.com:19302' },
-            { urls: 'stun:stun1.l.google.com:19302' }
-          ]
-        });
-        
+      const createGroupPeer = async (participant, stream, iceServers, isInitiator, incomingOffer = null) => {
+        if (groupPeerConnectionsRef.current[participant]) return;
+
+        const pc = new RTCPeerConnection({ iceServers, iceCandidatePoolSize: 10 });
         groupPeerConnectionsRef.current[participant] = pc;
-        
-        localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
-        
+
+        // Add local tracks
+        if (stream) {
+          stream.getTracks().forEach(track => pc.addTrack(track, stream));
+        }
+
+        // Receive remote stream
         pc.ontrack = (event) => {
-          if (event.streams[0]) {
-            participantStreamsRef.current[participant] = event.streams[0];
-            setGroupCallParticipants(prev => [...prev]);
+          if (event.streams && event.streams[0]) {
+            const rs = event.streams[0];
+            participantStreamsRef.current[participant] = rs;
+            setGroupCallParticipants(prev => prev.includes(participant) ? prev : [...prev, participant]);
+            // attach to video element if already rendered
+            const vidEl = participantVideoRefs.current[participant];
+            if (vidEl) {
+              vidEl.srcObject = rs;
+              vidEl.play().catch(() => {});
+            }
           }
         };
-        
+
+        // ICE candidates
         pc.onicecandidate = (event) => {
           if (event.candidate) {
             db.ref(`groupCalls/${currentRoom}/signals/${participant}/${username}/candidates`).push({
@@ -2190,49 +2268,117 @@ const endCall = () => {
             });
           }
         };
-        
-        const offer = await pc.createOffer();
-        await pc.setLocalDescription(offer);
-        
-        await db.ref(`groupCalls/${currentRoom}/signals/${participant}/${username}/offer`).set({
-          type: offer.type,
-          sdp: offer.sdp
-        });
-        
-        db.ref(`groupCalls/${currentRoom}/signals/${username}/${participant}/answer`).on('value', async (snap) => {
-          const data = snap.val();
-          if (data && !pc.remoteDescription) {
-            await pc.setRemoteDescription(new RTCSessionDescription(data));
+
+        pc.onconnectionstatechange = () => {
+          console.log(`Group peer ${participant}:`, pc.connectionState);
+          if (pc.connectionState === 'failed' || pc.connectionState === 'closed') {
+            delete groupPeerConnectionsRef.current[participant];
+            delete participantStreamsRef.current[participant];
+            setGroupCallParticipants(prev => prev.filter(p => p !== participant));
           }
-        });
-        
+        };
+
+        // Listen for ICE candidates from the other side
         db.ref(`groupCalls/${currentRoom}/signals/${username}/${participant}/candidates`).on('child_added', async (snap) => {
           const data = snap.val();
-          if (data?.candidate) {
-            await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
+          if (data && data.candidate) {
+            try { await pc.addIceCandidate(new RTCIceCandidate(data.candidate)); } catch (e) {}
           }
         });
+
+        if (isInitiator) {
+          // Create and send offer
+          const offer = await pc.createOffer({ offerToReceiveAudio: true, offerToReceiveVideo: true });
+          await pc.setLocalDescription(offer);
+          await db.ref(`groupCalls/${currentRoom}/signals/${participant}/${username}/offer`).set({ type: offer.type, sdp: offer.sdp });
+
+          // Wait for answer
+          db.ref(`groupCalls/${currentRoom}/signals/${username}/${participant}/answer`).on('value', async (snap) => {
+            const data = snap.val();
+            if (data && pc.signalingState === 'have-local-offer') {
+              await pc.setRemoteDescription(new RTCSessionDescription(data));
+            }
+          });
+        } else {
+          // Received an offer — create answer
+          await pc.setRemoteDescription(new RTCSessionDescription(incomingOffer));
+          const answer = await pc.createAnswer();
+          await pc.setLocalDescription(answer);
+          await db.ref(`groupCalls/${currentRoom}/signals/${participant}/${username}/answer`).set({ type: answer.type, sdp: answer.sdp });
+
+          setGroupCallParticipants(prev => prev.includes(participant) ? prev : [...prev, participant]);
+
+          // Also listen for late ICE candidates from initiator
+          db.ref(`groupCalls/${currentRoom}/signals/${username}/${participant}/candidates`).on('child_added', async (snap) => {
+            const data = snap.val();
+            if (data && data.candidate) {
+              try { await pc.addIceCandidate(new RTCIceCandidate(data.candidate)); } catch (e) {}
+            }
+          });
+        }
       };
 
       const endGroupCall = () => {
-        if (localStream) {
-          localStream.getTracks().forEach(track => track.stop());
+        console.log('📞 Ending group call');
+
+        // Stop local stream
+        if (groupLocalStreamRef.current) {
+          groupLocalStreamRef.current.getTracks().forEach(t => t.stop());
+          groupLocalStreamRef.current = null;
         }
-        
+
+        // Close all peer connections
         Object.values(groupPeerConnectionsRef.current).forEach(pc => pc.close());
         groupPeerConnectionsRef.current = {};
         participantStreamsRef.current = {};
-        
+
+        // Clean up Firebase
         if (currentRoom && username) {
           db.ref(`groupCalls/${currentRoom}/participants/${username}`).remove();
+          db.ref(`groupCalls/${currentRoom}/signals`).off();
+          db.ref(`groupCalls/${currentRoom}/participants`).off();
+          // If last person, clear active flag
+          db.ref(`groupCalls/${currentRoom}/participants`).once('value', snap => {
+            if (!snap.val() || Object.keys(snap.val()).length === 0) {
+              db.ref(`groupCalls/${currentRoom}/active`).remove();
+              db.ref(`groupCalls/${currentRoom}/signals`).remove();
+            }
+          });
         }
-        
+
         setIsGroupCall(false);
         setInCall(false);
         setGroupCallParticipants([]);
         setLocalStream(null);
+        setIsMuted(false);
+        setIsVideoOff(false);
+        addDebugLog('Group call ended', 'info');
       };
 
+      // Watch for active group call in room
+      useEffect(() => {
+        if (currentRoom && db) {
+          const activeRef = db.ref(`groupCalls/${currentRoom}/active`);
+          activeRef.on('value', snap => {
+            setGroupCallActive(!!snap.val());
+          });
+          return () => activeRef.off();
+        }
+      }, [currentRoom]);
+
+      // When in group call, re-attach streams to newly rendered video elements
+      useEffect(() => {
+        if (isGroupCall) {
+          groupCallParticipants.forEach(participant => {
+            const stream = participantStreamsRef.current[participant];
+            const vidEl = participantVideoRefs.current[participant];
+            if (vidEl && stream && vidEl.srcObject !== stream) {
+              vidEl.srcObject = stream;
+              vidEl.play().catch(() => {});
+            }
+          });
+        }
+      }, [groupCallParticipants, isGroupCall]);
 
       // Listen for incoming calls
       useEffect(() => {
@@ -2673,6 +2819,11 @@ const kickUser = async (targetUser) => {
                         <Trash /> Clear All
                       </button>
                     )}
+                    {!inCall && (
+                      <button onClick={startGroupCall} className="glow-button" style={{ background: '#1a1a1a', color: '#00ff88', padding: '10px 20px', borderRadius: '8px', border: '1px solid #00ff88', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        📹 Group Call
+                      </button>
+                    )}
                     <button onClick={() => setShowGamesMenu(!showGamesMenu)} className="glow-button" style={{ background: '#1a1a1a', color: '#fff', padding: '10px 20px', borderRadius: '8px', border: '1px solid #333', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <Gamepad /> Games
                     </button>
@@ -2682,6 +2833,22 @@ const kickUser = async (targetUser) => {
                   </div>
                 </div>
               </div>
+
+              {/* Active group call banner for users not in call */}
+              {groupCallActive && !inCall && (
+                <div style={{ background: 'linear-gradient(90deg, #003322, #004433)', padding: '10px 20px', borderBottom: '1px solid #00ff88', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#00ff88', fontSize: '14px', fontWeight: 'bold' }}>
+                    <span style={{ animation: 'glow 1s ease-in-out infinite' }}>🔴</span>
+                    Group call in progress
+                  </div>
+                  <button
+                    onClick={startGroupCall}
+                    style={{ background: '#00ff88', color: '#000', padding: '8px 20px', borderRadius: '8px', border: 'none', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer' }}
+                  >
+                    Join Call
+                  </button>
+                </div>
+              )}
 
               {roomUsers.length > 1 && (
                 <div style={{ background: '#0a0a0a', padding: '10px 20px', borderBottom: '1px solid #333' }}>
@@ -2935,8 +3102,76 @@ const kickUser = async (targetUser) => {
               />
             ))}
 
+            {/* Group Call Modal */}
+            {isGroupCall && inCall && (
+              <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: '#000', zIndex: 10000, display: 'flex', flexDirection: 'column' }}>
+                {/* Grid of participant videos */}
+                <div style={{
+                  flex: 1,
+                  display: 'grid',
+                  gridTemplateColumns: groupCallParticipants.length === 0 ? '1fr' :
+                                       groupCallParticipants.length === 1 ? '1fr 1fr' :
+                                       groupCallParticipants.length <= 3 ? 'repeat(2, 1fr)' :
+                                       'repeat(3, 1fr)',
+                  gap: '4px',
+                  padding: '10px',
+                  alignItems: 'stretch'
+                }}>
+                  {/* Local video tile */}
+                  <div style={{ position: 'relative', background: '#111', borderRadius: '12px', overflow: 'hidden', minHeight: '200px' }}>
+                    <video
+                      ref={localVideoRef}
+                      autoPlay playsInline muted
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: isVideoOff ? 'none' : 'block' }}
+                    />
+                    {isVideoOff && (
+                      <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '48px' }}>📹</div>
+                    )}
+                    <div style={{ position: 'absolute', bottom: '8px', left: '10px', background: 'rgba(0,0,0,0.6)', padding: '4px 10px', borderRadius: '6px', fontSize: '13px', color: '#fff' }}>
+                      {username} (you)
+                    </div>
+                  </div>
+
+                  {/* Remote participant tiles */}
+                  {groupCallParticipants.map(participant => (
+                    <div key={participant} style={{ position: 'relative', background: '#111', borderRadius: '12px', overflow: 'hidden', minHeight: '200px' }}>
+                      <video
+                        ref={el => { participantVideoRefs.current[participant] = el; if (el && participantStreamsRef.current[participant]) { el.srcObject = participantStreamsRef.current[participant]; el.play().catch(()=>{}); }}}
+                        autoPlay playsInline
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      />
+                      <div style={{ position: 'absolute', bottom: '8px', left: '10px', background: 'rgba(0,0,0,0.6)', padding: '4px 10px', borderRadius: '6px', fontSize: '13px', color: '#fff' }}>
+                        {participant}
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* Waiting placeholder */}
+                  {groupCallParticipants.length === 0 && (
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#999', fontSize: '16px', gap: '10px' }}>
+                      <div style={{ fontSize: '48px' }}>👥</div>
+                      <div>Waiting for others to join...</div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Controls */}
+                <div style={{ padding: '15px', display: 'flex', justifyContent: 'center', gap: '20px', background: 'rgba(0,0,0,0.8)', borderTop: '1px solid #222' }}>
+                  <button onClick={toggleMute} className={`call-btn mute ${isMuted ? 'active' : ''}`} title={isMuted ? 'Unmute' : 'Mute'}>
+                    {isMuted ? '🔇' : '🎤'}
+                  </button>
+                  <button onClick={toggleVideo} className={`call-btn video-toggle ${isVideoOff ? 'active' : ''}`} title={isVideoOff ? 'Turn on camera' : 'Turn off camera'}>
+                    {isVideoOff ? '📹' : '📷'}
+                  </button>
+                  <button onClick={endGroupCall} className="call-btn end" title="Leave call">
+                    ☎️
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* Video Call Modal */}
-            {inCall && (
+            {!isGroupCall && inCall && (
               <div className="video-call-modal">
                 <div className="video-container">
                   <video 
@@ -3098,7 +3333,7 @@ const kickUser = async (targetUser) => {
             )}
 
             {/* Incoming Call */}
-            {incomingCall && !inCall && (
+            {incomingCall && !inCall && !isGroupCall && (
               <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10001 }}>
                 <div className="incoming-call">
                   <div style={{ fontSize: '64px', marginBottom: '20px', animation: 'glow 1s ease-in-out infinite' }}>📞</div>
