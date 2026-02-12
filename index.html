@@ -1660,15 +1660,19 @@ const startCall = async (targetUser) => {
               const data = await response.json();
               console.log("✅ Xirsys response:", data);
               if (data.v && data.v.iceServers) {
-                // CRITICAL: Xirsys returns 'url' (singular), but RTCPeerConnection needs 'urls' (plural)
-                iceServers = Array.isArray(data.v.iceServers)
-                  ? data.v.iceServers.map(s => ({
-                      urls: s.url,
-                      username: s.username,
-                      credential: s.credential
-                    }))
-                  : [{ urls: data.v.iceServers.url, username: data.v.iceServers.username, credential: data.v.iceServers.credential }];
-                console.log("✅ ICE servers mapped:", iceServers.length, "servers");
+                const raw = data.v.iceServers;
+                const list = Array.isArray(raw) ? raw : [raw];
+                console.log("📋 Raw Xirsys servers:", JSON.stringify(list));
+                // Xirsys may return 'url' OR 'urls' depending on format - handle both
+                iceServers = list
+                  .filter(s => s.url || s.urls)
+                  .map(s => {
+                    const entry = { urls: s.urls || s.url };
+                    if (s.username) entry.username = s.username;
+                    if (s.credential) entry.credential = s.credential;
+                    return entry;
+                  });
+                console.log("✅ ICE servers ready:", JSON.stringify(iceServers));
               } else {
                 console.error("❌ Xirsys bad response:", data);
               }
@@ -1682,7 +1686,7 @@ const startCall = async (targetUser) => {
             iceServers: iceServers,
             iceCandidatePoolSize: 10
           };
-          
+          console.log("🔧 RTCPeerConnection config:", JSON.stringify(configuration));
         const peerConnection = new RTCPeerConnection(configuration);
           peerConnectionRef.current = peerConnection;
           
@@ -1882,15 +1886,19 @@ const startCall = async (targetUser) => {
               const data = await response.json();
               console.log("✅ Xirsys response:", data);
               if (data.v && data.v.iceServers) {
-                // CRITICAL: Xirsys returns 'url' (singular), but RTCPeerConnection needs 'urls' (plural)
-                iceServers = Array.isArray(data.v.iceServers)
-                  ? data.v.iceServers.map(s => ({
-                      urls: s.url,
-                      username: s.username,
-                      credential: s.credential
-                    }))
-                  : [{ urls: data.v.iceServers.url, username: data.v.iceServers.username, credential: data.v.iceServers.credential }];
-                console.log("✅ ICE servers mapped:", iceServers.length, "servers");
+                const raw = data.v.iceServers;
+                const list = Array.isArray(raw) ? raw : [raw];
+                console.log("📋 Raw Xirsys servers:", JSON.stringify(list));
+                // Xirsys may return 'url' OR 'urls' depending on format - handle both
+                iceServers = list
+                  .filter(s => s.url || s.urls)
+                  .map(s => {
+                    const entry = { urls: s.urls || s.url };
+                    if (s.username) entry.username = s.username;
+                    if (s.credential) entry.credential = s.credential;
+                    return entry;
+                  });
+                console.log("✅ ICE servers ready:", JSON.stringify(iceServers));
               } else {
                 console.error("❌ Xirsys bad response:", data);
               }
@@ -1904,6 +1912,7 @@ const startCall = async (targetUser) => {
             iceServers: iceServers,
             iceCandidatePoolSize: 10
           };
+          console.log("🔧 RTCPeerConnection config:", JSON.stringify(configuration));
           const peerConnection = new RTCPeerConnection(configuration);
           peerConnectionRef.current = peerConnection;
           
