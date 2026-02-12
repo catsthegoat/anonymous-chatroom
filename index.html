@@ -1116,6 +1116,7 @@
       const participantStreamsRef = useRef({});
       const participantVideoRefs = useRef({});
       const groupLocalStreamRef = useRef(null);
+      const groupCallListenersRef = useRef([]);
 
       const addDebugLog = (message, type = 'info') => {
         addDebugLogGlobal(message, type);
@@ -1321,50 +1322,6 @@
           window.removeEventListener('beforeunload', handleBeforeUnload);
         };
       }, [username, currentRoom]);
-
-      useEffect(() => {
-        if (currentRoom) {
-          const messagesRef = db.ref(`messages/${currentRoom}`);
-          const handleMessages = (snapshot) => {
-            const data = snapshot.val();
-            const msgs = data ? Object.values(data).sort((a, b) => a.timestamp - b.timestamp) : [];
-            console.log('=== MESSAGES LOADED FROM FIREBASE ===');
-            console.log('Total messages:', msgs.length);
-            const snapMessages = msgs.filter(m => m.type === 'snap');
-            console.log('Snap messages:', snapMessages.length);
-            snapMessages.forEach((snap, i) => {
-              console.log(`Snap ${i + 1}:`, {
-                id: snap.id,
-                username: snap.username,
-                hasImage: !!snap.image,
-                imageType: typeof snap.image,
-                imageLength: snap.image?.length,
-                imageStart: snap.image?.substring(0, 30)
-              });
-            });
-            setMessages(msgs);
-          };
-          messagesRef.on('value', handleMessages);
-          return () => messagesRef.off('value', handleMessages);
-        }
-      }, [currentRoom]);
-
-      useEffect(() => {
-        if (currentRoom) {
-          const inviteRef = db.ref(`gameInvites/${currentRoom}`);
-          const handleInvite = (snapshot) => {
-            const data = snapshot.val();
-            setGameInvite(data);
-          };
-          inviteRef.on('value', handleInvite);
-          return () => inviteRef.off('value', handleInvite);
-        }
-      }, [currentRoom]);
-
-      useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-      }, [messages]);
-
 
       const sendImageUrl = async () => {
         console.log('=== IMAGE URL SEND DEBUG ===');
@@ -2183,26 +2140,33 @@ const endCall = () => {
           // Announce room-level flag so others see an active group call
           await db.ref(`groupCalls/${currentRoom}/active`).set(true);
 
-          // Get existing participants and send them offers
+          // Snapshot existing participants BEFORE attaching child_added listener
+          // to avoid re-processing them when the listener fires for existing keys
           const snap = await db.ref(`groupCalls/${currentRoom}/participants`).once('value');
           const existing = snap.val() ? Object.keys(snap.val()).filter(p => p !== username) : [];
           const iceServers = await getIceServers();
 
+          // Connect to all currently present participants (we are the initiator)
           for (const participant of existing) {
             await createGroupPeer(participant, stream, iceServers, true);
           }
 
-          // Listen for NEW participants joining after us → send them offers
-          db.ref(`groupCalls/${currentRoom}/participants`).on('child_added', async (childSnap) => {
+          // Listen for NEW participants joining AFTER us → we send them offers
+          // Use the snapshot so child_added only fires for keys added after this point
+          const participantsRef = db.ref(`groupCalls/${currentRoom}/participants`);
+          const handleChildAdded = async (childSnap) => {
             const newUser = childSnap.key;
             if (newUser === username) return;
+            // Skip users we already connected to in the snapshot above
+            if (existing.includes(newUser)) return;
             if (groupPeerConnectionsRef.current[newUser]) return;
             const ice = await getIceServers();
             await createGroupPeer(newUser, groupLocalStreamRef.current, ice, true);
-          });
+          };
+          participantsRef.on('child_added', handleChildAdded);
 
           // Listen for participant leaving
-          db.ref(`groupCalls/${currentRoom}/participants`).on('child_removed', (childSnap) => {
+          const handleChildRemoved = (childSnap) => {
             const leftUser = childSnap.key;
             if (groupPeerConnectionsRef.current[leftUser]) {
               groupPeerConnectionsRef.current[leftUser].close();
@@ -2210,19 +2174,30 @@ const endCall = () => {
             }
             delete participantStreamsRef.current[leftUser];
             setGroupCallParticipants(prev => prev.filter(p => p !== leftUser));
-          });
+          };
+          participantsRef.on('child_removed', handleChildRemoved);
 
-          // Listen for incoming offers (from participants who joined before us and are now sending offers to us)
-          db.ref(`groupCalls/${currentRoom}/signals/${username}`).on('child_added', async (fromSnap) => {
-            const fromUser = fromSnap.key;
+          // Listen for incoming offers from other participants
+          // Path: groupCalls/{room}/signals/{ourUsername}/{senderUsername}/offer
+          const incomingSignalsRef = db.ref(`groupCalls/${currentRoom}/signals/${username}`);
+          const handleIncomingSignal = async (senderSnap) => {
+            const fromUser = senderSnap.key;
             if (fromUser === username) return;
             if (groupPeerConnectionsRef.current[fromUser]) return; // already connected
-            const offerData = fromSnap.child('offer').val();
+            const offerData = senderSnap.child('offer').val();
             if (offerData) {
               const ice = await getIceServers();
               await createGroupPeer(fromUser, groupLocalStreamRef.current, ice, false, offerData);
             }
-          });
+          };
+          incomingSignalsRef.on('child_added', handleIncomingSignal);
+
+          // Store all listeners so endGroupCall can detach them
+          groupCallListenersRef.current = [
+            { ref: participantsRef, event: 'child_added', fn: handleChildAdded },
+            { ref: participantsRef, event: 'child_removed', fn: handleChildRemoved },
+            { ref: incomingSignalsRef, event: 'child_added', fn: handleIncomingSignal },
+          ];
 
           addDebugLog('Group call started', 'success');
         } catch (err) {
@@ -2321,22 +2296,34 @@ const endCall = () => {
       const endGroupCall = () => {
         console.log('📞 Ending group call');
 
+        // Detach all Firebase listeners stored during startGroupCall
+        groupCallListenersRef.current.forEach(({ ref, event, fn }) => {
+          ref.off(event, fn);
+        });
+        groupCallListenersRef.current = [];
+
         // Stop local stream
         if (groupLocalStreamRef.current) {
           groupLocalStreamRef.current.getTracks().forEach(t => t.stop());
           groupLocalStreamRef.current = null;
         }
 
+        // Clear local video element
+        if (localVideoRef.current) {
+          localVideoRef.current.srcObject = null;
+        }
+
         // Close all peer connections
-        Object.values(groupPeerConnectionsRef.current).forEach(pc => pc.close());
+        Object.values(groupPeerConnectionsRef.current).forEach(pc => {
+          try { pc.close(); } catch (e) {}
+        });
         groupPeerConnectionsRef.current = {};
         participantStreamsRef.current = {};
 
         // Clean up Firebase
         if (currentRoom && username) {
           db.ref(`groupCalls/${currentRoom}/participants/${username}`).remove();
-          db.ref(`groupCalls/${currentRoom}/signals`).off();
-          db.ref(`groupCalls/${currentRoom}/participants`).off();
+          db.ref(`groupCalls/${currentRoom}/signals/${username}`).remove();
           // If last person, clear active flag
           db.ref(`groupCalls/${currentRoom}/participants`).once('value', snap => {
             if (!snap.val() || Object.keys(snap.val()).length === 0) {
@@ -2380,40 +2367,25 @@ const endCall = () => {
         }
       }, [groupCallParticipants, isGroupCall]);
 
+      // Keep a ref to inCall so the Firebase listener always reads the latest value
+      const inCallRef = useRef(false);
+      useEffect(() => { inCallRef.current = inCall; }, [inCall]);
+
       // Listen for incoming calls
       useEffect(() => {
         if (username && currentRoom && db) {
-          console.log('📞 Setting up incoming call listener for:', username);
           const callRef = db.ref(`calls/${currentRoom}/${username}/offer`);
           callRef.on('value', (snapshot) => {
             const data = snapshot.val();
-            console.log('📞 Incoming call data received:', data);
-            if (data && data.from !== username && !inCall) {
-              console.log('📞 INCOMING CALL FROM:', data.from);
+            // Use ref so we always have the latest inCall value (avoids stale closure)
+            if (data && data.from !== username && !inCallRef.current) {
               setIncomingCall(data);
               addDebugLog(`Incoming call from ${data.from}`, 'info');
-            } else if (data) {
-              console.log('📞 Call data ignored - from:', data.from, 'inCall:', inCall);
             }
           });
-          return () => {
-            console.log('📞 Removing incoming call listener');
-            callRef.off();
-          };
+          return () => callRef.off();
         }
-      }, [username, currentRoom, inCall]);
-
-      // Debug: Log when inCall changes
-      useEffect(() => {
-        console.log('=== inCall STATE CHANGED ===');
-        console.log('inCall:', inCall);
-        console.log('callWith:', callWith);
-        if (inCall) {
-          console.log('🎥 Call UI should be showing NOW!');
-        } else {
-          console.log('❌ Call UI should be hidden');
-        }
-      }, [inCall, callWith]);
+      }, [username, currentRoom]);
 
       const updateTyping = () => {
         if (!currentRoom || !username || !db) return;
