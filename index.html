@@ -1249,14 +1249,15 @@
         setInCallNotifications(prev => prev.filter(n => n.id !== notifId));
       };
 
-      // Ensure local video is attached when stream is available
+      // Attach local stream to the local video element whenever it changes
       useEffect(() => {
         if (localStream && localVideoRef.current && inCall) {
-          console.log('🎥 Attaching local stream to video element');
-          localVideoRef.current.srcObject = localStream;
-          localVideoRef.current.play().catch(err => console.error('Local video play error:', err));
+          if (localVideoRef.current.srcObject !== localStream) {
+            localVideoRef.current.srcObject = localStream;
+            localVideoRef.current.play().catch(() => {});
+          }
         }
-      }, [localStream, inCall]);
+      }, [localStream, inCall, isGroupCall]);
 
       useEffect(() => {
         if (username && currentRoom) {
@@ -2125,13 +2126,11 @@ const endCall = () => {
           setLocalStream(stream);
           setIsGroupCall(true);
           setInCall(true);
-
-          setTimeout(() => {
-            if (localVideoRef.current) {
-              localVideoRef.current.srcObject = stream;
-              localVideoRef.current.play().catch(() => {});
-            }
-          }, 100);
+          // Attach local video immediately (useEffect on localStream will also handle it)
+          if (localVideoRef.current) {
+            localVideoRef.current.srcObject = stream;
+            localVideoRef.current.play().catch(() => {});
+          }
 
           // Write our presence FIRST, then snapshot to see who else is here
           await db.ref(`groupCalls/${currentRoom}/participants/${username}`).set({ joined: Date.now(), online: true });
@@ -2140,35 +2139,27 @@ const endCall = () => {
 
           const iceServers = await getIceServers();
 
-          // ── Core rule: the alphabetically "smaller" username is ALWAYS the initiator.
-          // This guarantees exactly one side sends the offer for every pair, regardless
-          // of who joined first.
+          // ── Core rule: alphabetically smaller username is ALWAYS the initiator.
+          // Both sides apply this rule independently → exactly one offer per pair.
           const iAmInitiator = (other) => username < other;
 
-          // Snapshot who is already in the call
-          const snap = await db.ref(`groupCalls/${currentRoom}/participants`).once('value');
-          const existing = snap.val() ? Object.keys(snap.val()).filter(p => p !== username) : [];
-
-          for (const participant of existing) {
-            await createGroupPeer(participant, stream, iceServers, iAmInitiator(participant));
-          }
-
-          // Watch for new participants (and departures)
           const participantsRef = db.ref(`groupCalls/${currentRoom}/participants`);
 
+          // Use child_added for EVERYONE (existing + future).
+          // Firebase fires child_added for all existing keys when the listener first attaches,
+          // then continues firing for new keys — so we get both existing and new participants
+          // from a single listener with no snapshot race condition.
           const handleChildAdded = async (childSnap) => {
             const newUser = childSnap.key;
-            if (newUser === username) return;
-            if (groupPeerConnectionsRef.current[newUser]) return;
-            // Skip people we already handled in the snapshot loop above
-            if (existing.includes(newUser)) return;
+            if (newUser === username) return;                          // skip self
+            if (groupPeerConnectionsRef.current[newUser]) return;     // already connected
             const ice = await getIceServers();
             await createGroupPeer(newUser, groupLocalStreamRef.current, ice, iAmInitiator(newUser));
           };
 
           const handleChildRemoved = (childSnap) => {
             const leftUser = childSnap.key;
-            if (leftUser === username) return; // ignore our own removal
+            if (leftUser === username) return;
             if (groupPeerConnectionsRef.current[leftUser]) {
               try { groupPeerConnectionsRef.current[leftUser].close(); } catch(e) {}
               delete groupPeerConnectionsRef.current[leftUser];
@@ -2180,7 +2171,6 @@ const endCall = () => {
           participantsRef.on('child_added', handleChildAdded);
           participantsRef.on('child_removed', handleChildRemoved);
 
-          // Store listeners for cleanup
           groupCallListenersRef.current = [
             { ref: participantsRef, event: 'child_added', fn: handleChildAdded },
             { ref: participantsRef, event: 'child_removed', fn: handleChildRemoved },
@@ -2212,9 +2202,14 @@ const endCall = () => {
           if (event.streams && event.streams[0]) {
             const rs = event.streams[0];
             participantStreamsRef.current[participant] = rs;
+            // Add to participants list immediately so the tile renders
             setGroupCallParticipants(prev => prev.includes(participant) ? prev : [...prev, participant]);
+            // Attach stream — the ref callback will also handle this but do it here too
             const vidEl = participantVideoRefs.current[participant];
-            if (vidEl) { vidEl.srcObject = rs; vidEl.play().catch(() => {}); }
+            if (vidEl && vidEl.srcObject !== rs) {
+              vidEl.srcObject = rs;
+              vidEl.play().catch(() => {});
+            }
           }
         };
 
@@ -2259,7 +2254,11 @@ const endCall = () => {
           db.ref(answerPath).on('value', async (snap) => {
             const data = snap.val();
             if (data && pc.signalingState === 'have-local-offer') {
-              try { await pc.setRemoteDescription(new RTCSessionDescription(data)); } catch(e) {}
+              try {
+                await pc.setRemoteDescription(new RTCSessionDescription(data));
+                // Show tile as soon as SDP is exchanged, before tracks arrive
+                setGroupCallParticipants(prev => prev.includes(participant) ? prev : [...prev, participant]);
+              } catch(e) {}
             }
           });
 
@@ -2344,9 +2343,12 @@ const endCall = () => {
         }
       }, [currentRoom]);
 
-      // When in group call, re-attach streams to newly rendered video elements
+      // Re-attach streams whenever participants list changes (e.g. new tile rendered)
+      // The srcObject !== stream guard ensures we never restart a playing video
       useEffect(() => {
-        if (isGroupCall) {
+        if (!isGroupCall) return;
+        // Small delay so the DOM elements have rendered before we try to attach
+        const t = setTimeout(() => {
           groupCallParticipants.forEach(participant => {
             const stream = participantStreamsRef.current[participant];
             const vidEl = participantVideoRefs.current[participant];
@@ -2355,7 +2357,8 @@ const endCall = () => {
               vidEl.play().catch(() => {});
             }
           });
-        }
+        }, 50);
+        return () => clearTimeout(t);
       }, [groupCallParticipants, isGroupCall]);
 
       // Keep a ref to inCall so the Firebase listener always reads the latest value
@@ -3111,7 +3114,20 @@ const kickUser = async (targetUser) => {
                     {groupCallParticipants.map(participant => (
                       <div key={participant} style={{ position: 'relative', background: '#000', borderRadius: '12px', overflow: 'hidden', minHeight: '160px' }}>
                         <video
-                          ref={el => { participantVideoRefs.current[participant] = el; if (el && participantStreamsRef.current[participant]) { el.srcObject = participantStreamsRef.current[participant]; el.play().catch(()=>{}); }}}
+                          ref={el => {
+                            // Only update srcObject when the element mounts or the stream changes — not on every render
+                            const prev = participantVideoRefs.current[participant];
+                            participantVideoRefs.current[participant] = el;
+                            if (el) {
+                              const stream = participantStreamsRef.current[participant];
+                              if (stream && el.srcObject !== stream) {
+                                el.srcObject = stream;
+                                el.play().catch(() => {});
+                              }
+                            } else if (prev) {
+                              prev.srcObject = null;
+                            }
+                          }}
                           autoPlay playsInline
                           style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }}
                         />
