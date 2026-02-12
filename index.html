@@ -1654,11 +1654,10 @@ const startCall = async (targetUser) => {
         const peerConnection = new RTCPeerConnection(configuration);
           peerConnectionRef.current = peerConnection;
           
-          // Monitor connection state
+          // Monitor connection state ('disconnected' is transient, only end on failed/closed)
           peerConnection.onconnectionstatechange = () => {
             console.log('🔌 Connection state:', peerConnection.connectionState);
-            if (peerConnection.connectionState === 'disconnected' || 
-                peerConnection.connectionState === 'failed' || 
+            if (peerConnection.connectionState === 'failed' || 
                 peerConnection.connectionState === 'closed') {
               endCall();
             }
@@ -1880,11 +1879,10 @@ const startCall = async (targetUser) => {
           const peerConnection = new RTCPeerConnection(configuration);
           peerConnectionRef.current = peerConnection;
           
-          // Monitor connection
+          // Monitor connection ('disconnected' is transient, only end on failed/closed)
           peerConnection.onconnectionstatechange = () => {
             console.log('🔌 Connection state:', peerConnection.connectionState);
-            if (peerConnection.connectionState === 'disconnected' || 
-                peerConnection.connectionState === 'failed' || 
+            if (peerConnection.connectionState === 'failed' || 
                 peerConnection.connectionState === 'closed') {
               endCall();
             }
@@ -2114,6 +2112,9 @@ const endCall = () => {
 
       // ─── Group Call ───────────────────────────────────────────────────────────
       const startGroupCall = async () => {
+        // Prevent double-start (e.g. clicking both "Group Call" and "Join Call" banner)
+        if (groupPeerConnectionsRef.current._starting) return;
+        groupPeerConnectionsRef.current._starting = true;
         try {
           addDebugLog('Starting group call...', 'info');
           const stream = await navigator.mediaDevices.getUserMedia({
@@ -2167,6 +2168,7 @@ const endCall = () => {
 
           const handleChildRemoved = (childSnap) => {
             const leftUser = childSnap.key;
+            if (leftUser === username) return; // ignore our own removal
             if (groupPeerConnectionsRef.current[leftUser]) {
               try { groupPeerConnectionsRef.current[leftUser].close(); } catch(e) {}
               delete groupPeerConnectionsRef.current[leftUser];
@@ -2184,8 +2186,10 @@ const endCall = () => {
             { ref: participantsRef, event: 'child_removed', fn: handleChildRemoved },
           ];
 
+          delete groupPeerConnectionsRef.current._starting;
           addDebugLog('Group call started', 'success');
         } catch (err) {
+          delete groupPeerConnectionsRef.current._starting;
           console.error('Group call error:', err);
           setError('Failed to start group call: ' + err.message);
           setIsGroupCall(false);
@@ -2214,18 +2218,23 @@ const endCall = () => {
           }
         };
 
-        // Both sides send ICE candidates to: signals/{theirName}/{ourName}/candidates
+        // ── Symmetric paths: both sides always look at the same Firebase nodes ──
+        // Pair key: sort the two usernames so it's identical from either side
+        const [pA, pB] = [username, participant].sort();
+        const pairBase   = `groupCalls/${currentRoom}/signals/${pA}__${pB}`;
+        const offerPath  = `${pairBase}/offer`;
+        const answerPath = `${pairBase}/answer`;
+        // ICE: each side writes its own candidates under its username
+        const myIcePath    = `${pairBase}/ice_${username}`;
+        const theirIcePath = `${pairBase}/ice_${participant}`;
+
         pc.onicecandidate = (event) => {
           if (event.candidate) {
-            db.ref(`groupCalls/${currentRoom}/signals/${participant}/${username}/candidates`).push({
-              candidate: event.candidate.toJSON()
-            });
+            db.ref(myIcePath).push({ candidate: event.candidate.toJSON() });
           }
         };
 
-        // Both sides listen for ICE candidates from the other side
-        const iceCandidatesRef = db.ref(`groupCalls/${currentRoom}/signals/${username}/${participant}/candidates`);
-        iceCandidatesRef.on('child_added', async (snap) => {
+        db.ref(theirIcePath).on('child_added', async (snap) => {
           const data = snap.val();
           if (data && data.candidate) {
             try { await pc.addIceCandidate(new RTCIceCandidate(data.candidate)); } catch (e) {}
@@ -2240,19 +2249,13 @@ const endCall = () => {
           }
         };
 
-        // Signaling paths (always relative to the pair, not caller/callee):
-        //   Offer  lives at: signals/{answerer}/{initiator}/offer
-        //   Answer lives at: signals/{initiator}/{answerer}/answer
-        const offerPath   = `groupCalls/${currentRoom}/signals/${participant}/${username}/offer`;
-        const answerPath  = `groupCalls/${currentRoom}/signals/${username}/${participant}/answer`;
-
         if (isInitiator) {
-          // Create offer and write it where the answerer will find it
+          // Write offer — the answerer will find it at offerPath
           const offer = await pc.createOffer({ offerToReceiveAudio: true, offerToReceiveVideo: true });
           await pc.setLocalDescription(offer);
           await db.ref(offerPath).set({ type: offer.type, sdp: offer.sdp });
 
-          // Wait for the answerer to write their answer
+          // Listen for the answerer's answer at answerPath
           db.ref(answerPath).on('value', async (snap) => {
             const data = snap.val();
             if (data && pc.signalingState === 'have-local-offer') {
@@ -2261,16 +2264,12 @@ const endCall = () => {
           });
 
         } else {
-          // We are the answerer — poll for the offer that the initiator will write
-          // (it might already be there, or arrive shortly)
+          // Answerer: wait for the offer (may already be there or arrive shortly)
           const waitForOffer = () => new Promise((resolve) => {
-            const offerRef = db.ref(offerPath);
-            offerRef.on('value', (snap) => {
+            const ref = db.ref(offerPath);
+            ref.on('value', (snap) => {
               const data = snap.val();
-              if (data) {
-                offerRef.off();
-                resolve(data);
-              }
+              if (data) { ref.off(); resolve(data); }
             });
           });
 
@@ -2278,7 +2277,7 @@ const endCall = () => {
           await pc.setRemoteDescription(new RTCSessionDescription(offerData));
           const answer = await pc.createAnswer();
           await pc.setLocalDescription(answer);
-          // Write our answer where the initiator is listening
+          // Write answer — the initiator is listening at answerPath
           await db.ref(answerPath).set({ type: answer.type, sdp: answer.sdp });
           setGroupCallParticipants(prev => prev.includes(participant) ? prev : [...prev, participant]);
         }
@@ -2286,6 +2285,7 @@ const endCall = () => {
 
       const endGroupCall = () => {
         console.log('📞 Ending group call');
+        delete groupPeerConnectionsRef.current._starting;
 
         // Detach all Firebase listeners stored during startGroupCall
         groupCallListenersRef.current.forEach(({ ref, event, fn }) => {
