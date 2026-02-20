@@ -2300,14 +2300,27 @@ callListenersRef.current = [];
           }
         });
 
-        pc.ontrack = ({ streams }) => {
-          if (!streams || !streams[0]) return;
-          const rs = streams[0];
-          participantStreamsRef.current[participant] = rs;
-          setGroupCallParticipants(prev => prev.includes(participant) ? prev : [...prev, participant]);
-          const el = participantVideoRefs.current[participant];
-          if (el && el.srcObject !== rs) { el.srcObject = rs; el.play().catch(() => {}); }
-        };
+       pc.ontrack = ({streams}) => {
+  if (!streams || !streams[0]) return;
+  const rs = streams[0];
+  participantStreamsRef.current[participant] = rs;
+  setGroupCallParticipants(prev =>
+    prev.includes(participant) ? prev : [...prev, participant]);
+
+  const attachVideo = () => {
+    const el = participantVideoRefs.current[participant];
+    if (el) {
+      if (el.srcObject !== rs) {
+        el.srcObject = rs;
+        el.play().catch(e => console.error('Group video play error:', e));
+      }
+    } else {
+      setTimeout(attachVideo, 200);
+    }
+  };
+  attachVideo();
+};
+
 
         pc.onconnectionstatechange = () => {
           const s = pc.connectionState;
@@ -3577,7 +3590,7 @@ const kickUser = async (targetUser) => {
 
   <script>
     // ✏️ Replace this with your Cloudflare Worker URL once deployed
-const PROXYBASE = 'https://1b576421-1642-43bb-b6e3-497b18eb817b-00-2lo2tka16x441.worf.replit.dev';
+const PROXYBASE = 'interstellar-ajmchjt2t-catsthegoats-projects.vercel.app';
 
 function openProxy() {
   const overlay = document.getElementById('proxyOverlay');
@@ -3602,6 +3615,7 @@ function proxyGo() {
   </script>
 </body>
 </html>
+
 
 
 
