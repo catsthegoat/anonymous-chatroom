@@ -3559,9 +3559,8 @@ const kickUser = async (targetUser) => {
   </script>
 
   <!-- ── PROXY BROWSER ── -->
-  <button class="proxy-fab" id="proxyFab" title="Open Browser" onclick="document.getElementById('proxyOverlay').style.display='flex'">
-    🌐
-  </button>
+<button class="proxy-fab" id="proxyFab" title="Open Browser" onclick="openProxy()">🌐</button>
+
 
   <div class="proxy-overlay" id="proxyOverlay" style="display:none;">
     <div class="proxy-bar">
@@ -3570,28 +3569,41 @@ const kickUser = async (targetUser) => {
       <button class="proxy-close" onclick="document.getElementById('proxyOverlay').style.display='none'">✕ Close</button>
     </div>
     <div class="proxy-placeholder" id="proxyPlaceholder">Type a URL above and press Go</div>
-   <iframe class="proxy-iframe" id="proxyFrame" style="display:none"
+<iframe class="proxy-iframe" id="proxyFrame" style="display:none"
   allow="camera; microphone; fullscreen; clipboard-read; clipboard-write"
   sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-popups-to-escape-sandbox allow-top-navigation">
 </iframe>
+
   </div>
 
   <script>
     // ✏️ Replace this with your Cloudflare Worker URL once deployed
-    const PROXYBASE = 'https://1b576421-1642-43bb-b6e3-497b18eb817b-00-2lo2tka16x441.worf.replit.dev'
+const PROXYBASE = 'https://1b576421-1642-43bb-b6e3-497b18eb817b-00-2lo2tka16x441.worf.replit.dev';
 
+function openProxy() {
+  const overlay = document.getElementById('proxyOverlay');
+  overlay.style.display = 'flex';
+  const frame = document.getElementById('proxyFrame');
+  if (!frame.src || frame.src === 'about:blank' || frame.src === '') {
+    frame.src = PROXYBASE;
+    frame.style.display = 'block';
+    document.getElementById('proxyPlaceholder').style.display = 'none';
+  }
+}
 
-    function proxyGo() {
-      let url = document.getElementById('proxyInput').value.trim();
-      if (!url) return;
-      if (!url.startsWith('http://') && !url.startsWith('https://')) url = 'https://' + url;
-      document.getElementById('proxyFrame').src = PROXY_BASE + '/?url=' + encodeURIComponent(url);
-      document.getElementById('proxyFrame').style.display = 'block';
-      document.getElementById('proxyPlaceholder').style.display = 'none';
-    }
+function proxyGo() {
+  let url = document.getElementById('proxyInput').value.trim();
+  if (!url) return;
+  if (!url.startsWith('http') && !url.startsWith('https')) url = 'https://' + url;
+  document.getElementById('proxyFrame').src = PROXYBASE + '?url=' + encodeURIComponent(url);
+  document.getElementById('proxyFrame').style.display = 'block';
+  document.getElementById('proxyPlaceholder').style.display = 'none';
+}
+
   </script>
 </body>
 </html>
+
 
 
 
