@@ -3563,11 +3563,10 @@ const kickUser = async (targetUser) => {
 
 
   <div class="proxy-overlay" id="proxyOverlay" style="display:none;">
-    <div class="proxy-bar">
-      <input id="proxyInput" type="text" placeholder="Enter a URL (e.g. google.com)" onkeydown="if(event.key==='Enter') proxyGo()" />
-      <button class="proxy-go" onclick="proxyGo()">Go</button>
-      <button class="proxy-close" onclick="document.getElementById('proxyOverlay').style.display='none'">✕ Close</button>
-    </div>
+<div class="proxy-bar">
+  <button class="proxy-close" onclick="document.getElementById('proxyOverlay').style.display='none'">✕ Close</button>
+</div>
+
     <div class="proxy-placeholder" id="proxyPlaceholder">Type a URL above and press Go</div>
 <iframe class="proxy-iframe" id="proxyFrame" style="display:none"
   allow="camera; microphone; fullscreen; clipboard-read; clipboard-write"
@@ -3603,6 +3602,7 @@ function proxyGo() {
   </script>
 </body>
 </html>
+
 
 
 
