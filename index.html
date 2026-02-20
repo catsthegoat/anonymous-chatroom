@@ -1184,6 +1184,7 @@
       const localVideoRef = useRef(null);
       const remoteVideoRef = useRef(null);
       const peerConnectionRef = useRef(null);
+      const callListenersRef = useRef([]);
       const snapVideoRef = useRef(null);
       const snapCanvasRef = useRef(null);
       const recordingIntervalRef = useRef(null);
@@ -1731,13 +1732,16 @@ const startCall = async (targetUser) => {
           peerConnectionRef.current = peerConnection;
           
           // Monitor connection state ('disconnected' is transient, only end on failed/closed)
-          peerConnection.onconnectionstatechange = () => {
-            console.log('🔌 Connection state:', peerConnection.connectionState);
-            if (peerConnection.connectionState === 'failed' || 
-                peerConnection.connectionState === 'closed') {
-              endCall();
-            }
-          };
+peerConnection.onconnectionstatechange = () => {
+  const s = peerConnection.connectionState;
+  console.log('Connection state:', s);
+  if (s === 'failed' || s === 'closed') endCall();
+};
+peerConnection.oniceconnectionstatechange = () => {
+  const s = peerConnection.iceConnectionState;
+  console.log('ICE state:', s);
+  if (s === 'failed') endCall();
+};
           
           peerConnection.oniceconnectionstatechange = () => {
             console.log('🧊 ICE state:', peerConnection.iceConnectionState);
@@ -1956,13 +1960,17 @@ const startCall = async (targetUser) => {
           peerConnectionRef.current = peerConnection;
           
           // Monitor connection ('disconnected' is transient, only end on failed/closed)
-          peerConnection.onconnectionstatechange = () => {
-            console.log('🔌 Connection state:', peerConnection.connectionState);
-            if (peerConnection.connectionState === 'failed' || 
-                peerConnection.connectionState === 'closed') {
-              endCall();
-            }
-          };
+peerConnection.onconnectionstatechange = () => {
+  const s = peerConnection.connectionState;
+  console.log('Connection state:', s);
+  if (s === 'failed' || s === 'closed') endCall();
+};
+peerConnection.oniceconnectionstatechange = () => {
+  const s = peerConnection.iceConnectionState;
+  console.log('ICE state:', s);
+  if (s === 'failed') endCall();
+};
+
 
           // CRITICAL FIX: Add tracks BEFORE setting remote description
           stream.getTracks().forEach(track => {
@@ -2063,6 +2071,8 @@ const startCall = async (targetUser) => {
 
 
 const endCall = () => {
+  callListenersRef.current.forEach(({ref, ev, fn}) => ref.off(ev, fn));
+callListenersRef.current = [];
   console.log('📞 Ending call');
   
   // CRITICAL FIX: Notify the other person
@@ -3560,12 +3570,16 @@ const kickUser = async (targetUser) => {
       <button class="proxy-close" onclick="document.getElementById('proxyOverlay').style.display='none'">✕ Close</button>
     </div>
     <div class="proxy-placeholder" id="proxyPlaceholder">Type a URL above and press Go</div>
-    <iframe class="proxy-iframe" id="proxyFrame" style="display:none;"></iframe>
+   <iframe class="proxy-iframe" id="proxyFrame" style="display:none"
+  allow="camera; microphone; fullscreen; clipboard-read; clipboard-write"
+  sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-popups-to-escape-sandbox allow-top-navigation">
+</iframe>
   </div>
 
   <script>
     // ✏️ Replace this with your Cloudflare Worker URL once deployed
-    const PROXY_BASE = "https://fancy-cloud-3d94.emmahefter1.workers.dev";
+    const PROXYBASE = 'https://1b576421-1642-43bb-b6e3-497b18eb817b-00-2lo2tka16x441.worf.replit.dev'
+
 
     function proxyGo() {
       let url = document.getElementById('proxyInput').value.trim();
@@ -3578,6 +3592,7 @@ const kickUser = async (targetUser) => {
   </script>
 </body>
 </html>
+
 
 
 
