@@ -1895,7 +1895,7 @@ peerConnection.oniceconnectionstatechange = () => {
           console.log('✅ Got local stream');
           setLocalStream(stream);
 
-          // Dismiss incoming call popup right away, but wait to show call screen
+          // Dismiss incoming call popup, but don't show call screen yet
           setIncomingCall(null);
 
           // Wait for React to render the video element, then attach stream
@@ -2033,7 +2033,7 @@ peerConnection.oniceconnectionstatechange = () => {
           });
           console.log('✅ Answer sent');
 
-          // Only NOW show the call screen on the answerer's side
+          // Only NOW show call screen on answerer's side
           setInCall(true);
           setCallWith(caller);
           addDebugLog(`In call with ${caller}`, 'success');
@@ -2266,9 +2266,10 @@ callListenersRef.current = [];
         const myIce      = `${base}/ice_${username}`;
         const theirIce   = `${base}/ice_${participant}`;
 
-        // Initiator clears stale data from previous sessions
+        // Initiator clears stale data from previous sessions (small delay to avoid race)
         if (isInitiator) {
           try { await db.ref(base).remove(); } catch(e) {}
+          await new Promise(r => setTimeout(r, 300));  // let non-initiator set up listeners first
         }
 
         const pc = new RTCPeerConnection({ iceServers });
@@ -2305,7 +2306,7 @@ callListenersRef.current = [];
   if (!streams || !streams[0]) return;
   const rs = streams[0];
 
-  // Explicitly enable all incoming audio tracks
+  // Enable all incoming audio tracks explicitly
   rs.getAudioTracks().forEach(t => { t.enabled = true; });
 
   participantStreamsRef.current[participant] = rs;
@@ -2315,13 +2316,11 @@ callListenersRef.current = [];
   const attachVideo = () => {
     const el = participantVideoRefs.current[participant];
     if (el) {
-      if (el.srcObject !== rs) {
-        el.srcObject = rs;
-      }
-      el.muted = false;  // ensure audio plays
+      if (el.srcObject !== rs) el.srcObject = rs;
+      el.muted = false;
       el.play().catch(e => console.error('Group video play error:', e));
     } else {
-      setTimeout(attachVideo, 100);  // retry faster (was 200ms)
+      setTimeout(attachVideo, 100);
     }
   };
   attachVideo();
@@ -2364,9 +2363,9 @@ callListenersRef.current = [];
           if (pc.signalingState === 'closed') return;
 
           await pc.setRemoteDescription(new RTCSessionDescription(offer));
-          await flushIce();
           const answer = await pc.createAnswer();
           await pc.setLocalDescription(answer);
+          await flushIce();  // flush AFTER both local + remote descriptions are set
           await db.ref(answerPath).set({ type: answer.type, sdp: answer.sdp });
           setGroupCallParticipants(prev => prev.includes(participant) ? prev : [...prev, participant]);
         }
@@ -3200,7 +3199,7 @@ const kickUser = async (targetUser) => {
                             const prev = participantVideoRefs.current[participant];
                             participantVideoRefs.current[participant] = el;
                             if (el) {
-                              el.muted = false;  // ensure audio plays
+                              el.muted = false;
                               const stream = participantStreamsRef.current[participant];
                               if (stream && el.srcObject !== stream) {
                                 el.srcObject = stream;
