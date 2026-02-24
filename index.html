@@ -1895,9 +1895,7 @@ peerConnection.oniceconnectionstatechange = () => {
           console.log('✅ Got local stream');
           setLocalStream(stream);
 
-          // Set call state immediately
-          setInCall(true);
-          setCallWith(caller);
+          // Dismiss incoming call popup right away, but wait to show call screen
           setIncomingCall(null);
 
           // Wait for React to render the video element, then attach stream
@@ -2035,6 +2033,9 @@ peerConnection.oniceconnectionstatechange = () => {
           });
           console.log('✅ Answer sent');
 
+          // Only NOW show the call screen on the answerer's side
+          setInCall(true);
+          setCallWith(caller);
           addDebugLog(`In call with ${caller}`, 'success');
 
           // Listen for ICE candidates
@@ -2303,6 +2304,10 @@ callListenersRef.current = [];
        pc.ontrack = ({streams}) => {
   if (!streams || !streams[0]) return;
   const rs = streams[0];
+
+  // Explicitly enable all incoming audio tracks
+  rs.getAudioTracks().forEach(t => { t.enabled = true; });
+
   participantStreamsRef.current[participant] = rs;
   setGroupCallParticipants(prev =>
     prev.includes(participant) ? prev : [...prev, participant]);
@@ -2312,10 +2317,11 @@ callListenersRef.current = [];
     if (el) {
       if (el.srcObject !== rs) {
         el.srcObject = rs;
-        el.play().catch(e => console.error('Group video play error:', e));
       }
+      el.muted = false;  // ensure audio plays
+      el.play().catch(e => console.error('Group video play error:', e));
     } else {
-      setTimeout(attachVideo, 200);
+      setTimeout(attachVideo, 100);  // retry faster (was 200ms)
     }
   };
   attachVideo();
@@ -3194,6 +3200,7 @@ const kickUser = async (targetUser) => {
                             const prev = participantVideoRefs.current[participant];
                             participantVideoRefs.current[participant] = el;
                             if (el) {
+                              el.muted = false;  // ensure audio plays
                               const stream = participantStreamsRef.current[participant];
                               if (stream && el.srcObject !== stream) {
                                 el.srcObject = stream;
