@@ -1484,8 +1484,13 @@
 
       const closeSnapCamera = () => {
         if (snapStream) {
-          snapStream.getTracks().forEach(track => track.stop());
+          snapStream.getTracks().forEach(track => { track.stop(); track.enabled = false; });
           setSnapStream(null);
+        }
+        // Immediately clear video srcObject so camera indicator light turns off
+        if (snapVideoRef.current) {
+          snapVideoRef.current.srcObject = null;
+          snapVideoRef.current.load();
         }
         if (mediaRecorder && mediaRecorder.state === 'recording') {
           mediaRecorder.stop();
@@ -1739,13 +1744,9 @@ peerConnection.onconnectionstatechange = () => {
 };
 peerConnection.oniceconnectionstatechange = () => {
   const s = peerConnection.iceConnectionState;
-  console.log('ICE state:', s);
+  console.log('🧊 ICE state:', s);
   if (s === 'failed') endCall();
 };
-          
-          peerConnection.oniceconnectionstatechange = () => {
-            console.log('🧊 ICE state:', peerConnection.iceConnectionState);
-          };
 
           // CRITICAL FIX: Add tracks BEFORE creating offer
           stream.getTracks().forEach(track => {
@@ -2073,39 +2074,36 @@ peerConnection.oniceconnectionstatechange = () => {
 
 const endCall = () => {
   callListenersRef.current.forEach(({ref, ev, fn}) => ref.off(ev, fn));
-callListenersRef.current = [];
+  callListenersRef.current = [];
   console.log('📞 Ending call');
-  
-  // CRITICAL FIX: Notify the other person
+
+  // Notify the other person
   if (currentRoom && username && callWith) {
     db.ref(`calls/${currentRoom}/${callWith}/hangup`).set({
       from: username,
       timestamp: Date.now()
     });
   }
-  
-  // CRITICAL FIX: Stop all tracks AND clear video elements
+
+  // Stop all local tracks (also via video element srcObject in case state is stale)
   if (localStream) {
-    localStream.getTracks().forEach(track => {
-      track.stop();
-      console.log('Stopped track:', track.kind);
-    });
+    localStream.getTracks().forEach(track => { track.stop(); track.enabled = false; });
   }
-  
+  if (localVideoRef.current && localVideoRef.current.srcObject) {
+    localVideoRef.current.srcObject.getTracks().forEach(t => { t.stop(); t.enabled = false; });
+  }
+
   if (remoteStream) {
-    remoteStream.getTracks().forEach(track => {
-      track.stop();
-    });
+    remoteStream.getTracks().forEach(track => { track.stop(); track.enabled = false; });
   }
-  
-  // Clear video element sources
-  if (localVideoRef.current) {
-    localVideoRef.current.srcObject = null;
+  if (remoteVideoRef.current && remoteVideoRef.current.srcObject) {
+    remoteVideoRef.current.srcObject.getTracks().forEach(t => { t.stop(); t.enabled = false; });
   }
-  if (remoteVideoRef.current) {
-    remoteVideoRef.current.srcObject = null;
-  }
-  
+
+  // Clear video srcObjects immediately so camera light turns off
+  if (localVideoRef.current) { localVideoRef.current.srcObject = null; localVideoRef.current.load(); }
+  if (remoteVideoRef.current) { remoteVideoRef.current.srcObject = null; remoteVideoRef.current.load(); }
+
   // Close peer connection
   if (peerConnectionRef.current) {
     peerConnectionRef.current.close();
@@ -2382,15 +2380,24 @@ callListenersRef.current = [];
         Object.keys(groupPeerConnectionsRef.current).forEach(peer => {
           try { groupPeerConnectionsRef.current[peer].close(); } catch(e) {}
         });
+        // Clear all participant video elements before closing connections
+        Object.values(participantVideoRefs.current).forEach(el => {
+          if (el) { try { el.srcObject = null; el.load(); } catch(e) {} }
+        });
         groupPeerConnectionsRef.current = {};
         participantStreamsRef.current = {};
+        participantVideoRefs.current = {};
 
-        // Stop local camera/mic
+        // Stop local camera/mic - stop tracks AND clear srcObject so camera light turns off
         if (groupLocalStreamRef.current) {
-          groupLocalStreamRef.current.getTracks().forEach(t => t.stop());
+          groupLocalStreamRef.current.getTracks().forEach(t => { t.stop(); t.enabled = false; });
           groupLocalStreamRef.current = null;
         }
-        if (localVideoRef.current) localVideoRef.current.srcObject = null;
+        // Also stop via video element in case ref is stale
+        if (localVideoRef.current && localVideoRef.current.srcObject) {
+          localVideoRef.current.srcObject.getTracks().forEach(t => { t.stop(); t.enabled = false; });
+        }
+        if (localVideoRef.current) { localVideoRef.current.srcObject = null; localVideoRef.current.load(); }
 
         // Clean up Firebase presence
         if (currentRoom && username) {
@@ -2793,7 +2800,8 @@ const kickUser = async (targetUser) => {
               <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
                 <div style={{ textAlign: 'center', marginBottom: '40px' }}>
                   <h1 className="glow-text" style={{ fontSize: '36px', fontWeight: 'bold', marginBottom: '10px' }}>ACTIVE ROOMS</h1>
-                  <p style={{ color: '#999', fontSize: '16px' }}>User: {username}</p>
+                  <p style={{ color: '#999', fontSize: '16px', marginBottom: '20px' }}>User: {username}</p>
+                  <button onClick={() => setCurrentView('create')} className="glow-button" style={{ background: '#fff', color: '#000', padding: '12px 28px', borderRadius: '10px', border: 'none', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer' }}>+ CREATE ROOM</button>
                 </div>
                 <div style={{ display: 'grid', gap: '15px', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
                   {rooms.length === 0 ? (
