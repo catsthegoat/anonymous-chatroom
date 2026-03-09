@@ -971,7 +971,7 @@
       border: none;
     }
   
-/* ===== AI CHAT PUTER ===== */
+/* ===== AI CHAT (OPENROUTER) ===== */
 @keyframes rainbow {
   0%   { box-shadow: 0 0 18px 4px #ff0080, 0 0 40px 8px rgba(255,0,128,0.4); border-color: #ff0080; }
   16%  { box-shadow: 0 0 18px 4px #ff8000, 0 0 40px 8px rgba(255,128,0,0.4); border-color: #ff8000; }
@@ -1034,7 +1034,7 @@
 .ai-messages::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
 .ai-msg { padding: 10px 14px; border-radius: 14px; font-size: 14px; line-height: 1.6; max-width: 88%; word-break: break-word; }
 .ai-msg.user { background: #1a1a1a; border: 1px solid #333; align-self: flex-end; border-bottom-right-radius: 4px; }
-.ai-msg.ai { background: #0a0a1a; border: 1px solid #8000ff; align-self: flex-start; color: #e0d8ff; border-bottom-left-radius: 4px; }
+.ai-msg.ai { background: #0a0a1a; border: 1px solid #00c8ff; align-self: flex-start; color: #e0f7ff; border-bottom-left-radius: 4px; }
 .ai-msg img { max-width: 100%; border-radius: 10px; margin-top: 8px; display: block; }
 .ai-typing-dots { display: inline-flex; gap: 4px; align-items: center; padding: 4px 0; }
 .ai-typing-dots span { width: 7px; height: 7px; border-radius: 50%; background: #555; animation: typingDot 1.2s infinite; }
@@ -1042,7 +1042,7 @@
 .ai-typing-dots span:nth-child(3) { animation-delay: 0.4s; }
 @keyframes typingDot {
   0%, 60%, 100% { transform: translateY(0); background: #555; }
-  30% { transform: translateY(-5px); background: #8000ff; }
+  30% { transform: translateY(-5px); background: #00c8ff; }
 }
 .ai-preview-bar { display: flex; align-items: center; gap: 8px; padding: 8px 14px; background: #111; border-top: 1px solid #1a1a1a; flex-shrink: 0; }
 .ai-preview-bar img { width: 44px; height: 44px; object-fit: cover; border-radius: 8px; border: 1px solid #333; }
@@ -1053,12 +1053,18 @@
 .ai-attach-btn:hover { background: #2a2a2a; color: #fff; border-color: #555; }
 .ai-input-row { display: flex; gap: 8px; padding: 10px 14px 14px; flex-shrink: 0; }
 .ai-input { flex: 1; padding: 10px 14px; background: #1a1a1a; border: 1px solid #333; border-radius: 10px; color: #fff; font-size: 14px; outline: none; transition: border-color 0.2s; }
-.ai-input:focus { border-color: #8000ff; }
+.ai-input:focus { border-color: #00c8ff; }
 .ai-send-btn { padding: 10px 18px; background: #fff; color: #000; border: none; border-radius: 10px; font-size: 14px; font-weight: bold; cursor: pointer; transition: all 0.2s; }
 .ai-send-btn:hover { background: #ddd; }
 .ai-send-btn:disabled { background: #333; color: #666; cursor: not-allowed; }
-.ai-puter-note { font-size: 11px; color: #444; text-align: center; padding: 0 14px 8px; flex-shrink: 0; }
-.ai-puter-note a { color: #555; }
+.ai-note { font-size: 11px; color: #444; text-align: center; padding: 0 14px 8px; flex-shrink: 0; }
+.ai-note a { color: #00c8ff; }
+
+.ai-mode-toggle { background:#1a1a1a; border:1px solid #333; color:#ccc; border-radius:8px; padding:6px 10px; font-size:12px; cursor:pointer; margin-left:auto; }
+.ai-mode-toggle span { opacity:0.6; }
+.ai-mode-toggle .active { opacity:1; color:#00c8ff; }
+.ai-img { max-width:100%; border-radius:10px; margin-top:8px; display:block; }
+
 
 </style>
 </head>
@@ -3719,11 +3725,17 @@ function proxyGo() {
 
   </script>
 
-<script src="https://js.puter.com/v2/"></script>
 <script>
 window.addEventListener('load', function() {
+  const OPENROUTER_API_KEY = 'YOUR_OPENROUTER_API_KEY_HERE';
+  const OPENROUTER_ENDPOINT = 'https://openrouter.ai/api/v1/chat/completions';
+  const OPENROUTER_IMAGE_ENDPOINT = 'https://openrouter.ai/api/v1/images';
+  const OPENROUTER_MODEL = 'openrouter/auto'; // free text models router
+  const OPENROUTER_IMAGE_MODEL = 'openrouter/auto'; // auto-pick free image model when available
 
   let aiOpen = false;
+  let aiMode = 'text'; // 'text' or 'image'
+
   let aiHistory = [];
   let pendingFile = null;
   let isStreaming = false;
@@ -3731,11 +3743,11 @@ window.addEventListener('load', function() {
   // FAB button
   const fab = document.createElement('button');
   fab.className = 'ai-fab';
-  fab.title = 'Chat with GPT-4o AI';
+  fab.title = 'Chat with AI';
   fab.innerHTML = '🤖';
   document.body.appendChild(fab);
 
-  // Panel HTML
+  // Panel
   const panel = document.createElement('div');
   panel.className = 'ai-panel';
   panel.style.display = 'none';
@@ -3743,7 +3755,7 @@ window.addEventListener('load', function() {
     <div class="ai-panel-header">
       <div class="ai-header-left">
         <span>✨ AI Assistant</span>
-        <span class="ai-model-badge">GPT-4o</span>
+        <span class="ai-model-badge">OpenRouter</span>
       </div>
       <div class="ai-header-btns">
         <button class="ai-clear-btn" id="aiClearBtn">🗑 Clear</button>
@@ -3751,18 +3763,19 @@ window.addEventListener('load', function() {
       </div>
     </div>
     <div class="ai-messages" id="aiMessages">
-      <div class="ai-msg ai">Hey! 👋 I'm GPT-4o. Ask me anything — you can also upload images and files!</div>
+      <div class="ai-msg ai">Hey! 👋 I'm an AI powered by OpenRouter free models. Ask me anything!</div>
     </div>
     <div id="aiPreviewBar" class="ai-preview-bar" style="display:none;"></div>
     <div class="ai-toolbar">
-      <button class="ai-attach-btn" id="aiAttachBtn">📎 Attach Image / File</button>
+      <button class="ai-attach-btn" id="aiAttachBtn">📎 Attach file</button>
+      <button class="ai-mode-toggle" id="aiModeToggle"><span id="modeText" class="active">TXT</span> | <span id="modeImage">IMG</span></button>
       <input type="file" id="aiFileInput" accept="image/*,.pdf,.txt,.csv,.json,.js,.html,.css,.py" style="display:none;" />
     </div>
     <div class="ai-input-row">
-      <input class="ai-input" id="aiInput" type="text" placeholder="Message GPT-4o..." />
+      <input class="ai-input" id="aiInput" type="text" placeholder="Message AI..." />
       <button class="ai-send-btn" id="aiSendBtn">Send</button>
     </div>
-    <p class="ai-puter-note">Powered by <a href="https://puter.com" target="_blank">Puter.js</a> · free sign-in required once</p>
+    <p class="ai-note">Uses <a href="https://openrouter.ai" target="_blank">OpenRouter free models router</a>. Keep your API key secret!</p>
   `;
   document.body.appendChild(panel);
 
@@ -3778,11 +3791,26 @@ window.addEventListener('load', function() {
 
   document.getElementById('aiClearBtn').addEventListener('click', () => {
     aiHistory = [];
-    document.getElementById('aiMessages').innerHTML = '<div class="ai-msg ai">Chat cleared! Ask me anything. 🗑</div>';
+    document.getElementById('aiMessages').innerHTML = '<div class="ai-msg ai">Chat cleared! 🗑 Ask me anything.</div>';
   });
 
   document.getElementById('aiAttachBtn').addEventListener('click', () => {
     document.getElementById('aiFileInput').click();
+  });
+  const modeToggle = document.getElementById('aiModeToggle');
+  const modeText = document.getElementById('modeText');
+  const modeImage = document.getElementById('modeImage');
+  modeToggle.addEventListener('click', () => {
+    aiMode = aiMode === 'text' ? 'image' : 'text';
+    if (aiMode === 'text') {
+      modeText.classList.add('active');
+      modeImage.classList.remove('active');
+      document.getElementById('aiInput').placeholder = 'Message AI...';
+    } else {
+      modeImage.classList.add('active');
+      modeText.classList.remove('active');
+      document.getElementById('aiInput').placeholder = 'Describe the image you want...';
+    }
   });
 
   document.getElementById('aiFileInput').addEventListener('change', function() {
@@ -3790,20 +3818,21 @@ window.addEventListener('load', function() {
     if (!file) return;
     const reader = new FileReader();
     reader.onload = (e) => {
-      pendingFile = { dataUrl: e.target.result, name: file.name, type: file.type };
+      const text = typeof e.target.result === 'string' ? e.target.result : '';
+      pendingFile = { name: file.name, text };
       showPreview();
     };
-    reader.readAsDataURL(file);
+    // For simplicity, treat everything as text (works well for txt, code, etc.)
+    reader.readAsText(file);
     this.value = '';
   });
 
   function showPreview() {
     const bar = document.getElementById('aiPreviewBar');
     bar.style.display = 'flex';
-    const isImg = pendingFile.type.startsWith('image/');
-    bar.innerHTML = (isImg ? `<img src="${pendingFile.dataUrl}" alt="preview"/>` : '<span style="font-size:24px">📄</span>') +
-      `<span class="ai-preview-name">${pendingFile.name}</span>
-       <button class="ai-remove-file" id="aiRemoveFile">✕</button>`;
+    bar.innerHTML = '<span style="font-size:24px">📄</span>' +
+      '<span class="ai-preview-name">' + pendingFile.name + '</span>' +
+      '<button class="ai-remove-file" id="aiRemoveFile">✕</button>';
     document.getElementById('aiRemoveFile').addEventListener('click', () => {
       pendingFile = null; bar.style.display = 'none';
     });
@@ -3811,16 +3840,9 @@ window.addEventListener('load', function() {
 
   async function sendAiMessage() {
     if (isStreaming) return;
-
-    // Check puter is available
-    if (typeof puter === 'undefined') {
-      addMsg('ai', '⚠️ Puter.js failed to load. Make sure you are connected to the internet and refresh the page!');
-      return;
-    }
-
     const input = document.getElementById('aiInput');
-    const msg = input.value.trim();
-    if (!msg && !pendingFile) return;
+    const prompt = input.value.trim();
+    if (!prompt && !pendingFile) return;
     input.value = '';
 
     const messagesDiv = document.getElementById('aiMessages');
@@ -3831,35 +3853,96 @@ window.addEventListener('load', function() {
     // User bubble
     const userBubble = document.createElement('div');
     userBubble.className = 'ai-msg user';
-    const isImg = pendingFile?.type?.startsWith('image/');
-    userBubble.innerHTML = (msg ? `<span>${msg}</span>` : '') +
-      (pendingFile ? (isImg ? `<img src="${pendingFile.dataUrl}" alt="img"/>` : `<div>📄 ${pendingFile.name}</div>`) : '');
+    if (aiMode === 'image') {
+      userBubble.textContent = '[Image request] ' + prompt;
+    } else if (pendingFile) {
+      userBubble.innerHTML = (prompt ? '<div>' + prompt + '</div>' : '') + '<div>📄 ' + pendingFile.name + '</div>';
+    } else {
+      userBubble.textContent = prompt;
+    }
     messagesDiv.appendChild(userBubble);
 
-    // Typing indicator
     const aiBubble = document.createElement('div');
     aiBubble.className = 'ai-msg ai';
     aiBubble.innerHTML = '<div class="ai-typing-dots"><span></span><span></span><span></span></div>';
     messagesDiv.appendChild(aiBubble);
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
 
+    if (aiMode === 'image') {
+      // Image generation path
+      try {
+        const res = await fetch(OPENROUTER_IMAGE_ENDPOINT, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + OPENROUTER_API_KEY,
+            'HTTP-Referer': window.location.origin || 'https://your-site.example',
+            'X-Title': 'Anonymous Chatroom AI Image'
+          },
+          body: JSON.stringify({
+            model: OPENROUTER_IMAGE_MODEL,
+            prompt: prompt
+          })
+        });
+        const data = await res.json();
+        if (data.error) throw new Error(data.error.message || 'Image API error');
+        const url = data.data?.[0]?.url;
+        if (url) {
+          aiBubble.innerHTML = '<img src="' + url + '" alt="AI image" class="ai-img" />';
+        } else {
+          aiBubble.textContent = 'Sorry, I could not generate an image.';
+        }
+      } catch (e) {
+        aiBubble.textContent = '⚠️ ' + (e.message || 'Something went wrong generating the image.');
+      }
+      isStreaming = false;
+      sendBtn.disabled = false;
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      return;
+    }
+
+    // Text chat path (same as before)
+    const messagesPayload = [];
+    if (aiHistory.length === 0) {
+      messagesPayload.push({ role: 'system', content: 'You are a helpful, friendly assistant in an anonymous chatroom. Keep answers concise and safe for teens.' });
+    }
+    aiHistory.forEach(m => messagesPayload.push(m));
+
+    let content = prompt || '';
+    if (pendingFile) {
+      content += '
+
+User also uploaded a file named ' + pendingFile.name + '. Here is its text content:
+
+' + pendingFile.text;
+    }
+    messagesPayload.push({ role: 'user', content });
+
     pendingFile = null;
     document.getElementById('aiPreviewBar').style.display = 'none';
 
-    aiHistory.push({ role: 'user', content: msg || 'Please analyze the attached content.' });
-
     try {
-      const response = await puter.ai.chat(aiHistory, { model: 'gpt-4o', stream: true });
-      aiBubble.textContent = '';
-      for await (const part of response) {
-        if (part?.text) {
-          aiBubble.textContent += part.text;
-          messagesDiv.scrollTop = messagesDiv.scrollHeight;
-        }
-      }
-      aiHistory.push({ role: 'assistant', content: aiBubble.textContent });
-    } catch(e) {
-      aiBubble.textContent = '⚠️ ' + (e.message || 'Something went wrong. Try signing into Puter when prompted!');
+      const res = await fetch(OPENROUTER_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + OPENROUTER_API_KEY,
+          'HTTP-Referer': window.location.origin || 'https://your-site.example',
+          'X-Title': 'Anonymous Chatroom AI'
+        },
+        body: JSON.stringify({
+          model: OPENROUTER_MODEL,
+          messages: messagesPayload
+        })
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error.message || 'API error');
+      const reply = data.choices?.[0]?.message?.content || 'Sorry, I could not generate a reply.';
+      aiHistory.push({ role: 'user', content });
+      aiHistory.push({ role: 'assistant', content: reply });
+      aiBubble.textContent = reply;
+    } catch (e) {
+      aiBubble.textContent = '⚠️ ' + (e.message || 'Something went wrong calling OpenRouter.');
     }
 
     isStreaming = false;
@@ -3867,21 +3950,11 @@ window.addEventListener('load', function() {
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
   }
 
-  function addMsg(type, text) {
-    const messagesDiv = document.getElementById('aiMessages');
-    const b = document.createElement('div');
-    b.className = 'ai-msg ' + type;
-    b.textContent = text;
-    messagesDiv.appendChild(b);
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
-  }
-
   document.getElementById('aiSendBtn').addEventListener('click', sendAiMessage);
-  document.getElementById('aiInput').addEventListener('keydown', e => {
+  document.getElementById('aiInput').addEventListener('keydown', function(e) {
     if (e.key === 'Enter') sendAiMessage();
   });
-
-}); // end window.load
+});
 </script>
 
 </body>
