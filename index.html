@@ -1981,10 +1981,14 @@ peerConnection.oniceconnectionstatechange = () => {
               setIsCalling(false);
               setInCall(true);
               setCallWith(targetUser);
-              if (remoteVideoRef.current) {
-                remoteVideoRef.current.srcObject = rs;
-                remoteVideoRef.current.play().catch(e => console.error('Remote play error:', e));
-              }
+              let tries2 = 0;
+              const attachRemote2 = () => {
+                if (tries2++ > 30) return;
+                const el = remoteVideoRef.current;
+                if (el) { el.srcObject = rs; el.play().catch(() => {}); }
+                else { setTimeout(attachRemote2, 100); }
+              };
+              attachRemote2();
             }
           };;
           
@@ -3455,7 +3459,7 @@ const kickUser = async (targetUser) => {
                     controls={false}
                     className="remote-video"
                     style={{ 
-                      display: remoteStream ? 'block' : 'none',
+                      display: 'block', opacity: remoteStream ? 1 : 0,
                       width: '100%',
                       height: '100%',
                       objectFit: 'cover'
