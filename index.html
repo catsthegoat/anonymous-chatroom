@@ -2099,6 +2099,8 @@ peerConnection.oniceconnectionstatechange = () => {
           console.log('✅ Got local stream');
           setLocalStream(stream);
 
+          // Save offer data BEFORE clearing state
+          const savedOffer = incomingCall;
           // Dismiss incoming call popup, but don't show call screen yet
           setIncomingCall(null);
 
@@ -2200,7 +2202,7 @@ peerConnection.oniceconnectionstatechange = () => {
           };
 
           // Set remote description from offer
-          const offerData = incomingCall.offer;
+          const offerData = savedOffer.offer;
           await peerConnection.setRemoteDescription(new RTCSessionDescription(offerData));
           console.log('✅ Set remote description');
 
@@ -2652,7 +2654,7 @@ const endCall = () => {
 
       // Keep a ref to inCall so the Firebase listener always reads the latest value
       const inCallRef = useRef(false);
-      useEffect(() => { inCallRef.current = inCall; }, [inCall]);
+      useEffect(() => { inCallRef.current = inCall || isCalling; }, [inCall, isCalling]);
 
       // Listen for incoming calls
       useEffect(() => {
@@ -2662,6 +2664,11 @@ const endCall = () => {
             const data = snapshot.val();
             // Use ref so we always have the latest inCall value (avoids stale closure)
             if (data && data.from !== username && !inCallRef.current) {
+              // Ignore stale offers older than 30 seconds
+              if (Date.now() - data.timestamp > 30000) {
+                snapshot.ref.remove();
+                return;
+              }
               setIncomingCall(data);
               addDebugLog(`Incoming call from ${data.from}`, 'info');
             }
