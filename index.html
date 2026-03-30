@@ -1077,6 +1077,136 @@
           from { opacity: 0; transform: translate(-50%, calc(-50% + 30px)); }
           to   { opacity: 1; transform: translate(-50%, -50%); }
         }
+
+    /* ===== GLOBAL SMOOTH ANIMATIONS ===== */
+    * {
+      transition: background-color 0.2s ease, border-color 0.2s ease, color 0.15s ease, opacity 0.2s ease;
+    }
+
+    /* Buttons */
+    button {
+      transition: transform 0.18s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.2s ease, background-color 0.2s ease, opacity 0.2s ease !important;
+    }
+    button:hover { transform: scale(1.07) !important; }
+    button:active { transform: scale(0.94) !important; }
+
+    /* Inputs */
+    input, textarea {
+      transition: border-color 0.2s ease, box-shadow 0.25s ease !important;
+    }
+
+    /* Message bubbles slide in */
+    @keyframes msgSlideIn {
+      from { opacity: 0; transform: translateY(18px) scale(0.97); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .message-bubble {
+      animation: msgSlideIn 0.28s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+
+    /* Room cards pop in */
+    @keyframes cardPop {
+      from { opacity: 0; transform: translateY(22px) scale(0.95); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .glow-border {
+      animation: cardPop 0.35s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+
+    /* Room list items stagger */
+    @keyframes roomFadeIn {
+      from { opacity: 0; transform: translateX(-16px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    /* Emoji picker bounce in */
+    .emoji-picker {
+      animation: cardPop 0.22s cubic-bezier(0.34,1.56,0.64,1) both !important;
+      transform-origin: bottom right;
+    }
+
+    /* Reactions bounce */
+    @keyframes reactionBounce {
+      0%   { transform: scale(0.5); opacity: 0; }
+      60%  { transform: scale(1.25); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .reaction {
+      animation: reactionBounce 0.3s cubic-bezier(0.34,1.56,0.64,1) both;
+      transition: transform 0.18s cubic-bezier(0.34,1.56,0.64,1), background 0.2s ease !important;
+    }
+    .reaction:hover { transform: scale(1.18) !important; }
+
+    /* Incoming call slide up */
+    .incoming-call {
+      animation: slideUp 0.4s cubic-bezier(0.34,1.56,0.64,1) both !important;
+    }
+
+    /* Debug console slide in from right */
+    .debug-console {
+      animation: debugSlide 0.3s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+    @keyframes debugSlide {
+      from { opacity: 0; transform: translateX(40px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    /* AI panel slide up */
+    .ai-panel {
+      animation: aiPanelIn 0.35s cubic-bezier(0.34,1.56,0.64,1) both !important;
+      transform-origin: bottom right;
+    }
+    @keyframes aiPanelIn {
+      from { opacity: 0; transform: scale(0.88) translateY(30px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    /* AI messages pop in */
+    .ai-msg {
+      animation: msgSlideIn 0.25s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+
+    /* FAB buttons wiggle on hover */
+    .ai-fab, .proxy-fab {
+      transition: transform 0.22s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.2s ease !important;
+    }
+    .ai-fab:hover, .proxy-fab:hover {
+      transform: scale(1.15) rotate(-8deg) !important;
+    }
+
+    /* Minimized windows slide in */
+    .minimized-window {
+      animation: cardPop 0.3s cubic-bezier(0.34,1.56,0.64,1) both;
+      transition: width 0.3s ease, height 0.3s ease, bottom 0.3s ease, right 0.3s ease !important;
+    }
+
+    /* Video call modal fade in */
+    .video-call-modal {
+      animation: fadeIn 0.3s ease both !important;
+    }
+
+    /* Reply preview slide down */
+    .reply-preview {
+      animation: msgSlideIn 0.2s ease both;
+    }
+
+    /* Typing indicator pulse */
+    .typing-indicator {
+      animation: typingPulse 2s ease-in-out infinite;
+    }
+    @keyframes typingPulse {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+
+    /* System messages fade in */
+    .system-message {
+      animation: fadeIn 0.4s ease both;
+    }
+
+    /* Scrollbar smooth */
+    * { scroll-behavior: smooth; }
+
 </style>
 </head>
 <body>
@@ -1266,6 +1396,7 @@
       const [gameInvite, setGameInvite] = useState(null);
       const [openGameWindows, setOpenGameWindows] = useState([]);
       const [inCall, setInCall] = useState(false);
+      const [isCalling, setIsCalling] = useState(false);
       const [callWith, setCallWith] = useState(null);
       const [incomingCall, setIncomingCall] = useState(null);
       const [localStream, setLocalStream] = useState(null);
@@ -1760,6 +1891,8 @@
 const startCall = async (targetUser) => {
         try {
           console.log('=== START CALL ===');
+          setIsCalling(true);
+          setCallWith(targetUser);
           console.log('Calling:', targetUser);
           
           // Get local media stream with better constraints
@@ -1845,6 +1978,7 @@ peerConnection.oniceconnectionstatechange = () => {
             if (event.streams && event.streams[0]) {
               const rs = event.streams[0];
               setRemoteStream(rs);
+              setIsCalling(false);
               setInCall(true);
               setCallWith(targetUser);
               if (remoteVideoRef.current) {
@@ -1927,6 +2061,7 @@ peerConnection.oniceconnectionstatechange = () => {
           declineRef.on('value', (snapshot) => {
             if (snapshot.val() === true) {
               console.log('📞 Call declined');
+              setIsCalling(false);
               endCall();
               alert(`${targetUser} declined your call`);
               db.ref(`calls/${currentRoom}/${username}`).remove();
@@ -2169,6 +2304,7 @@ const endCall = () => {
   }
 
   setInCall(false);
+  setIsCalling(false);
   setCallWith(null);
   setLocalStream(null);
   setRemoteStream(null);
@@ -3470,6 +3606,27 @@ const kickUser = async (targetUser) => {
             )}
 
             {/* Incoming Call */}
+            {isCalling && !inCall && (
+              <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
+                background: 'rgba(0,0,0,0.92)', display: 'flex', alignItems: 'center', 
+                justifyContent: 'center', zIndex: 10001 }}>
+                <div className="incoming-call" style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '64px', marginBottom: '20px', animation: 'glow 1s ease-in-out infinite' }}>📲</div>
+                  <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '10px' }}>
+                    Calling {callWith}...
+                  </h2>
+                  <p style={{ fontSize: '16px', color: '#999', marginBottom: '30px' }}>
+                    Ringing... waiting for them to answer
+                  </p>
+                  <button 
+                    onClick={endCall} 
+                    style={{ background: '#ff3b30', color: '#fff', border: 'none', 
+                      borderRadius: '50px', padding: '15px 40px', fontSize: '18px', cursor: 'pointer' }}>
+                    🔴 Cancel
+                  </button>
+                </div>
+              </div>
+            )}
             {incomingCall && !inCall && !isGroupCall && (
               <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10001 }}>
                 <div className="incoming-call">
