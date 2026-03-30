@@ -1207,6 +1207,27 @@
     /* Scrollbar smooth */
     * { scroll-behavior: smooth; }
 
+
+    /* Prevent flash/animation on video call elements */
+    video, .video-call-modal *, .video-call-modal {
+      animation: none !important;
+      transition: opacity 0.2s ease !important;
+    }
+    .video-call-modal .call-btn {
+      transition: transform 0.18s cubic-bezier(0.34,1.56,0.64,1), background-color 0.2s ease !important;
+      animation: none !important;
+    }
+    .video-call-modal .call-btn:hover { transform: scale(1.1) !important; }
+
+
+    /* GPU accelerate video elements to prevent black flash */
+    video {
+      will-change: transform;
+      transform: translateZ(0);
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+
 </style>
 </head>
 <body>
@@ -1939,7 +1960,7 @@ const startCall = async (targetUser) => {
               }
             );
             const turnData = await turnRes.json();
-            iceServers = Array.isArray(turnData.iceServers) ? turnData.iceServers : [turnData.iceServers] || [{ urls: 'stun:stun.cloudflare.com:3478' }];
+            iceServers = turnData.iceServers || [{ urls: 'stun:stun.cloudflare.com:3478' }];
           } catch(e) {
             console.warn('Cloudflare TURN fetch failed, using STUN fallback', e);
             iceServers = [{ urls: 'stun:stun.cloudflare.com:3478' }, { urls: 'stun:stun.l.google.com:19302' }];
@@ -2128,7 +2149,7 @@ peerConnection.oniceconnectionstatechange = () => {
               }
             );
             const turnData = await turnRes.json();
-            iceServers = Array.isArray(turnData.iceServers) ? turnData.iceServers : [turnData.iceServers] || [{ urls: 'stun:stun.cloudflare.com:3478' }];
+            iceServers = turnData.iceServers || [{ urls: 'stun:stun.cloudflare.com:3478' }];
           } catch(e) {
             console.warn('Cloudflare TURN fetch failed, using STUN fallback', e);
             iceServers = [{ urls: 'stun:stun.cloudflare.com:3478' }, { urls: 'stun:stun.l.google.com:19302' }];
@@ -2370,7 +2391,7 @@ const endCall = () => {
             }
           );
           const data = await res.json();
-          if (data.iceServers) return Array.isArray(data.iceServers) ? data.iceServers : [data.iceServers];
+          if (data.iceServers) return data.iceServers;
         } catch(e) {
           console.warn('Cloudflare TURN fetch failed, falling back to STUN', e);
         }
@@ -3405,18 +3426,16 @@ const kickUser = async (targetUser) => {
                       <div key={participant} style={{ position: 'relative', background: '#000', borderRadius: '12px', overflow: 'hidden', minHeight: '160px' }}>
                         <video
                           ref={el => {
-                            // Only update srcObject when the element mounts or the stream changes — not on every render
-                            const prev = participantVideoRefs.current[participant];
                             participantVideoRefs.current[participant] = el;
                             if (el) {
                               el.muted = false;
+                              el.autoplay = true;
+                              el.playsInline = true;
                               const stream = participantStreamsRef.current[participant];
                               if (stream && el.srcObject !== stream) {
                                 el.srcObject = stream;
                                 el.play().catch(() => {});
                               }
-                            } else if (prev) {
-                              prev.srcObject = null;
                             }
                           }}
                           autoPlay playsInline
