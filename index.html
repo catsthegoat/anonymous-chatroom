@@ -1939,7 +1939,7 @@ const startCall = async (targetUser) => {
               }
             );
             const turnData = await turnRes.json();
-            iceServers = turnData.iceServers || [{ urls: 'stun:stun.cloudflare.com:3478' }];
+            iceServers = Array.isArray(turnData.iceServers) ? turnData.iceServers : [turnData.iceServers] || [{ urls: 'stun:stun.cloudflare.com:3478' }];
           } catch(e) {
             console.warn('Cloudflare TURN fetch failed, using STUN fallback', e);
             iceServers = [{ urls: 'stun:stun.cloudflare.com:3478' }, { urls: 'stun:stun.l.google.com:19302' }];
@@ -2099,8 +2099,6 @@ peerConnection.oniceconnectionstatechange = () => {
           console.log('✅ Got local stream');
           setLocalStream(stream);
 
-          // Save offer data BEFORE clearing state
-          const savedOffer = incomingCall;
           // Dismiss incoming call popup, but don't show call screen yet
           setIncomingCall(null);
 
@@ -2130,7 +2128,7 @@ peerConnection.oniceconnectionstatechange = () => {
               }
             );
             const turnData = await turnRes.json();
-            iceServers = turnData.iceServers || [{ urls: 'stun:stun.cloudflare.com:3478' }];
+            iceServers = Array.isArray(turnData.iceServers) ? turnData.iceServers : [turnData.iceServers] || [{ urls: 'stun:stun.cloudflare.com:3478' }];
           } catch(e) {
             console.warn('Cloudflare TURN fetch failed, using STUN fallback', e);
             iceServers = [{ urls: 'stun:stun.cloudflare.com:3478' }, { urls: 'stun:stun.l.google.com:19302' }];
@@ -2202,7 +2200,7 @@ peerConnection.oniceconnectionstatechange = () => {
           };
 
           // Set remote description from offer
-          const offerData = savedOffer.offer;
+          const offerData = incomingCall.offer;
           await peerConnection.setRemoteDescription(new RTCSessionDescription(offerData));
           console.log('✅ Set remote description');
 
@@ -2372,7 +2370,7 @@ const endCall = () => {
             }
           );
           const data = await res.json();
-          if (data.iceServers) return data.iceServers;
+          if (data.iceServers) return Array.isArray(data.iceServers) ? data.iceServers : [data.iceServers];
         } catch(e) {
           console.warn('Cloudflare TURN fetch failed, falling back to STUN', e);
         }
@@ -2654,7 +2652,7 @@ const endCall = () => {
 
       // Keep a ref to inCall so the Firebase listener always reads the latest value
       const inCallRef = useRef(false);
-      useEffect(() => { inCallRef.current = inCall || isCalling; }, [inCall, isCalling]);
+      useEffect(() => { inCallRef.current = inCall; }, [inCall]);
 
       // Listen for incoming calls
       useEffect(() => {
@@ -2664,11 +2662,6 @@ const endCall = () => {
             const data = snapshot.val();
             // Use ref so we always have the latest inCall value (avoids stale closure)
             if (data && data.from !== username && !inCallRef.current) {
-              // Ignore stale offers older than 30 seconds
-              if (Date.now() - data.timestamp > 30000) {
-                snapshot.ref.remove();
-                return;
-              }
               setIncomingCall(data);
               addDebugLog(`Incoming call from ${data.from}`, 'info');
             }
