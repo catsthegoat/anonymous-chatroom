@@ -1791,13 +1791,26 @@ const startCall = async (targetUser) => {
             }
           }, 100);
 
-// Open Relay TURN servers (free, no API key needed)
-          const iceServers = [
-            { urls: "stun:openrelay.metered.ca:80" },
-            { urls: "turn:openrelay.metered.ca:80", username: "openrelayproject", credential: "openrelayproject" },
-            { urls: "turn:openrelay.metered.ca:443", username: "openrelayproject", credential: "openrelayproject" },
-            { urls: "turn:openrelay.metered.ca:443?transport=tcp", username: "openrelayproject", credential: "openrelayproject" }
-          ];
+// Cloudflare TURN (low-latency, global)
+          let iceServers;
+          try {
+            const turnRes = await fetch(
+              'https://rtc.live.cloudflare.com/v1/turn/keys/49fd58d0768513bdeef8b8b98cac5bfb/credentials/generate',
+              {
+                method: 'POST',
+                headers: {
+                  'Authorization': 'Bearer 7cde0fc369cb5cbacbd65b74f041817c47eac5e388607cafae236567b9aca27b',
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ ttl: 86400 })
+              }
+            );
+            const turnData = await turnRes.json();
+            iceServers = turnData.iceServers || [{ urls: 'stun:stun.cloudflare.com:3478' }];
+          } catch(e) {
+            console.warn('Cloudflare TURN fetch failed, using STUN fallback', e);
+            iceServers = [{ urls: 'stun:stun.cloudflare.com:3478' }, { urls: 'stun:stun.l.google.com:19302' }];
+          }
 
           // Create peer connection
           const configuration = {
@@ -1965,13 +1978,26 @@ peerConnection.oniceconnectionstatechange = () => {
 
 
           
-// Open Relay TURN servers (free, no API key needed)
-          const iceServers = [
-            { urls: "stun:openrelay.metered.ca:80" },
-            { urls: "turn:openrelay.metered.ca:80", username: "openrelayproject", credential: "openrelayproject" },
-            { urls: "turn:openrelay.metered.ca:443", username: "openrelayproject", credential: "openrelayproject" },
-            { urls: "turn:openrelay.metered.ca:443?transport=tcp", username: "openrelayproject", credential: "openrelayproject" }
-          ];
+// Cloudflare TURN (low-latency, global)
+          let iceServers;
+          try {
+            const turnRes = await fetch(
+              'https://rtc.live.cloudflare.com/v1/turn/keys/49fd58d0768513bdeef8b8b98cac5bfb/credentials/generate',
+              {
+                method: 'POST',
+                headers: {
+                  'Authorization': 'Bearer 7cde0fc369cb5cbacbd65b74f041817c47eac5e388607cafae236567b9aca27b',
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ ttl: 86400 })
+              }
+            );
+            const turnData = await turnRes.json();
+            iceServers = turnData.iceServers || [{ urls: 'stun:stun.cloudflare.com:3478' }];
+          } catch(e) {
+            console.warn('Cloudflare TURN fetch failed, using STUN fallback', e);
+            iceServers = [{ urls: 'stun:stun.cloudflare.com:3478' }, { urls: 'stun:stun.l.google.com:19302' }];
+          }
 
           // Create peer connection
           const configuration = {
@@ -2195,10 +2221,26 @@ const endCall = () => {
       const groupCallActiveRef = useRef(false);
 
       const getIceServers = async () => {
-        // Always return STUN immediately — Xirsys fetch is unreliable and blocks startup
+        try {
+          const res = await fetch(
+            'https://rtc.live.cloudflare.com/v1/turn/keys/49fd58d0768513bdeef8b8b98cac5bfb/credentials/generate',
+            {
+              method: 'POST',
+              headers: {
+                'Authorization': 'Bearer 7cde0fc369cb5cbacbd65b74f041817c47eac5e388607cafae236567b9aca27b',
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ ttl: 86400 })
+            }
+          );
+          const data = await res.json();
+          if (data.iceServers) return data.iceServers;
+        } catch(e) {
+          console.warn('Cloudflare TURN fetch failed, falling back to STUN', e);
+        }
         return [
-          { urls: 'stun:stun.l.google.com:19302' },
-          { urls: 'stun:stun1.l.google.com:19302' },
+          { urls: 'stun:stun.cloudflare.com:3478' },
+          { urls: 'stun:stun.l.google.com:19302' }
         ];
       };
 
