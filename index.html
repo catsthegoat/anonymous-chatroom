@@ -1939,7 +1939,7 @@ const startCall = async (targetUser) => {
               }
             );
             const turnData = await turnRes.json();
-            iceServers = turnData.iceServers || [{ urls: 'stun:stun.cloudflare.com:3478' }];
+            iceServers = Array.isArray(turnData.iceServers) ? turnData.iceServers : (turnData.iceServers ? [turnData.iceServers] : [{ urls: 'stun:stun.cloudflare.com:3478' }]);
           } catch(e) {
             console.warn('Cloudflare TURN fetch failed, using STUN fallback', e);
             iceServers = [{ urls: 'stun:stun.cloudflare.com:3478' }, { urls: 'stun:stun.l.google.com:19302' }];
@@ -1981,9 +1981,9 @@ peerConnection.oniceconnectionstatechange = () => {
               setIsCalling(false);
               setInCall(true);
               setCallWith(targetUser);
-              let tries2 = 0;
+              let rTries2 = 0;
               const attachRemote2 = () => {
-                if (tries2++ > 30) return;
+                if (rTries2++ > 40) return;
                 const el = remoteVideoRef.current;
                 if (el) { el.srcObject = rs; el.play().catch(() => {}); }
                 else { setTimeout(attachRemote2, 100); }
@@ -2102,18 +2102,16 @@ peerConnection.oniceconnectionstatechange = () => {
           
           console.log('✅ Got local stream');
           setLocalStream(stream);
-
-          // Dismiss incoming call popup, but don't show call screen yet
+          const savedOffer = incomingCall;
           setIncomingCall(null);
-
-          // Wait for React to render the video element, then attach stream
-          setTimeout(() => {
-            if (localVideoRef.current && stream) {
-              console.log('🎥 Attaching local stream to video element (answerer)');
-              localVideoRef.current.srcObject = stream;
-              localVideoRef.current.play().catch(err => console.error('Local video play error:', err));
-            }
-          }, 100);
+          let localTries = 0;
+          const attachLocal = () => {
+            if (localTries++ > 30) return;
+            const el = localVideoRef.current;
+            if (el) { el.srcObject = stream; el.play().catch(() => {}); }
+            else { setTimeout(attachLocal, 100); }
+          };
+          attachLocal();
 
 
           
@@ -2132,7 +2130,7 @@ peerConnection.oniceconnectionstatechange = () => {
               }
             );
             const turnData = await turnRes.json();
-            iceServers = turnData.iceServers || [{ urls: 'stun:stun.cloudflare.com:3478' }];
+            iceServers = Array.isArray(turnData.iceServers) ? turnData.iceServers : (turnData.iceServers ? [turnData.iceServers] : [{ urls: 'stun:stun.cloudflare.com:3478' }]);
           } catch(e) {
             console.warn('Cloudflare TURN fetch failed, using STUN fallback', e);
             iceServers = [{ urls: 'stun:stun.cloudflare.com:3478' }, { urls: 'stun:stun.l.google.com:19302' }];
@@ -2169,27 +2167,17 @@ peerConnection.oniceconnectionstatechange = () => {
          // Handle incoming tracks - FIXED
           peerConnection.ontrack = (event) => {
             console.log('🎥 RECEIVED REMOTE TRACK:', event.track.kind);
-            
             if (event.streams && event.streams[0]) {
               const remoteStream = event.streams[0];
-              console.log('Remote stream tracks:', remoteStream.getTracks().length);
-              
               setRemoteStream(remoteStream);
-              
-              // CRITICAL FIX: Wait for element and stream, then attach and play
-              setTimeout(() => {
-                if (remoteVideoRef.current && remoteStream) {
-                  remoteVideoRef.current.srcObject = remoteStream;
-                  remoteVideoRef.current.load();
-                  
-                  remoteVideoRef.current.onloadedmetadata = () => {
-                    console.log('✅ Remote video metadata loaded');
-                    remoteVideoRef.current.play()
-                      .then(() => console.log('✅ Remote video playing'))
-                      .catch(err => console.error('Video play error:', err));
-                  };
-                }
-              }, 100);
+              let rTries = 0;
+              const attachRemote = () => {
+                if (rTries++ > 40) return;
+                const el = remoteVideoRef.current;
+                if (el) { el.srcObject = remoteStream; el.play().catch(() => {}); }
+                else { setTimeout(attachRemote, 100); }
+              };
+              attachRemote();
             }
           };
 
@@ -2374,7 +2362,7 @@ const endCall = () => {
             }
           );
           const data = await res.json();
-          if (data.iceServers) return data.iceServers;
+          if (data.iceServers) return Array.isArray(data.iceServers) ? data.iceServers : [data.iceServers];
         } catch(e) {
           console.warn('Cloudflare TURN fetch failed, falling back to STUN', e);
         }
@@ -2510,25 +2498,12 @@ const endCall = () => {
        pc.ontrack = ({streams}) => {
   if (!streams || !streams[0]) return;
   const rs = streams[0];
-
-  // Enable all incoming audio tracks explicitly
   rs.getAudioTracks().forEach(t => { t.enabled = true; });
-
   participantStreamsRef.current[participant] = rs;
-  setGroupCallParticipants(prev =>
-    prev.includes(participant) ? prev : [...prev, participant]);
-
-  const attachVideo = () => {
-    const el = participantVideoRefs.current[participant];
-    if (el) {
-      if (el.srcObject !== rs) el.srcObject = rs;
-      el.muted = false;
-      el.play().catch(e => console.error('Group video play error:', e));
-    } else {
-      setTimeout(attachVideo, 100);
-    }
-  };
-  attachVideo();
+  // Attach BEFORE state update to prevent black flash
+  const elNow = participantVideoRefs.current[participant];
+  if (elNow && elNow.srcObject !== rs) { elNow.srcObject = rs; elNow.muted = false; elNow.play().catch(() => {}); }
+  setGroupCallParticipants(prev => prev.includes(participant) ? prev : [...prev, participant]);
 };
 
 
@@ -2638,21 +2613,18 @@ const endCall = () => {
       }, [currentRoom]);
 
       // Re-attach streams whenever participants list changes (e.g. new tile rendered)
-      // The srcObject !== stream guard ensures we never restart a playing video
+      // Attach streams synchronously — no delay = no black flash window
       useEffect(() => {
         if (!isGroupCall) return;
-        // Small delay so the DOM elements have rendered before we try to attach
-        const t = setTimeout(() => {
-          groupCallParticipants.forEach(participant => {
-            const stream = participantStreamsRef.current[participant];
-            const vidEl = participantVideoRefs.current[participant];
-            if (vidEl && stream && vidEl.srcObject !== stream) {
-              vidEl.srcObject = stream;
-              vidEl.play().catch(() => {});
-            }
-          });
-        }, 50);
-        return () => clearTimeout(t);
+        groupCallParticipants.forEach(participant => {
+          const stream = participantStreamsRef.current[participant];
+          const vidEl = participantVideoRefs.current[participant];
+          if (vidEl && stream && vidEl.srcObject !== stream) {
+            vidEl.srcObject = stream;
+            vidEl.muted = false;
+            vidEl.play().catch(() => {});
+          }
+        });
       }, [groupCallParticipants, isGroupCall]);
 
       // Keep a ref to inCall so the Firebase listener always reads the latest value
