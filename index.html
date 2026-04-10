@@ -2676,53 +2676,44 @@ const formatTime = (timestamp) => {
                   <input className="nxc-commandbar" placeholder="Search or jump to a room..." />
                   
                 </div>
+
+              {showSettingsModal && (
+                <div className="nxc-overlay" onClick={() => setShowSettingsModal(false)}>
+                  <div className="nxc-modal" style={{maxWidth:'380px',width:'100%'}} onClick={e => e.stopPropagation()}>
+                    <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'20px'}}>
+                      <h3 style={{fontSize:'17px',fontWeight:'700',display:'flex',alignItems:'center',gap:'8px'}}><IconSettings /> Settings</h3>
+                      <button className="nxc-btn-icon" onClick={() => setShowSettingsModal(false)}><IconX /></button>
+                    </div>
+                    <div style={{borderTop:'1px solid var(--nx-border)',paddingTop:'16px',display:'flex',flexDirection:'column',gap:'12px'}}>
+                      <div style={{fontSize:'11px',fontWeight:'700',textTransform:'uppercase',letterSpacing:'0.06em',color:'var(--nx-muted)'}}>Tab Cloaking</div>
+                      <p style={{fontSize:'13px',color:'var(--nx-muted)',marginBottom:'4px'}}>Make this tab look like something else.</p>
+                      <div style={{display:'flex',flexDirection:'column',gap:'8px'}}>
+                        <button className="nxc-btn-g" style={{textAlign:'left',display:'flex',alignItems:'center',gap:'10px'}} onClick={() => {
+                          document.title = 'Google Docs';
+                          let l = document.querySelector("link[rel*='icon']") || document.createElement('link');
+                          l.rel = 'shortcut icon'; l.href = 'https://ssl.gstatic.com/docs/documents/images/kix-favicon7.ico'; document.head.appendChild(l);
+                          setShowSettingsModal(false);
+                        }}>📄 Cloak as Google Docs</button>
+                        <button className="nxc-btn-g" style={{textAlign:'left',display:'flex',alignItems:'center',gap:'10px'}} onClick={() => {
+                          document.title = 'Khan Academy';
+                          let l = document.querySelector("link[rel*='icon']") || document.createElement('link');
+                          l.rel = 'shortcut icon'; l.href = 'https://cdn.kastatic.org/images/favicon.ico'; document.head.appendChild(l);
+                          setShowSettingsModal(false);
+                        }}>🟢 Cloak as Khan Academy</button>
+                        <button className="nxc-btn-g" style={{textAlign:'left',display:'flex',alignItems:'center',gap:'10px'}} onClick={() => {
+                          document.title = 'Pioneers Rooms';
+                          let l = document.querySelector("link[rel*='icon']") || document.createElement('link');
+                          l.rel = 'shortcut icon'; l.href = ''; document.head.appendChild(l);
+                          setShowSettingsModal(false);
+                        }}><IconSettings /> Reset to Default</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
               </main>
             </div>
           </div>
-
-      {showSettingsModal && (
-        <div className="nxc-overlay" onClick={() => setShowSettingsModal(false)}>
-          <div className="nxc-modal" style={{maxWidth:'380px',width:'100%'}} onClick={e => e.stopPropagation()}>
-            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'20px'}}>
-              <h3 style={{fontSize:'17px',fontWeight:'700',display:'flex',alignItems:'center',gap:'8px'}}><IconSettings /> Settings</h3>
-              <button className="nxc-btn-icon" onClick={() => setShowSettingsModal(false)}><IconX /></button>
-            </div>
-            <div style={{borderTop:'1px solid var(--nx-border)',paddingTop:'16px',display:'flex',flexDirection:'column',gap:'12px'}}>
-              <div style={{fontSize:'11px',fontWeight:'700',textTransform:'uppercase',letterSpacing:'0.06em',color:'var(--nx-muted)'}}>Tab Cloaking</div>
-              <p style={{fontSize:'13px',color:'var(--nx-muted)',marginBottom:'4px'}}>Make this tab look like something else to anyone looking over your shoulder.</p>
-              <div style={{display:'flex',flexDirection:'column',gap:'8px'}}>
-                <button className="nxc-btn-g" style={{textAlign:'left',display:'flex',alignItems:'center',gap:'10px'}} onClick={() => {
-                  document.title = 'Google Docs';
-                  let l = document.querySelector("link[rel*='icon']") || document.createElement('link');
-                  l.rel = 'shortcut icon'; l.href = 'https://ssl.gstatic.com/docs/documents/images/kix-favicon7.ico'; document.head.appendChild(l);
-                  setShowSettingsModal(false);
-                }}>
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="#4285f4"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
-                  Cloak as Google Docs
-                </button>
-                <button className="nxc-btn-g" style={{textAlign:'left',display:'flex',alignItems:'center',gap:'10px'}} onClick={() => {
-                  document.title = 'Khan Academy';
-                  let l = document.querySelector("link[rel*='icon']") || document.createElement('link');
-                  l.rel = 'shortcut icon'; l.href = 'https://cdn.kastatic.org/images/favicon.ico'; document.head.appendChild(l);
-                  setShowSettingsModal(false);
-                }}>
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#14bf96"/><text x="6" y="16" fontSize="10" fill="white">K</text></svg>
-                  Cloak as Khan Academy
-                </button>
-                <button className="nxc-btn-g" style={{textAlign:'left',display:'flex',alignItems:'center',gap:'10px'}} onClick={() => {
-                  document.title = 'Pioneers Rooms';
-                  let l = document.querySelector("link[rel*='icon']") || document.createElement('link');
-                  l.rel = 'shortcut icon'; l.href = ''; document.head.appendChild(l);
-                  setShowSettingsModal(false);
-                }}>
-                  <IconSettings />
-                  Reset to Default
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
         );
       }
