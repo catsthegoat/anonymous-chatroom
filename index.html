@@ -51,7 +51,7 @@ body{font-family:var(--nx-font);background:var(--nx-bg);color:var(--nx-text);min
 
 .nxc-page-center{min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;position:relative;}
 
-.nxc-card{background:var(--nx-s1);border:1px solid var(--nx-border2);border-radius:var(--nx-rlg);
+.nxc-card{background:transparent;border:1px solid var(--nx-border2);border-radius:var(--nx-rlg);
   box-shadow:0 8px 32px rgba(0,0,0,0.4),0 1px 0 rgba(255,255,255,0.04) inset;overflow:hidden;}
 
 .nxc-logo-icon{width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,var(--nx-accent),var(--nx-accent2));
@@ -114,11 +114,11 @@ button:active{transform:scale(0.95)!important;}
 
 .nxc-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);z-index:500;
   display:flex;align-items:center;justify-content:center;padding:20px;animation:nxfade 0.18s ease both;}
-.nxc-modal{background:var(--nx-s1);border:1px solid var(--nx-border2);border-radius:var(--nx-rlg);padding:26px;
+.nxc-modal{background:transparent;border:1px solid var(--nx-border2);border-radius:var(--nx-rlg);padding:26px;
   width:100%;max-width:420px;box-shadow:0 16px 60px rgba(0,0,0,0.6);animation:nxpop 0.25s cubic-bezier(0.34,1.56,0.64,1) both;}
 
 .nxc-lobby-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;}
-.nxc-room-card{background:var(--nx-s1);border:1px solid var(--nx-border);border-radius:var(--nx-r);padding:18px;
+.nxc-room-card{background:transparent;border:1px solid var(--nx-border);border-radius:var(--nx-r);padding:18px;
   cursor:default;position:relative;overflow:hidden;transition:all var(--nx-t);
   animation:nxpop 0.3s cubic-bezier(0.34,1.56,0.64,1) both;}
 .nxc-room-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(108,140,255,0.05),transparent);
@@ -134,7 +134,7 @@ button:active{transform:scale(0.95)!important;}
 .nxc-online-dot{position:absolute;bottom:1px;right:1px;width:9px;height:9px;border-radius:50%;
   background:var(--nx-green);border:2px solid var(--nx-s1);box-shadow:0 0 6px var(--nx-green);}
 
-.nxc-chat-bar{padding:12px 16px;border-top:1px solid var(--nx-border);background:var(--nx-s1);flex-shrink:0;}
+.nxc-chat-bar{padding:12px 16px;border-top:1px solid var(--nx-border);background:transparent;flex-shrink:0;}
 
 .nxc-msg-bubble{transition:background var(--nx-t);border-radius:var(--nx-r);padding:6px 10px;
   animation:nxmsg 0.22s cubic-bezier(0.34,1.56,0.64,1) both;}
@@ -587,6 +587,45 @@ button:active{transform:scale(0.95)!important;}
 .nxc-side-item:hover::after{opacity:1;transform:translate(6px,-50%);}
 .nxc-side-item:hover{transform:scale(1.03)!important;}
 
+
+.nxc-calling-shell{min-height:100dvh;display:flex;flex-direction:column;background:transparent;position:relative;}
+.nxc-call-header{padding:12px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--nx-border);background:rgba(255,255,255,0.02);backdrop-filter:blur(10px);}
+.nxc-call-videos{flex:1;position:relative;overflow:hidden;}
+.nxc-video-container{position:absolute;inset:0;}
+.nxc-video-main{width:100%;height:100%;object-fit:cover;}
+.nxc-video-local{position:absolute;bottom:80px;right:16px;width:140px;height:110px;object-fit:cover;border-radius:14px;border:3px solid rgba(255,255,255,0.3);box-shadow:0 8px 32px rgba(0,0,0,0.6);}
+.nxc-call-controls{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);display:flex;gap:12px;padding:12px;backdrop-filter:blur(20px);background:rgba(0,0,0,0.7);border-radius:32px;border:1px solid rgba(255,255,255,0.1);}
+.nxc-call-btn{width:52px;height:52px;border-radius:50%;border:none;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:all var(--nx-t);}
+.nxc-call-btn:hover{transform:scale(1.08);}
+.nxc-call-btn-end{background:rgba(248,113,113,0.7);color:#fff;}
+.nxc-call-btn-mute,.nxc-call-btn-video{background:rgba(255,255,255,0.12);color:#fff;}
+.nxc-call-chat{flex:1;display:flex;flex-direction:column;border-left:1px solid var(--nx-border);max-width:380px;}
+.nxc-chat-msgs{flex:1;overflow-y:auto;padding:12px;gap:6px;}
+.nxc-msg-row{display:flex;gap:8px;padding:6px 0;}
+.nxc-msg-avatar{width:32px;height:32px;border-radius:50%;background:var(--nx-accent);color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.nxc-msg-content{flex:1;}
+.nxc-msg-header{display:flex;align-items:baseline;gap:6px;margin-bottom:2px;font-size:12px;}
+.nxc-msg-user{font-weight:600;}
+.nxc-msg-time{color:var(--nx-muted);}
+.nxc-msg-text{font-size:14px;line-height:1.4;}
+.nxc-chat-input{display:flex;gap:8px;padding:12px;border-top:1px solid var(--nx-border);background:rgba(255,255,255,0.02);}
+.nxc-typing-ind{padding:8px 0;font-size:13px;color:var(--nx-muted);}
+.nxc-typing-dots{display:flex;gap:4px;}
+.nxc-dot1{width:6px;height:6px;border-radius:50%;background:var(--nx-muted);animation:nxdot 1.4s infinite;}
+.nxc-dot2{animation-delay:0.2s;}
+.nxc-dot3{animation-delay:0.4s;}
+@keyframes nxdot{0%,60%,100%{transform:translateY(0);}30%{transform:translateY(-4px);}}
+.nxc-msg-image{max-width:100%;border-radius:12px;margin-top:6px;}
+
+
+.nxc-chat-input-controls{display:flex;gap:6px;align-items:center;}
+.nxc-chat-reply-btn,.nxc-chat-emoji-btn{width:34px;height:34px;border-radius:8px;background:var(--nx-s2);border:1px solid var(--nx-border);color:var(--nx-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all var(--nx-t);}
+.nxc-chat-reply-btn:hover,.nxc-chat-emoji-btn:hover{background:var(--nx-s3);color:var(--nx-text);border-color:var(--nx-border2);}
+.nxc-chat-reply-badge{position:absolute;top:-4px;right:-4px;background:var(--nx-accent);color:#000;width:16px;height:16px;border-radius:50%;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;}
+.nxc-chat-input{padding:12px 12px 12px 12px !important;background:var(--nx-s2) !important;border:1px solid var(--nx-border2) !important;border-radius:12px !important;}
+.nxc-chat-input:focus{border-color:var(--nx-accent) !important;}
+.nxc-chat-msgs{padding:12px 0 !important;}
+
 </style>
 </head>
 <body>
@@ -657,7 +696,10 @@ button:active{transform:scale(0.95)!important;}
     const UserX = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="18" y1="8" x2="23" y2="13"/><line x1="23" y1="8" x2="18" y2="13"/></svg>;
     const Gamepad = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="6" y1="12" x2="10" y2="12"/><line x1="8" y1="10" x2="8" y2="14"/><line x1="15" y1="13" x2="15.01" y2="13"/><line x1="18" y1="11" x2="18.01" y2="11"/><rect x="2" y="6" width="20" height="12" rx="2"/></svg>;
     const Bug = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="8" y="6" width="8" height="14" rx="4"/><path d="M6 12h4m8 0h4M8 6V4a2 2 0 0 1 4 0v2m4 0V4a2 2 0 0 1 4 0v2M8 18v2a2 2 0 0 0 4 0v-2m4 0v2a2 2 0 0 0 4 0v-2"/></svg>;
-    const Smile = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>;
+    const Smile = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/>
+      const IconReply = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 10 4 15 9 20"/><path d="M20 4v7a4 4 0 0 1-4 4H4"/></svg>;
+      const IconEmoji = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="10" r="3"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>;
+</svg>;
 
       const IconVideo = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>;
       const IconGamepad = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="6" y1="12" x2="10" y2="12"/><line x1="8" y1="10" x2="8" y2="14"/><line x1="15" y1="13" x2="15.01" y2="13"/><line x1="18" y1="11" x2="18.01" y2="11"/><rect x="2" y="6" width="20" height="12" rx="2"/></svg>;
@@ -2547,7 +2589,7 @@ const formatTime = (timestamp) => {
       if (currentView === 'lobby') {
         const pendingCount = friendRequests.length;
         return (
-          <div style={{minHeight:'100dvh',background:'var(--nx-bg)'}}>
+          <div style={{minHeight:'100dvh',background:transparent}}>
             <div className="nxc-mesh" />
             <nav className="nxc-nav">
               <div className="nxc-nav-logo">
@@ -2659,747 +2701,93 @@ const formatTime = (timestamp) => {
       }
 
 
-if (currentView === 'room') {
+
+      if (currentView === 'room') {
         const currentRoomData = rooms.find(r => r.id === currentRoom);
         const isOwner = currentRoomData && currentRoomData.owner === username;
-
         return (
-          <>
-            <div style={{height:'100dvh',display:'flex',flexDirection:'column',background:'var(--nx-bg)',position:'relative'}}>
-              <div className="nxc-nav">
-                <div style={{display:'flex',alignItems:'center',gap:'10px'}}>
-                  <button className="nxc-btn-icon" onClick={leaveRoom} title="Leave">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-                  </button>
-                  <div>
-                    <div style={{fontWeight:'700',fontSize:'15px',letterSpacing:'-0.01em'}}>{currentRoomData?.name||'Room'}</div>
-                    <div style={{fontSize:'11px',color:'var(--nx-muted)'}}>{roomUsers.length} online{isOwner?' · 👑':''}</div>
-                  </div>
-                </div>
-                <div style={{display:'flex',alignItems:'center',gap:'8px'}}>
-                  {!inCall&&<button className="nxc-btn-success nxc-btn-sm" onClick={startGroupCall}><IconVideo /><span>Call</span></button>}
-                  {isOwner&&<button className="nxc-btn-danger nxc-btn-sm" onClick={clearAllMessages}>Clear</button>}
-                  <button className="nxc-btn-icon" onClick={()=>setShowGamesMenu(!showGamesMenu)} title="Games"><IconGamepad /></button>
-                  <div className="nxc-avatar">{username.charAt(0).toUpperCase()}</div>
-                </div>
+          <div className="nxc-calling-shell">
+            <div className="nxc-call-header">
+              <button className="nxc-btn-icon" onClick={leaveRoom}><IconX /></button>
+              <div>
+                <div style={{fontWeight:'700',fontSize:'16px'}}>{currentRoomData?.name || 'Call Space'}</div>
+                <div style={{fontSize:'12px',color:'var(--nx-muted)'}}>{roomUsers.length} online</div>
               </div>
-
-              {}
-              {groupCallActive && !inCall && (
-                <div style={{ background: 'linear-gradient(90deg, #003322, #004433)', padding: '10px 20px', borderBottom: '1px solid #00ff88', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#00ff88', fontSize: '14px', fontWeight: 'bold' }}>
-                    <span style={{ animation: 'glow 1s ease-in-out infinite' }}><IconLive /></span>
-                    Group call in progress
-                  </div>
-                  <button
-                    onClick={startGroupCall}
-                    style={{ background: '#00ff88', color: '#000', padding: '8px 20px', borderRadius: '8px', border: 'none', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer' }}
-                  >
-                    Join Call
-                  </button>
-                </div>
-              )}
-
-              {roomUsers.length > 1 && (
-                <div style={{background:'var(--nx-s1)',padding:'8px 18px',borderBottom:'1px solid var(--nx-border)'}}>
-                  <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                    <Users style={{ width: '16px', height: '16px' }} />
-                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                      {roomUsers.map(user => (
-                        <div key={user} style={{ background: '#1a1a1a', padding: '6px 12px', borderRadius: '8px', border: '1px solid #333', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span>{user}</span>
-                          {user === currentRoomData?.owner && <span><IconCrown /></span>}
-                          {user !== username && !inCall && (
-                            <button 
-                              onClick={() => startCall(user)} 
-                              style={{ 
-                                background: 'transparent', 
-                                border: 'none', 
-                                color: '#00ff88', 
-                                cursor: 'pointer', 
-                                padding: '0 5px',
-                                fontSize: '16px'
-                              }}
-                              title={`Call ${user}`}
-                            >
-                              📞
-                            </button>
-                          )}
-                          {isOwner && user !== username && (
-                            <button onClick={() => kickUser(user)} style={{ background: 'transparent', border: 'none', color: '#ff6666', cursor: 'pointer', padding: '0 5px' }}>
-                              <UserX style={{ width: '14px', height: '14px' }} />
-                            </button>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              <div style={{ flex: 1, overflow: 'auto', background: '#000', padding: '20px' }}>
-                <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-                  
-                  {gameInvite && (
-                    <div className="glow-border" style={{ background: '#0a0a0a', padding: '20px', marginBottom: '20px', borderRadius: '15px', border: '2px solid #4a9eff', animation: 'glow 2s ease-in-out infinite' }}>
-                      <div style={{ textAlign: 'center' }}>
-                        <div style={{ fontSize: '24px', marginBottom: '10px' }}><IconGamepad /></div>
-                        <div style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '10px' }}>
-                          {gameInvite.sender} wants to play {gameInvite.gameType === 'gartic' ? 'Gartic Phone' : 'Uno'}!
-                        </div>
-                        <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
-                          <button onClick={acceptGameInvite} className="glow-button" style={{ background: '#00ff00', color: '#000', padding: '12px 24px', borderRadius: '8px', border: 'none', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer' }}>
-                            <IconCheck /> Accept
-                          </button>
-                          <button onClick={declineGameInvite} style={{ background: '#2a0000', border: '1px solid #ff0000', color: '#ff6666', padding: '12px 24px', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: 'bold' }}>
-                            <IconX /> Decline
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {showGamesMenu && (
-                    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={() => setShowGamesMenu(false)}>
-                      <div className="glow-border" style={{ background: '#0a0a0a', padding: '30px', borderRadius: '20px', maxWidth: '400px', width: '90%' }} onClick={(e) => e.stopPropagation()}>
-                        <h3 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '20px', textAlign: 'center' }}><IconGamepad /> Choose a Game</h3>
-                        <div style={{ display: 'grid', gap: '10px' }}>
-                          <button onClick={() => sendGameInvite('gartic')} className="glow-button" style={{ width: '100%', background: '#1a1a1a', color: '#fff', padding: '15px', borderRadius: '10px', border: '1px solid #333', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>
-                            🎨 Gartic Phone
-                          </button>
-                          <button onClick={() => sendGameInvite('uno')} className="glow-button" style={{ width: '100%', background: '#1a1a1a', color: '#fff', padding: '15px', borderRadius: '10px', border: '1px solid #333', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>
-                            🃏 Uno Online
-                          </button>
-                          <button onClick={() => setShowGamesMenu(false)} style={{ width: '100%', background: '#2a0000', border: '1px solid #ff0000', color: '#ff6666', padding: '15px', borderRadius: '10px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>
-                            Cancel
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {messages.map((msg) => {
-                    if (msg.type === 'system') {
-                      return <div key={msg.id} className="system-message">{msg.text}</div>;
-                    }
-
-
-                    const replyMsg = msg.replyTo ? getReplyMessage(msg.replyTo) : null;
-                    const userColor = `hsl(${msg.username.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % 360}, 70%, 60%)`;
-
-                    return (
-                      <div key={msg.id} className='nxc-msg-bubble' style={{ marginBottom: '15px', background: msg.username === username ? '#1a1a1a' : '#0a0a0a', padding: '15px', borderRadius: '15px', border: '1px solid #333' }}>
-                        <div className="message-actions">
-                          <button onClick={() => setReplyTo(msg)} className="action-btn">Reply</button>
-                          <button onClick={() => setShowEmojiPicker(showEmojiPicker === msg.id ? null : msg.id)} className="action-btn">
-                            <Smile />
-                          </button>
-                        </div>
-
-                        {showEmojiPicker === msg.id && (
-                          <div className="emoji-picker">
-                            {EMOJIS.map(emoji => (
-                              <button key={emoji} onClick={() => {
-                                addReaction(msg.id, emoji);
-                                setShowEmojiPicker(null);
-                              }} className="emoji-btn">
-                                {emoji}
-                              </button>
-                            ))}
-                          </div>
-                        )}
-
-                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', marginBottom: '8px' }}>
-                          <span style={{ color: userColor, fontWeight: 'bold', fontSize: '14px' }}>{msg.username}</span>
-                          <span style={{ color: '#666', fontSize: '12px' }}>{formatTime(msg.timestamp)}</span>
-                        </div>
-
-                        {replyMsg && (
-                          <div className="reply-to" style={{ borderColor: userColor }}>
-                            <div style={{ fontSize: '11px', color: '#999', marginBottom: '4px' }}>Replying to {replyMsg.username}</div>
-                            <div style={{ fontSize: '12px', opacity: 0.7 }}>{replyMsg.text.substring(0, 50)}{replyMsg.text.length > 50 ? '...' : ''}</div>
-                          </div>
-                        )}
-
-                        {msg.type === 'snap' && msg.image ? (
-                          <div style={{ marginTop: '8px' }}>
-                            <img 
-                              src={msg.image} 
-                              alt="Snap" 
-                              style={{ 
-                                maxWidth: '100%', 
-                                maxHeight: '400px', 
-                                borderRadius: '10px',
-                                cursor: 'pointer'
-                              }} 
-                            />
-                          </div>
-                        ) : msg.type === 'video' && msg.videoUrl ? (
-                          <div style={{ marginTop: '8px' }}>
-                            <video 
-                              src={msg.videoUrl} 
-                              controls 
-                              style={{ 
-                                maxWidth: '100%', 
-                                maxHeight: '400px', 
-                                borderRadius: '10px'
-                              }} 
-                            />
-                          </div>
-                        ) : (
-                          <div style={{ fontSize: '15px', lineHeight: '1.5', wordBreak: 'break-word' }}>{msg.text}</div>
-                        )}
-
-                        {msg.reactions && Object.keys(msg.reactions).length > 0 && (
-                          <div className="reaction-container">
-                            {Object.entries(msg.reactions).map(([emoji, users]) => (
-                              <div key={emoji} onClick={() => addReaction(msg.id, emoji)} className={`reaction ${users.includes(username) ? 'active' : ''}`}>
-                                <span>{emoji}</span>
-                                <span>{users.length}</span>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-
-                  {typingUsers.length > 0 && (
-                    <div className="typing-indicator">
-                      {typingUsers.join(', ')} {typingUsers.length === 1 ? 'is' : 'are'} typing...
-                    </div>
-                  )}
-
-                  <div ref={messagesEndRef} />
-                </div>
-              </div>
-
-              <div className="glow-border" className='nxc-chat-bar'>
-                <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-                  {replyTo && (
-                    <div className="reply-preview">
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '5px' }}>
-                        <span style={{ fontSize: '12px', color: '#999' }}>Replying to {replyTo.username}</span>
-                        <button onClick={() => setReplyTo(null)} style={{ background: 'transparent', border: 'none', color: '#666', cursor: 'pointer', fontSize: '18px', lineHeight: 1 }}>×</button>
-                      </div>
-                      <div style={{ fontSize: '13px', opacity: 0.8 }}>{replyTo.text.substring(0, 80)}{replyTo.text.length > 80 ? '...' : ''}</div>
-                    </div>
-                  )}
-
-
-                  {showImageInput && (
-                    <div style={{ marginBottom: '15px', background: '#1a1a1a', padding: '20px', borderRadius: '15px', border: '1px solid #333' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-                        <h3 style={{ fontSize: '16px', fontWeight: 'bold' }}>🖼️ Send Image/GIF</h3>
-                        <button onClick={() => setShowImageInput(false)} style={{ background: 'transparent', border: 'none', color: '#999', cursor: 'pointer', fontSize: '24px' }}>×</button>
-                      </div>
-                      <div style={{ marginBottom: '10px', padding: '8px', background: '#0a2a0a', border: '1px solid #00ff88', borderRadius: '8px', color: '#88ffcc', fontSize: '12px' }}>
-                        💡 <strong>Tip:</strong> You can paste Giphy page URLs directly! Or use "Share" → "Copy GIF Link" from Giphy/Tenor
-                      </div>
-                      <input
-                        type="text"
-                        value={imageUrl}
-                        onChange={(e) => setImageUrl(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && sendImageUrl()}
-                        placeholder="Paste image or GIF URL..."
-                        style={{ width: '100%', padding: '15px', background: '#0a0a0a', border: '1px solid #333', borderRadius: '10px', color: '#fff', fontSize: '15px', marginBottom: '15px' }}
-                      />
-                      {imageUrl && (
-                        <div style={{ marginBottom: '15px', textAlign: 'center' }}>
-                          <img src={imageUrl} alt="Preview" style={{ maxWidth: '100%', maxHeight: '200px', borderRadius: '10px' }} onError={(e) => e.target.style.display = 'none'} />
-                        </div>
-                      )}
-                      <button onClick={sendImageUrl} className="glow-button" style={{ width: '100%', background: '#fff', color: '#000', padding: '15px', borderRadius: '10px', border: 'none', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>
-                        📤 SEND IMAGE
-                      </button>
-                    </div>
-                  )}
-
-                  <div style={{ display: 'flex', gap: '10px' }}>
-                    <input
-                      type="text"
-                      value={message}
-                      onChange={(e) => {
-                        setMessage(e.target.value);
-                        updateTyping();
-                      }}
-                      onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-                      placeholder="Type a message..."
-                      style={{ flex: 1, padding: '15px', background: '#1a1a1a', border: '1px solid #333', borderRadius: '10px', color: '#fff', fontSize: '15px' }}
-                    />
-                    <button onClick={sendMessage} className="glow-button" style={{ background: '#fff', color: '#000', padding: '15px 30px', borderRadius: '10px', border: 'none', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <Send /> Send
-                    </button>
-                    <button onClick={openSnapCamera} className="glow-button" style={{ background: '#ffeb3b', color: '#000', padding: '15px 30px', borderRadius: '10px', border: 'none', fontSize: '20px', fontWeight: 'bold', cursor: 'pointer' }} title="Take a snap">
-                      📸
-                    </button>
-                    <button onClick={() => setShowImageInput(!showImageInput)} className="glow-button" style={{ background: '#1a1a1a', color: '#fff', padding: '15px 30px', borderRadius: '10px', border: '1px solid #333', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>
-                      🖼️
-                    </button>
-                  </div>
-                </div>
+              <div style={{display:'flex',gap:'8px'}}>
+                {!inCall && <button className="nxc-btn-p nxc-btn-sm" onClick={startGroupCall}>Start Call</button>}
+                {isOwner && <button className="nxc-btn-danger nxc-btn-sm" onClick={clearAllMessages}>Clear Chat</button>}
               </div>
             </div>
-
-            {}
-            {openGameWindows.map(window => (
-              <MinimizedWindow 
-                key={window.id}
-                title={window.title}
-                url={window.url}
-                icon={window.icon}
-                onClose={() => closeGameWindow(window.id)}
-              />
-            ))}
-
-            {}
-            {isGroupCall && inCall && (
-              <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: '#111', zIndex: 10000, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-
-                {}
-                {groupCallParticipants.length === 0 ? (
-                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '20px', minHeight: 0 }}>
-                    {}
-                    <div style={{ position: 'relative', width: '260px', height: '200px', borderRadius: '16px', overflow: 'hidden', border: '2px solid #333', background: '#000', flexShrink: 0 }}>
-                      <video ref={localVideoRef} autoPlay playsInline muted
-                        style={{ width: '100%', height: '100%', objectFit: 'cover', display: isVideoOff ? 'none' : 'block' }} />
-                      {isVideoOff && <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '36px' }}><IconVideo /></div>}
-                      <div style={{ position: 'absolute', bottom: '8px', left: '10px', background: 'rgba(0,0,0,0.6)', padding: '3px 8px', borderRadius: '6px', fontSize: '12px', color: '#fff' }}>{username} (you)</div>
-                    </div>
-                    <div style={{ textAlign: 'center', color: '#666' }}>
-                      <div style={{ fontSize: '36px', marginBottom: '12px' }}><IconUsers /></div>
-                      <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#fff', marginBottom: '6px' }}>You're in the group call</div>
-                      <div style={{ fontSize: '14px' }}>Waiting for others to join...</div>
-                    </div>
+            <div className="nxc-call-videos">
+              {inCall && (
+                <div className="nxc-video-container">
+                  <video ref={remoteVideoRef} autoPlay playsInline muted className="nxc-video-main" />
+                  <div className="nxc-video-local">
+                    <video ref={localVideoRef} autoPlay playsInline muted className="nxc-video-small" />
                   </div>
-                ) : (
-                  
-                  <div style={{
-                    flex: 1,
-                    display: 'grid',
-                    gridTemplateColumns: groupCallParticipants.length === 1 ? '1fr 1fr' :
-                                         groupCallParticipants.length <= 3 ? 'repeat(2, 1fr)' :
-                                         'repeat(3, 1fr)',
-                    gridAutoRows: groupCallParticipants.length <= 1 ? '1fr' : 'auto',
-                    gap: '4px',
-                    padding: '8px',
-                    minHeight: 0,
-                    overflow: 'hidden'
-                  }}>
-                    {}
-                    <div style={{ position: 'relative', background: '#000', borderRadius: '12px', overflow: 'hidden', minHeight: '160px' }}>
-                      <video ref={localVideoRef} autoPlay playsInline muted
-                        style={{ width: '100%', height: '100%', objectFit: 'cover', display: isVideoOff ? 'none' : 'block', position: 'absolute', inset: 0 }} />
-                      {isVideoOff && <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '36px' }}><IconVideo /></div>}
-                      <div style={{ position: 'absolute', bottom: '8px', left: '10px', background: 'rgba(0,0,0,0.6)', padding: '3px 8px', borderRadius: '6px', fontSize: '12px', color: '#fff' }}>{username} (you)</div>
-                    </div>
-
-                    {}
-                    {groupCallParticipants.map(participant => (
-                      <div key={participant} style={{ position: 'relative', background: '#000', borderRadius: '12px', overflow: 'hidden', minHeight: '160px' }}>
-                        <video
-                          ref={el => {
-                            
-                            const prev = participantVideoRefs.current[participant];
-                            participantVideoRefs.current[participant] = el;
-                            if (el) {
-                              el.muted = false;
-                              const stream = participantStreamsRef.current[participant];
-                              if (stream && el.srcObject !== stream) {
-                                el.srcObject = stream;
-                                el.play().catch(() => {});
-                              }
-                            } else if (prev) {
-                              prev.srcObject = null;
-                            }
-                          }}
-                          autoPlay playsInline
-                          style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }}
-                        />
-                        <div style={{ position: 'absolute', bottom: '8px', left: '10px', background: 'rgba(0,0,0,0.6)', padding: '3px 8px', borderRadius: '6px', fontSize: '12px', color: '#fff' }}>{participant}</div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {}
-                <div style={{ flexShrink: 0, padding: '16px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '20px', background: '#000', borderTop: '1px solid #222' }}>
-                  <button onClick={toggleMute} className={`call-btn mute ${isMuted ? 'active' : ''}`} title={isMuted ? 'Unmute' : 'Mute'}>
-                    {isMuted ? '🔇' : '🎤'}
-                  </button>
-                  <button onClick={toggleVideo} className={`call-btn video-toggle ${isVideoOff ? 'active' : ''}`} title={isVideoOff ? 'Turn on camera' : 'Turn off camera'}>
-                    {isVideoOff ? '📷 Off' : '🎥 On'}
-                  </button>
-                  <button onClick={endGroupCall} className="call-btn end" title="Leave call">
-                    ☎️
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {}
-            {!isGroupCall && inCall && (
-              <div className="video-call-modal">
-                <div className="video-container">
-                  <video 
-                    ref={remoteVideoRef} 
-                    autoPlay 
-                    playsInline
-                    controls={false}
-                    className="remote-video"
-                    style={{ 
-                      display: 'block', opacity: remoteStream ? 1 : 0,
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover'
-                    }}
-                  />
-                  {!remoteStream && (
-                    <div className="call-status">
-                      <div style={{ fontSize: '48px', marginBottom: '20px' }}>📞</div>
-                      <div>Calling {callWith}...</div>
-                      <div style={{ fontSize: '14px', color: '#999', marginTop: '10px' }}>Waiting for them to answer...</div>
-                    </div>
-                  )}
-                  
-                  {}
-                  <video 
-                    ref={localVideoRef} 
-                    autoPlay 
-                    playsInline 
-                    muted 
-                    className="local-video"
-                    style={{
-                      position: 'absolute',
-                      top: '20px',
-                      right: '20px',
-                      width: '220px',
-                      height: '280px',
-                      borderRadius: '15px',
-                      border: '2px solid #fff',
-                      objectFit: 'cover',
-                      boxShadow: '0 4px 15px rgba(0,0,0,0.5)',
-                      zIndex: 10,
-                      display: isVideoOff ? 'none' : 'block'
-                    }}
-                  />
-                  {isVideoOff && (
-                    <div 
-                      style={{ 
-                        position: 'absolute',
-                        top: '20px',
-                        right: '20px',
-                        width: '220px',
-                        height: '280px',
-                        borderRadius: '15px',
-                        border: '2px solid #fff',
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        justifyContent: 'center', 
-                        background: '#1a1a1a',
-                        boxShadow: '0 4px 15px rgba(0,0,0,0.5)',
-                        zIndex: 10
-                      }}
-                    >
-                      <span style={{ fontSize: '48px' }}><IconVideo /></span>
-                    </div>
-                  )}
-                  
-                  {}
-                  {inCallNotifications.map(notif => (
-                    <div
-                      key={notif.id}
-                      style={{
-                        position: 'absolute',
-                        top: '20px',
-                        left: '20px',
-                        maxWidth: '300px',
-                        background: 'rgba(0, 0, 0, 0.9)',
-                        border: '1px solid rgba(255, 255, 255, 0.3)',
-                        borderRadius: '15px',
-                        padding: '15px',
-                        zIndex: 10,
-                        animation: 'slideIn 0.3s ease-out',
-                        backdropFilter: 'blur(10px)',
-                        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.5)'
-                      }}
-                    >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                        <div style={{ fontWeight: 'bold', fontSize: '14px' }}><IconChat /> {notif.from}</div>
-                        <button
-                          onClick={() => dismissNotification(notif.id)}
-                          style={{
-                            background: 'transparent',
-                            border: 'none',
-                            color: '#999',
-                            cursor: 'pointer',
-                            fontSize: '16px',
-                            padding: '0 5px'
-                          }}
-                        >
-                          <IconX />
-                        </button>
-                      </div>
-                      <div style={{ 
-                        fontSize: '13px', 
-                        color: '#ccc', 
-                        marginBottom: '10px',
-                        wordBreak: 'break-word',
-                        maxHeight: '60px',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis'
-                      }}>
-                        {notif.text}
-                      </div>
-                      <button
-                        onClick={() => dismissNotification(notif.id)}
-                        style={{
-                          background: 'rgba(255, 255, 255, 0.2)',
-                          border: '1px solid rgba(255, 255, 255, 0.3)',
-                          color: '#fff',
-                          padding: '6px 12px',
-                          borderRadius: '8px',
-                          fontSize: '12px',
-                          cursor: 'pointer',
-                          width: '100%',
-                          transition: 'all 0.2s'
-                        }}
-                        onMouseEnter={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.3)'}
-                        onMouseLeave={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.2)'}
-                      >
-                        Dismiss
-                      </button>
-                    </div>
-                  ))}
-
-                  <div className="call-controls">
-                    <button 
-                      onClick={toggleMute} 
-                      className={`call-btn mute ${isMuted ? 'active' : ''}`}
-                      title={isMuted ? 'Unmute' : 'Mute'}
-                    >
-                      {isMuted ? '🔇' : '🎤'}
+                  <div className="nxc-call-controls">
+                    <button className="nxc-call-btn nxc-call-btn-mute" onClick={() => setIsMuted(!isMuted)}>
+                      {isMuted ? '🔇' : '🔊'}
                     </button>
-                    <button 
-                      onClick={toggleVideo} 
-                      className={`call-btn video-toggle ${isVideoOff ? 'active' : ''}`}
-                      title={isVideoOff ? 'Turn on camera' : 'Turn off camera'}
-                    >
+                    <button className="nxc-call-btn nxc-call-btn-end" onClick={leaveRoom}>
+                      <IconX />
+                    </button>
+                    <button className="nxc-call-btn nxc-call-btn-video" onClick={() => setIsVideoOff(!isVideoOff)}>
                       {isVideoOff ? '📷 Off' : '🎥 On'}
                     </button>
-                    <button 
-                      onClick={endCall} 
-                      className="call-btn end"
-                      title="End call"
-                    >
-                      ☎️
-                    </button>
                   </div>
                 </div>
+              )}
+            </div>
+            <div className="nxc-call-chat">
+              <div className="nxc-chat-msgs">
+                {typingUsers.length > 0 && (
+                  <div className="nxc-typing-ind">
+                    <div className="nxc-typing-dots">
+                      <div className="nxc-dot1"></div>
+                      <div className="nxc-dot2"></div>
+                      <div className="nxc-dot3"></div>
+                    </div>
+                    {typingUsers.join(', ')} typing...
+                  </div>
+                )}
+                {messages.map(msg => (
+                  <div key={msg.id} className="nxc-msg-row">
+                    <div className="nxc-msg-avatar">{msg.username.charAt(0).toUpperCase()}</div>
+                    <div className="nxc-msg-content">
+                      <div className="nxc-msg-header">
+                        <span className="nxc-msg-user">{msg.username}</span>
+                        <span className="nxc-msg-time">{formatTime(msg.timestamp)}</span>
+                      </div>
+                      <div className="nxc-msg-text">{msg.text}</div>
+                      {msg.image && <img src={msg.image} alt="sent image" className="nxc-msg-image" />}
+                    </div>
+                  </div>
+                ))}
               </div>
-            )}
-
-            {}
-            {isCalling && !inCall && (
-              <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
-                background: 'rgba(0,0,0,0.92)', display: 'flex', alignItems: 'center', 
-                justifyContent: 'center', zIndex: 10001 }}>
-                <div className="incoming-call" style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '64px', marginBottom: '20px', animation: 'glow 1s ease-in-out infinite' }}>📲</div>
-                  <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '10px' }}>
-                    Calling {callWith}...
-                  </h2>
-                  <p style={{ fontSize: '16px', color: '#999', marginBottom: '30px' }}>
-                    Ringing... waiting for them to answer
-                  </p>
-                  <button 
-                    onClick={endCall} 
-                    style={{ background: '#ff3b30', color: '#fff', border: 'none', 
-                      borderRadius: '50px', padding: '15px 40px', fontSize: '18px', cursor: 'pointer' }}>
-                    <IconLive /> Cancel
+              <div className="nxc-chat-input" style={{position:'relative'}}>
+                {replyTo && (
+                  <div className="nxc-chat-reply" style={{position:'absolute',left:'12px',top:'-32px',background:'var(--nx-s2)',padding:'6px 10px',borderRadius:'8px',border:'1px solid var(--nx-border)',fontSize:'12px',color:'var(--nx-muted)'}}>
+                    Replying to {replyTo.username}: <span style={{fontWeight:'600',color:'var(--nx-text)'}}>{replyTo.text.slice(0,30)}{replyTo.text.length>30?'...':''}</span>
+                    <button onClick={()=>setReplyTo(null)} style={{marginLeft:'8px',background:'transparent',border:'none',color:'var(--nx-red)',fontSize:'14px',cursor:'pointer'}}>×</button>
+                  </div>
+                )}
+                <div className="nxc-chat-input-controls">
+                  <button className="nxc-chat-emoji-btn" onClick={()=>setShowEmojiPicker(!showEmojiPicker)} title="Emoji">
+                    <IconEmoji />
+                  </button>
+                  <button className="nxc-chat-reply-btn" onClick={()=>setReplyTo({username:'Test',text:'Test reply'})} title="Reply">
+                    <IconReply />
                   </button>
                 </div>
+                <input className="nxc-chat-input" value={message} onChange={e=>setMessage(e.target.value)} placeholder="Type a message..." onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}}} />
+                <button className="nxc-btn-p nxc-btn-sm" onClick={sendMessage}>Send</button>
               </div>
-            )}
-            {incomingCall && !inCall && !isGroupCall && (
-              <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10001 }}>
-                <div className="incoming-call">
-                  <div style={{ fontSize: '64px', marginBottom: '20px', animation: 'glow 1s ease-in-out infinite' }}>📞</div>
-                  <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '10px' }}>Incoming Call</h2>
-                  <p style={{ fontSize: '18px', color: '#999', marginBottom: '30px' }}>{incomingCall.from} is calling you...</p>
-                  <div style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
-                    <button 
-                      onClick={() => answerCall(incomingCall.from)} 
-                      className="glow-button" 
-                      style={{ 
-                        background: '#00ff00', 
-                        color: '#000', 
-                        padding: '15px 40px', 
-                        borderRadius: '50px', 
-                        border: 'none', 
-                        fontSize: '18px', 
-                        fontWeight: 'bold', 
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '10px'
-                      }}
-                    >
-                      📞 Answer
-                    </button>
-                    <button 
-                      onClick={declineCall} 
-                      style={{ 
-                        background: '#ff3b30', 
-                        color: '#fff', 
-                        padding: '15px 40px', 
-                        borderRadius: '50px', 
-                        border: 'none', 
-                        fontSize: '18px', 
-                        fontWeight: 'bold', 
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '10px'
-                      }}
-                    >
-                      ❌ Decline
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {}
-            {showSnapCamera && (
-              <div className="snap-camera-modal">
-                <button onClick={closeSnapCamera} className="snap-close-btn">
-                  <IconX />
-                </button>
-                
-                {}
-                <button 
-                  onClick={toggleCaptureMode}
-                  style={{
-                    position: 'absolute',
-                    top: '20px',
-                    right: '20px',
-                    padding: '10px 20px',
-                    borderRadius: '50px',
-                    background: captureMode === 'photo' ? '#ffeb3b' : '#ff4444',
-                    color: '#000',
-                    border: 'none',
-                    fontSize: '14px',
-                    fontWeight: 'bold',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    zIndex: 11,
-                    transition: 'all 0.2s'
-                  }}
-                >
-                  {captureMode === 'photo' ? '📸 Photo' : '🎥 Video'}
-                </button>
-                
-                <div className="snap-video-container">
-                  {!capturedSnap && !recordedVideo ? (
-                    <>
-                      <video 
-                        ref={snapVideoRef} 
-                        autoPlay 
-                        playsInline 
-                        muted
-                        className="snap-video"
-                        style={{ transform: isFrontCamera ? 'scaleX(-1)' : 'none' }}
-                      />
-                      
-                      {}
-                      {isRecording && (
-                        <div style={{
-                          position: 'absolute',
-                          top: '80px',
-                          left: '50%',
-                          transform: 'translateX(-50%)',
-                          background: 'rgba(255, 0, 0, 0.9)',
-                          color: '#fff',
-                          padding: '10px 20px',
-                          borderRadius: '50px',
-                          fontSize: '16px',
-                          fontWeight: 'bold',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '10px',
-                          zIndex: 11
-                        }}>
-                          <div style={{
-                            width: '12px',
-                            height: '12px',
-                            borderRadius: '50%',
-                            background: '#fff',
-                            animation: 'glow 1s ease-in-out infinite'
-                          }} />
-                          {Math.floor(recordingTime / 60)}:{(recordingTime % 60).toString().padStart(2, '0')}
-                        </div>
-                      )}
-                      
-                      <div className="snap-controls">
-                        <button onClick={flipCamera} className="snap-action-btn" title="Flip camera">
-                          🔄
-                        </button>
-                        
-                        {captureMode === 'photo' ? (
-                          <button onClick={captureSnap} className="snap-capture-btn" title="Capture photo" />
-                        ) : (
-                          <button 
-                            onClick={isRecording ? stopRecording : startRecording}
-                            className="snap-capture-btn"
-                            style={{
-                              background: isRecording ? '#ff4444' : '#fff',
-                              border: isRecording ? '5px solid #fff' : '5px solid rgba(255, 255, 255, 0.3)'
-                            }}
-                            title={isRecording ? 'Stop recording' : 'Start recording'}
-                          />
-                        )}
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      {capturedSnap && (
-                        <img src={capturedSnap} className="snap-preview-image" alt="Captured snap" />
-                      )}
-                      {recordedVideo && (
-                        <video src={recordedVideo} className="snap-preview-image" controls autoPlay loop />
-                      )}
-                      <div className="snap-controls">
-                        <button onClick={retakeSnap} className="snap-action-btn" title="Retake">
-                          ↺
-                        </button>
-                      </div>
-                      <button onClick={sendSnap} className="snap-send-btn">
-                        📤 Send {capturedSnap ? 'Snap' : 'Video'}
-                      </button>
-                    </>
-                  )}
-                  <canvas ref={snapCanvasRef} style={{ display: 'none' }} />
-                </div>
-              </div>
-            )}
-
-            {!showDebug && (
-              <div className="debug-toggle" onClick={() => setShowDebug(true)}>
-                <Bug />
-              </div>
-            )}
-            {showDebug && <DebugConsole logs={logs} onClose={() => setShowDebug(false)} />}
-          </>
+            </div>
+          </div>
         );
       }
 
-      return null;
-    }
-
-    
 ReactDOM.render(<ChatroomApp />, document.getElementById('root'));
 </script>
 
