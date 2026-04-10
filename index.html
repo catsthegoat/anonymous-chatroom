@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NexChat</title>
+<title>Pioneers Rooms</title>
 <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600,700,800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
@@ -16,23 +16,23 @@
 <style>
 
 :root {
-  --nx-bg: #0e0e12;
-  --nx-s1: #13131a;
-  --nx-s2: #18181f;
-  --nx-s3: #1e1e28;
+  --nx-bg: #08080f;
+  --nx-s1: rgba(10,10,16,0.75);
+  --nx-s2: rgba(20,20,28,0.7);
+  --nx-s3: rgba(28,28,40,0.65);
   --nx-s4: #242433;
   --nx-border: rgba(255,255,255,0.06);
   --nx-border2: rgba(255,255,255,0.1);
   --nx-border3: rgba(255,255,255,0.18);
-  --nx-accent: #6c8cff;
-  --nx-accent2: #a78bfa;
-  --nx-glow: rgba(108,140,255,0.2);
+  --nx-accent: #ffffff;
+  --nx-accent2: #e0e0e0;
+  --nx-glow: rgba(255,255,255,0.15);
   --nx-text: #e2e2ee;
   --nx-muted: #6b6b88;
   --nx-faint: #2e2e42;
   --nx-green: #4ade80;
   --nx-red: #f87171;
-  --nx-yellow: #fbbf24;
+  --nx-yellow: #e0e0e0;
   --nx-r: 12px;
   --nx-rsm: 8px;
   --nx-rlg: 18px;
@@ -41,17 +41,17 @@
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 html{-webkit-font-smoothing:antialiased;}
-body{font-family:var(--nx-font);background:var(--nx-bg);color:var(--nx-text);min-height:100dvh;overflow-x:hidden;}
+body{font-family:var(--nx-font);background:transparent;color:var(--nx-text);min-height:100dvh;overflow-x:hidden;}
 ::-webkit-scrollbar{width:4px;}
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:var(--nx-faint);border-radius:99px;}
-::selection{background:rgba(108,140,255,0.22);}
+::selection{background:rgba(255,255,255,0.15);}
 
 .nxc-mesh{display:none;}
 
 .nxc-page-center{min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;position:relative;}
 
-.nxc-card{background:transparent;border:1px solid var(--nx-border2);border-radius:var(--nx-rlg);
+.nxc-card{background:var(--nx-s1);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid var(--nx-border2);border-radius:var(--nx-rlg);
   box-shadow:0 8px 32px rgba(0,0,0,0.4),0 1px 0 rgba(255,255,255,0.04) inset;overflow:hidden;}
 
 .nxc-logo-icon{width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,var(--nx-accent),var(--nx-accent2));
@@ -78,7 +78,7 @@ button:active{transform:scale(0.95)!important;}
 
 .nxc-btn-p{background:var(--nx-accent);color:#fff;padding:11px 22px;border-radius:var(--nx-r);
   font-size:14px;font-weight:600;box-shadow:0 0 0 0 var(--nx-glow);}
-.nxc-btn-p:hover{background:#7b9bff;box-shadow:0 0 22px var(--nx-glow);}
+.nxc-btn-p:hover{background:#e0e0e0;box-shadow:0 0 22px var(--nx-glow);}
 .nxc-btn-g{background:transparent;color:var(--nx-muted);padding:11px 22px;border-radius:var(--nx-r);
   font-size:14px;font-weight:500;border:1px solid var(--nx-border2);}
 .nxc-btn-g:hover{background:var(--nx-s2);color:var(--nx-text);}
@@ -114,14 +114,14 @@ button:active{transform:scale(0.95)!important;}
 
 .nxc-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);z-index:500;
   display:flex;align-items:center;justify-content:center;padding:20px;animation:nxfade 0.18s ease both;}
-.nxc-modal{background:transparent;border:1px solid var(--nx-border2);border-radius:var(--nx-rlg);padding:26px;
+.nxc-modal{background:var(--nx-s1);border:1px solid var(--nx-border2);border-radius:var(--nx-rlg);padding:26px;
   width:100%;max-width:420px;box-shadow:0 16px 60px rgba(0,0,0,0.6);animation:nxpop 0.25s cubic-bezier(0.34,1.56,0.64,1) both;}
 
 .nxc-lobby-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;}
-.nxc-room-card{background:transparent;border:1px solid var(--nx-border);border-radius:var(--nx-r);padding:18px;
+.nxc-room-card{background:var(--nx-s1);border:1px solid var(--nx-border);border-radius:var(--nx-r);padding:18px;
   cursor:default;position:relative;overflow:hidden;transition:all var(--nx-t);
   animation:nxpop 0.3s cubic-bezier(0.34,1.56,0.64,1) both;}
-.nxc-room-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(108,140,255,0.05),transparent);
+.nxc-room-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.04),transparent);
   opacity:0;transition:opacity var(--nx-t);}
 .nxc-room-card:hover{border-color:var(--nx-border3);transform:translateY(-3px)!important;box-shadow:0 8px 28px rgba(0,0,0,0.35);}
 .nxc-room-card:hover::before{opacity:1;}
@@ -134,7 +134,7 @@ button:active{transform:scale(0.95)!important;}
 .nxc-online-dot{position:absolute;bottom:1px;right:1px;width:9px;height:9px;border-radius:50%;
   background:var(--nx-green);border:2px solid var(--nx-s1);box-shadow:0 0 6px var(--nx-green);}
 
-.nxc-chat-bar{padding:12px 16px;border-top:1px solid var(--nx-border);background:transparent;flex-shrink:0;}
+.nxc-chat-bar{padding:12px 16px;border-top:1px solid var(--nx-border);background:var(--nx-s1);flex-shrink:0;}
 
 .nxc-msg-bubble{transition:background var(--nx-t);border-radius:var(--nx-r);padding:6px 10px;
   animation:nxmsg 0.22s cubic-bezier(0.34,1.56,0.64,1) both;}
@@ -523,7 +523,7 @@ button:active{transform:scale(0.95)!important;}
 .nxc-card{will-change:opacity,transform;}
 .nxc-msg-bubble{will-change:opacity,transform;}
 @keyframes nxslide{from{opacity:0;transform:translateX(-12px);}to{opacity:1;transform:translateX(0);}}
-@keyframes nxglow{0%,100%{box-shadow:0 0 12px var(--nx-glow);}50%{box-shadow:0 0 28px var(--nx-glow),0 0 50px rgba(108,140,255,0.12);}}
+@keyframes nxglow{0%,100%{box-shadow:0 0 12px var(--nx-glow);}50%{box-shadow:0 0 28px var(--nx-glow),0 0 50px rgba(255,255,255,0.08);}}
 .nxc-logo-icon{animation:nxglow 3s ease-in-out infinite;}
 .nxc-room-card{animation:nxpop 0.32s cubic-bezier(0.34,1.56,0.64,1) both;}
 .nxc-avatar{transition:box-shadow var(--nx-t),transform var(--nx-t);}
@@ -535,7 +535,7 @@ button:active{transform:scale(0.95)!important;}
 .nxc-topbar{height:56px;padding:0 20px;display:flex;align-items:center;justify-content:space-between;background:rgba(0,0,0,0.65);backdrop-filter:blur(14px);border-bottom:1px solid var(--nx-border);}
 .nxc-topbar-logo{display:flex;align-items:center;gap:9px;font-weight:700;letter-spacing:-0.03em;}
 .nxc-home-layout{display:flex;min-height:calc(100dvh - 56px);}
-.nxc-sidebar{width:250px;background:rgba(0,0,0,0.35);backdrop-filter:blur(10px);border-right:1px solid var(--nx-border);padding:18px;display:flex;flex-direction:column;gap:10px;}
+.nxc-sidebar{width:250px;background:rgba(5,5,10,0.55);backdrop-filter:blur(10px);border-right:1px solid var(--nx-border);padding:18px;display:flex;flex-direction:column;gap:10px;}
 .nxc-profile-card{padding:18px;border:1px solid var(--nx-border);background:rgba(255,255,255,0.03);border-radius:16px;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;}
 .nxc-avatar-xl{width:64px;height:64px;font-size:24px;}
 .nxc-sidebar-section{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--nx-muted);margin-top:6px;}
@@ -588,45 +588,153 @@ button:active{transform:scale(0.95)!important;}
 .nxc-side-item:hover{transform:scale(1.03)!important;}
 
 
-.nxc-calling-shell{min-height:100dvh;display:flex;flex-direction:column;background:transparent;position:relative;}
-.nxc-call-header{padding:12px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--nx-border);background:rgba(255,255,255,0.02);backdrop-filter:blur(10px);}
-.nxc-call-videos{flex:1;position:relative;overflow:hidden;}
-.nxc-video-container{position:absolute;inset:0;}
-.nxc-video-main{width:100%;height:100%;object-fit:cover;}
-.nxc-video-local{position:absolute;bottom:80px;right:16px;width:140px;height:110px;object-fit:cover;border-radius:14px;border:3px solid rgba(255,255,255,0.3);box-shadow:0 8px 32px rgba(0,0,0,0.6);}
-.nxc-call-controls{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);display:flex;gap:12px;padding:12px;backdrop-filter:blur(20px);background:rgba(0,0,0,0.7);border-radius:32px;border:1px solid rgba(255,255,255,0.1);}
-.nxc-call-btn{width:52px;height:52px;border-radius:50%;border:none;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:all var(--nx-t);}
-.nxc-call-btn:hover{transform:scale(1.08);}
-.nxc-call-btn-end{background:rgba(248,113,113,0.7);color:#fff;}
-.nxc-call-btn-mute,.nxc-call-btn-video{background:rgba(255,255,255,0.12);color:#fff;}
-.nxc-call-chat{flex:1;display:flex;flex-direction:column;border-left:1px solid var(--nx-border);max-width:380px;}
-.nxc-chat-msgs{flex:1;overflow-y:auto;padding:12px;gap:6px;}
-.nxc-msg-row{display:flex;gap:8px;padding:6px 0;}
-.nxc-msg-avatar{width:32px;height:32px;border-radius:50%;background:var(--nx-accent);color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.nxc-msg-content{flex:1;}
-.nxc-msg-header{display:flex;align-items:baseline;gap:6px;margin-bottom:2px;font-size:12px;}
-.nxc-msg-user{font-weight:600;}
-.nxc-msg-time{color:var(--nx-muted);}
-.nxc-msg-text{font-size:14px;line-height:1.4;}
-.nxc-chat-input{display:flex;gap:8px;padding:12px;border-top:1px solid var(--nx-border);background:rgba(255,255,255,0.02);}
-.nxc-typing-ind{padding:8px 0;font-size:13px;color:var(--nx-muted);}
-.nxc-typing-dots{display:flex;gap:4px;}
-.nxc-dot1{width:6px;height:6px;border-radius:50%;background:var(--nx-muted);animation:nxdot 1.4s infinite;}
-.nxc-dot2{animation-delay:0.2s;}
-.nxc-dot3{animation-delay:0.4s;}
-@keyframes nxdot{0%,60%,100%{transform:translateY(0);}30%{transform:translateY(-4px);}}
-.nxc-msg-image{max-width:100%;border-radius:12px;margin-top:6px;}
+.message-actions {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+.action-btn {
+  background: rgba(255,255,255,0.06) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255,255,255,0.15) !important;
+  border-radius: 8px !important;
+  padding: 3px 10px !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: background 0.15s, border-color 0.15s;
+}
+.action-btn:hover {
+  background: rgba(255,255,255,0.12) !important;
+  border-color: rgba(255,255,255,0.35) !important;
+  transform: none !important;
+}
+.action-btn svg { width: 13px; height: 13px; }
+
+
+.emoji-picker {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 4px !important;
+  padding: 8px !important;
+  background: rgba(10,10,16,0.95) !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  border-radius: 12px !important;
+  backdrop-filter: blur(16px) !important;
+  max-width: 210px !important;
+}
+.emoji-btn {
+  background: transparent !important;
+  border: none !important;
+  font-size: 18px !important;
+  cursor: pointer !important;
+  padding: 4px 6px !important;
+  border-radius: 6px !important;
+  line-height: 1 !important;
+  transition: background 0.15s !important;
+  color: inherit !important;
+}
+.emoji-btn:hover {
+  background: rgba(255,255,255,0.1) !important;
+  transform: scale(1.25) !important;
+}
+.reaction {
+  background: rgba(255,255,255,0.06) !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  color: #fff !important;
+  border-radius: 99px !important;
+  padding: 2px 8px !important;
+  font-size: 13px !important;
+}
+.action-btn {
+  background: rgba(255,255,255,0.06) !important;
+  color: #fff !important;
+  border: 1px solid rgba(255,255,255,0.15) !important;
+  border-radius: 8px !important;
+  padding: 3px 10px !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+}
+.action-btn:hover {
+  background: rgba(255,255,255,0.12) !important;
+  transform: none !important;
+}
 
 </style>
 </head>
 <body>
+
+<style>
+#constellation-canvas {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+body { background: #08080f !important; }
+#root { position: relative; z-index: 1; }
+</style>
+<canvas id="constellation-canvas"></canvas>
+<script>
+(function(){
+  const canvas = document.getElementById('constellation-canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, stars = [], lines = [];
+  function resize(){ W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+  resize();
+  window.addEventListener('resize', resize);
+  for(let i=0;i<140;i++){
+    stars.push({
+      x: Math.random()*99999, y: Math.random()*99999,
+      r: Math.random()*1.4+0.3,
+      vx:(Math.random()-0.5)*0.08, vy:(Math.random()-0.5)*0.08,
+      opacity: Math.random()*0.5+0.4
+    });
+  }
+  function draw(){
+    stars.forEach(s=>{ s.x+=s.vx; s.y+=s.vy; if(s.x<0||s.x>W)s.vx*=-1; if(s.y<0||s.y>H)s.vy*=-1; });
+    ctx.clearRect(0,0,W,H);
+    for(let i=0;i<stars.length;i++){
+      for(let j=i+1;j<stars.length;j++){
+        const dx=stars[i].x-stars[j].x, dy=stars[i].y-stars[j].y;
+        const d=Math.sqrt(dx*dx+dy*dy);
+        if(d<120){
+          ctx.beginPath();
+          ctx.moveTo(stars[i].x,stars[i].y);
+          ctx.lineTo(stars[j].x,stars[j].y);
+          ctx.strokeStyle=`rgba(255,255,255,${0.12*(1-d/120)})`;
+          ctx.lineWidth=0.5;
+          ctx.stroke();
+        }
+      }
+    }
+    stars.forEach(s=>{
+      ctx.beginPath();
+      ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(255,255,255,${s.opacity})`;
+      ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+</script>
+
 
 <script>
 /* window.onerror disabled */
   document.getElementById('boot-fallback') && (document.getElementById('boot-fallback').remove());
   var d = document.createElement('div');
   d.style.cssText = 'position:fixed;inset:0;z-index:99999;background:#0e0e12;color:#fff;font-family:monospace;padding:30px;overflow:auto;';
-  d.innerHTML = '<div style="color:#f87171;font-size:18px;margin-bottom:16px">⚠️ NexChat App Error</div>' +
+  d.innerHTML = '<div style="color:#f87171;font-size:18px;margin-bottom:16px">⚠️ Pioneers Rooms App Error</div>' +
     '<div style="background:#1a0010;border:1px solid #f87171;border-radius:8px;padding:16px;font-size:13px;line-height:1.7">' +
     '<div><b>Error:</b> ' + msg + '</div>' +
     '<div><b>File:</b> ' + src + '</div>' +
@@ -639,7 +747,7 @@ button:active{transform:scale(0.95)!important;}
 };
 </script>
 
-<div id="root" style="position:relative;z-index:1;"><div id="boot-fallback" style="display:flex;align-items:center;justify-content:center;min-height:100vh;color:#fff;font-family:sans-serif;position:relative;z-index:1">Loading NexChat...</div></div>
+<div id="root" style="position:relative;z-index:1;"><div id="boot-fallback" style="display:flex;align-items:center;justify-content:center;min-height:100vh;color:#fff;font-family:sans-serif;position:relative;z-index:1">Loading Pioneers Rooms...</div></div>
 <script type="text/babel">
 
     const { useState, useEffect, useRef } = React;
@@ -676,9 +784,10 @@ button:active{transform:scale(0.95)!important;}
       addDebugLogGlobal(`Firebase error: ${error.message}`, 'error');
     }
 
-    const EMOJIS = ['👍', '❤️', '😂', '😮', '😢', '😡', '🎉', '🔥', '👀', '💯', '🙏', '✨'];
+    const EMOJIS = ['+1','♥','ha','wow','sad','grr','🎉','🔥','👀','💯','🙏','✨'];
 
-    const MessageCircle = () => <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>;
+    const IconSettings = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>;
+      const MessageCircle = () => <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>;
     const Send = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>;
     const LogOut = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>;
     const Plus = () => <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>;
@@ -854,6 +963,7 @@ button:active{transform:scale(0.95)!important;}
       const [showImageInput, setShowImageInput] = useState(false);
       const [imageUrl, setImageUrl] = useState('');
       const [showGamesMenu, setShowGamesMenu] = useState(false);
+      const [showSettingsModal, setShowSettingsModal] = useState(false);
       const [gameInvite, setGameInvite] = useState(null);
       const [openGameWindows, setOpenGameWindows] = useState([]);
       const [inCall, setInCall] = useState(false);
@@ -2457,7 +2567,7 @@ const formatTime = (timestamp) => {
               <div className="nxc-logo-icon">
                 <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
               </div>
-              <h1 className="nxc-brand">NexChat</h1>
+              <h1 className="nxc-brand">Pioneers Rooms</h1>
               <p style={{color:'var(--nx-muted)',fontSize:'14px',marginTop:'4px'}}>Real-time chat, calls & more</p>
             </div>
             <div className="nxc-card nxc-fade-in" style={{width:'100%',maxWidth:'380px',position:'relative',zIndex:1}}>
@@ -2520,7 +2630,7 @@ const formatTime = (timestamp) => {
             <div className="nxc-topbar">
               <div className="nxc-topbar-logo">
                 <div className="nxc-nav-dot" />
-                NexChat
+                Pioneers Rooms
               </div>
               <div style={{display:'flex',alignItems:'center',gap:'10px'}}>
                 <div className="nxc-mini-pill">Conversations</div>
@@ -2540,6 +2650,7 @@ const formatTime = (timestamp) => {
                 <button className="nxc-side-item active" title="Home" onClick={()=>setCurrentView('home')}><IconChat /></button>
                 <button className="nxc-side-item" title="Chatrooms" onClick={()=>setCurrentView('lobby')}><IconChat /></button>
                 <button className="nxc-side-item" title="AI" onClick={()=>setShowDebug(!showDebug)}><IconAI /></button>
+                
                 <button className="nxc-side-item" title="Games" onClick={()=>setShowGamesMenu(!showGamesMenu)}><IconGamepad /></button>
                 <button className="nxc-side-item" title="Calling" onClick={()=>setCurrentView('room')}><IconVideo /></button>
                 <button className="nxc-side-item" title="Friends" onClick={()=>setShowFriendsModal(true)}><IconUsers /></button>
@@ -2551,7 +2662,8 @@ const formatTime = (timestamp) => {
                   <div className="nxc-mini-pill">Call</div>
                 </div>
                 <div style={{marginTop:'auto'}}>
-                  <button className="nxc-btn-g" style={{width:'100%'}} onClick={()=>setCurrentView('start')}>Sign Out</button>
+                  <button className="nxc-side-item" title="Settings" onClick={()=>setShowSettingsModal(true)}><IconSettings /></button>
+                <button className="nxc-btn-g" style={{width:'100%'}} onClick={()=>setCurrentView('start')}>Sign Out</button>
                 </div>
               </aside>
               <main className="nxc-home-main">
@@ -2559,30 +2671,71 @@ const formatTime = (timestamp) => {
                   <div className="nxc-logo-icon" style={{width:'96px',height:'96px',marginBottom:'18px'}}>
                     <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                   </div>
-                  <h1 className="nxc-brand" style={{fontSize:'46px',marginBottom:'10px'}}>NexChat</h1>
-                  <p style={{color:'var(--nx-muted)',fontSize:'15px',maxWidth:'620px',textAlign:'center',lineHeight:'1.7'}}>Black, white, and constellation-lit — your dashboard for chats, rooms, calls, and friends.</p>
+                  <h1 className="nxc-brand" style={{fontSize:'46px',marginBottom:'10px'}}>Pioneers Rooms</h1>
+                  <p style={{color:'var(--nx-muted)',fontSize:'15px',maxWidth:'620px',textAlign:'center',lineHeight:'1.7'}}></p>
                   <input className="nxc-commandbar" placeholder="Search or jump to a room..." />
-                  <div className="nxc-dashboard-stack">
-                    <div className="nxc-dashboard-card"><h4>Chatrooms</h4><p>Jump into rooms and keep the conversation moving with a polished layout.</p></div>
-                    <div className="nxc-dashboard-card"><h4>Calling</h4><p>Use voice or video calls with the same clean dark theme and smooth motion.</p></div>
-                    <div className="nxc-dashboard-card"><h4>AI</h4><p>Open the built-in AI area to keep the hub feeling complete and useful.</p></div>
-                  </div>
+                  
                 </div>
               </main>
             </div>
           </div>
+
+      {showSettingsModal && (
+        <div className="nxc-overlay" onClick={() => setShowSettingsModal(false)}>
+          <div className="nxc-modal" style={{maxWidth:'380px',width:'100%'}} onClick={e => e.stopPropagation()}>
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'20px'}}>
+              <h3 style={{fontSize:'17px',fontWeight:'700',display:'flex',alignItems:'center',gap:'8px'}}><IconSettings /> Settings</h3>
+              <button className="nxc-btn-icon" onClick={() => setShowSettingsModal(false)}><IconX /></button>
+            </div>
+            <div style={{borderTop:'1px solid var(--nx-border)',paddingTop:'16px',display:'flex',flexDirection:'column',gap:'12px'}}>
+              <div style={{fontSize:'11px',fontWeight:'700',textTransform:'uppercase',letterSpacing:'0.06em',color:'var(--nx-muted)'}}>Tab Cloaking</div>
+              <p style={{fontSize:'13px',color:'var(--nx-muted)',marginBottom:'4px'}}>Make this tab look like something else to anyone looking over your shoulder.</p>
+              <div style={{display:'flex',flexDirection:'column',gap:'8px'}}>
+                <button className="nxc-btn-g" style={{textAlign:'left',display:'flex',alignItems:'center',gap:'10px'}} onClick={() => {
+                  document.title = 'Google Docs';
+                  let l = document.querySelector("link[rel*='icon']") || document.createElement('link');
+                  l.rel = 'shortcut icon'; l.href = 'https://ssl.gstatic.com/docs/documents/images/kix-favicon7.ico'; document.head.appendChild(l);
+                  setShowSettingsModal(false);
+                }}>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="#4285f4"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+                  Cloak as Google Docs
+                </button>
+                <button className="nxc-btn-g" style={{textAlign:'left',display:'flex',alignItems:'center',gap:'10px'}} onClick={() => {
+                  document.title = 'Khan Academy';
+                  let l = document.querySelector("link[rel*='icon']") || document.createElement('link');
+                  l.rel = 'shortcut icon'; l.href = 'https://cdn.kastatic.org/images/favicon.ico'; document.head.appendChild(l);
+                  setShowSettingsModal(false);
+                }}>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#14bf96"/><text x="6" y="16" fontSize="10" fill="white">K</text></svg>
+                  Cloak as Khan Academy
+                </button>
+                <button className="nxc-btn-g" style={{textAlign:'left',display:'flex',alignItems:'center',gap:'10px'}} onClick={() => {
+                  document.title = 'Pioneers Rooms';
+                  let l = document.querySelector("link[rel*='icon']") || document.createElement('link');
+                  l.rel = 'shortcut icon'; l.href = ''; document.head.appendChild(l);
+                  setShowSettingsModal(false);
+                }}>
+                  <IconSettings />
+                  Reset to Default
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
         );
       }
 
       if (currentView === 'lobby') {
         const pendingCount = friendRequests.length;
         return (
-          <div style={{minHeight:'100dvh',background:transparent}}>
+          <div style={{minHeight:'100dvh',background:'transparent'}}>
             <div className="nxc-mesh" />
             <nav className="nxc-nav">
               <div className="nxc-nav-logo">
                 <div className="nxc-nav-dot" />
-                NexChat
+                Pioneers Rooms
               </div>
               <div style={{display:'flex',alignItems:'center',gap:'10px'}}>
                 <button className="nxc-btn-icon" style={{position:'relative'}} onClick={()=>setShowFriendsModal(true)}>
@@ -2689,79 +2842,749 @@ const formatTime = (timestamp) => {
       }
 
 
-
-      if (currentView === 'room') {
+if (currentView === 'room') {
         const currentRoomData = rooms.find(r => r.id === currentRoom);
         const isOwner = currentRoomData && currentRoomData.owner === username;
+
         return (
-          <div className="nxc-calling-shell">
-            <div className="nxc-call-header">
-              <button className="nxc-btn-icon" onClick={leaveRoom}><IconX /></button>
-              <div>
-                <div style={{fontWeight:'700',fontSize:'16px'}}>{currentRoomData?.name || 'Call Space'}</div>
-                <div style={{fontSize:'12px',color:'var(--nx-muted)'}}>{roomUsers.length} online</div>
-              </div>
-              <div style={{display:'flex',gap:'8px'}}>
-                {!inCall && <button className="nxc-btn-p nxc-btn-sm" onClick={startGroupCall}>Start Call</button>}
-                {isOwner && <button className="nxc-btn-danger nxc-btn-sm" onClick={clearAllMessages}>Clear Chat</button>}
-              </div>
-            </div>
-            <div className="nxc-call-videos">
-              {inCall && (
-                <div className="nxc-video-container">
-                  <video ref={remoteVideoRef} autoPlay playsInline muted className="nxc-video-main" />
-                  <div className="nxc-video-local">
-                    <video ref={localVideoRef} autoPlay playsInline muted className="nxc-video-small" />
+          <>
+            <div style={{height:'100dvh',display:'flex',flexDirection:'column',background:'transparent',position:'relative'}}>
+              <div className="nxc-nav">
+                <div style={{display:'flex',alignItems:'center',gap:'10px'}}>
+                  <button className="nxc-btn-icon" onClick={leaveRoom} title="Leave">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                  </button>
+                  <div>
+                    <div style={{fontWeight:'700',fontSize:'15px',letterSpacing:'-0.01em'}}>{currentRoomData?.name||'Room'}</div>
+                    <div style={{fontSize:'11px',color:'var(--nx-muted)'}}>{roomUsers.length} online{isOwner?' · 👑':''}</div>
                   </div>
-                  <div className="nxc-call-controls">
-                    <button className="nxc-call-btn nxc-call-btn-mute" onClick={() => setIsMuted(!isMuted)}>
-                      {isMuted ? '🔇' : '🔊'}
-                    </button>
-                    <button className="nxc-call-btn nxc-call-btn-end" onClick={leaveRoom}>
-                      <IconX />
-                    </button>
-                    <button className="nxc-call-btn nxc-call-btn-video" onClick={() => setIsVideoOff(!isVideoOff)}>
-                      {isVideoOff ? '📷 Off' : '🎥 On'}
-                    </button>
+                </div>
+                <div style={{display:'flex',alignItems:'center',gap:'8px'}}>
+                  {!inCall&&<button className="nxc-btn-success nxc-btn-sm" onClick={startGroupCall}><IconVideo /><span>Call</span></button>}
+                  {isOwner&&<button className="nxc-btn-danger nxc-btn-sm" onClick={clearAllMessages}>Clear</button>}
+                  
+                  <div className="nxc-avatar">{username.charAt(0).toUpperCase()}</div>
+                </div>
+              </div>
+
+              {}
+              {groupCallActive && !inCall && (
+                <div style={{ background: 'linear-gradient(90deg, #003322, #004433)', padding: '10px 20px', borderBottom: '1px solid #00ff88', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#00ff88', fontSize: '14px', fontWeight: 'bold' }}>
+                    <span style={{ animation: 'glow 1s ease-in-out infinite' }}><IconLive /></span>
+                    Group call in progress
+                  </div>
+                  <button
+                    onClick={startGroupCall}
+                    style={{ background: '#00ff88', color: '#000', padding: '8px 20px', borderRadius: '8px', border: 'none', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer' }}
+                  >
+                    Join Call
+                  </button>
+                </div>
+              )}
+
+              {roomUsers.length > 1 && (
+                <div style={{background:'var(--nx-s1)',padding:'8px 18px',borderBottom:'1px solid var(--nx-border)'}}>
+                  <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                    <Users style={{ width: '16px', height: '16px' }} />
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                      {roomUsers.map(user => (
+                        <div key={user} style={{ background: '#1a1a1a', padding: '6px 12px', borderRadius: '8px', border: '1px solid #333', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span>{user}</span>
+                          {user === currentRoomData?.owner && <span><IconCrown /></span>}
+                          {user !== username && !inCall && (
+                            <button 
+                              onClick={() => startCall(user)} 
+                              style={{ 
+                                background: 'transparent', 
+                                border: 'none', 
+                                color: '#00ff88', 
+                                cursor: 'pointer', 
+                                padding: '0 5px',
+                                fontSize: '16px'
+                              }}
+                              title={`Call ${user}`}
+                            >
+                              📞
+                            </button>
+                          )}
+                          {isOwner && user !== username && (
+                            <button onClick={() => kickUser(user)} style={{ background: 'transparent', border: 'none', color: '#ff6666', cursor: 'pointer', padding: '0 5px' }}>
+                              <UserX style={{ width: '14px', height: '14px' }} />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               )}
-            </div>
-            <div className="nxc-call-chat">
-              <div className="nxc-chat-msgs">
-                {typingUsers.length > 0 && (
-                  <div className="nxc-typing-ind">
-                    <div className="nxc-typing-dots">
-                      <div className="nxc-dot1"></div>
-                      <div className="nxc-dot2"></div>
-                      <div className="nxc-dot3"></div>
+
+              <div style={{ flex: 1, overflow: 'auto', background: 'transparent', padding: '20px' }}>
+                <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+                  
+                  {gameInvite && (
+                    <div className="glow-border" style={{ background: '#0a0a0a', padding: '20px', marginBottom: '20px', borderRadius: '15px', border: '2px solid #4a9eff', animation: 'glow 2s ease-in-out infinite' }}>
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{ fontSize: '24px', marginBottom: '10px' }}><IconGamepad /></div>
+                        <div style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '10px' }}>
+                          {gameInvite.sender} wants to play {gameInvite.gameType === 'gartic' ? 'Gartic Phone' : 'Uno'}!
+                        </div>
+                        <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+                          <button onClick={acceptGameInvite} className="glow-button" style={{ background: '#00ff00', color: '#000', padding: '12px 24px', borderRadius: '8px', border: 'none', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer' }}>
+                            <IconCheck /> Accept
+                          </button>
+                          <button onClick={declineGameInvite} style={{ background: '#2a0000', border: '1px solid #ff0000', color: '#ff6666', padding: '12px 24px', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: 'bold' }}>
+                            <IconX /> Decline
+                          </button>
+                        </div>
+                      </div>
                     </div>
-                    {typingUsers.join(', ')} typing...
+                  )}
+
+                  {showGamesMenu && (
+                    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={() => setShowGamesMenu(false)}>
+                      <div className="glow-border" style={{ background: '#0a0a0a', padding: '30px', borderRadius: '20px', maxWidth: '400px', width: '90%' }} onClick={(e) => e.stopPropagation()}>
+                        <h3 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '20px', textAlign: 'center' }}><IconGamepad /> Choose a Game</h3>
+                        <div style={{ display: 'grid', gap: '10px' }}>
+                          <button onClick={() => sendGameInvite('gartic')} className="glow-button" style={{ width: '100%', background: '#1a1a1a', color: '#fff', padding: '15px', borderRadius: '10px', border: '1px solid #333', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>
+                            🎨 Gartic Phone
+                          </button>
+                          <button onClick={() => sendGameInvite('uno')} className="glow-button" style={{ width: '100%', background: '#1a1a1a', color: '#fff', padding: '15px', borderRadius: '10px', border: '1px solid #333', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>
+                            🃏 Uno Online
+                          </button>
+                          <button onClick={() => setShowGamesMenu(false)} style={{ width: '100%', background: '#2a0000', border: '1px solid #ff0000', color: '#ff6666', padding: '15px', borderRadius: '10px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {messages.map((msg) => {
+                    if (msg.type === 'system') {
+                      return <div key={msg.id} className="system-message">{msg.text}</div>;
+                    }
+
+
+                    const replyMsg = msg.replyTo ? getReplyMessage(msg.replyTo) : null;
+                    const userColor = `hsl(${msg.username.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % 360}, 70%, 60%)`;
+
+                    return (
+                      <div key={msg.id} className='nxc-msg-bubble' style={{ marginBottom: '15px', background: msg.username === username ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.04)', padding: '15px', borderRadius: '15px', border: '1px solid #333' }}>
+                        <div className="message-actions">
+                          <button onClick={() => setReplyTo(msg)} className="action-btn" title="Reply">
+                                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 0 0-4-4H4"/></svg>
+                                        </button>
+                          <button onClick={() => setShowEmojiPicker(showEmojiPicker === msg.id ? null : msg.id)} className="action-btn">
+                            <Smile />
+                          </button>
+                        </div>
+
+                        {showEmojiPicker === msg.id && (
+                          <div className="emoji-picker">
+                            {EMOJIS.map(emoji => (
+                              <button key={emoji} onClick={() => {
+                                addReaction(msg.id, emoji);
+                                setShowEmojiPicker(null);
+                              }} className="emoji-btn">
+                                {emoji}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', marginBottom: '8px' }}>
+                          <span style={{ color: userColor, fontWeight: 'bold', fontSize: '14px' }}>{msg.username}</span>
+                          <span style={{ color: '#666', fontSize: '12px' }}>{formatTime(msg.timestamp)}</span>
+                        </div>
+
+                        {replyMsg && (
+                          <div className="reply-to" style={{ borderColor: userColor }}>
+                            <div style={{ fontSize: '11px', color: '#999', marginBottom: '4px' }}>Replying to {replyMsg.username}</div>
+                            <div style={{ fontSize: '12px', opacity: 0.7 }}>{replyMsg.text.substring(0, 50)}{replyMsg.text.length > 50 ? '...' : ''}</div>
+                          </div>
+                        )}
+
+                        {msg.type === 'snap' && msg.image ? (
+                          <div style={{ marginTop: '8px' }}>
+                            <img 
+                              src={msg.image} 
+                              alt="Snap" 
+                              style={{ 
+                                maxWidth: '100%', 
+                                maxHeight: '400px', 
+                                borderRadius: '10px',
+                                cursor: 'pointer'
+                              }} 
+                            />
+                          </div>
+                        ) : msg.type === 'video' && msg.videoUrl ? (
+                          <div style={{ marginTop: '8px' }}>
+                            <video 
+                              src={msg.videoUrl} 
+                              controls 
+                              style={{ 
+                                maxWidth: '100%', 
+                                maxHeight: '400px', 
+                                borderRadius: '10px'
+                              }} 
+                            />
+                          </div>
+                        ) : (
+                          <div style={{ fontSize: '15px', lineHeight: '1.5', wordBreak: 'break-word' }}>{msg.text}</div>
+                        )}
+
+                        {msg.reactions && Object.keys(msg.reactions).length > 0 && (
+                          <div className="reaction-container">
+                            {Object.entries(msg.reactions).map(([emoji, users]) => (
+                              <div key={emoji} onClick={() => addReaction(msg.id, emoji)} className={`reaction ${users.includes(username) ? 'active' : ''}`}>
+                                <span>{emoji}</span>
+                                <span>{users.length}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+
+                  {typingUsers.length > 0 && (
+                    <div className="typing-indicator">
+                      {typingUsers.join(', ')} {typingUsers.length === 1 ? 'is' : 'are'} typing...
+                    </div>
+                  )}
+
+                  <div ref={messagesEndRef} />
+                </div>
+              </div>
+
+              <div className="glow-border" className='nxc-chat-bar'>
+                <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+                  {replyTo && (
+                    <div className="reply-preview">
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '5px' }}>
+                        <span style={{ fontSize: '12px', color: '#999' }}>Replying to {replyTo.username}</span>
+                        <button onClick={() => setReplyTo(null)} style={{ background: 'transparent', border: 'none', color: '#666', cursor: 'pointer', fontSize: '18px', lineHeight: 1 }}>×</button>
+                      </div>
+                      <div style={{ fontSize: '13px', opacity: 0.8 }}>{replyTo.text.substring(0, 80)}{replyTo.text.length > 80 ? '...' : ''}</div>
+                    </div>
+                  )}
+
+
+                  {showImageInput && (
+                    <div style={{ marginBottom: '15px', background: '#1a1a1a', padding: '20px', borderRadius: '15px', border: '1px solid #333' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                        <h3 style={{ fontSize: '16px', fontWeight: 'bold' }}>🖼️ Send Image/GIF</h3>
+                        <button onClick={() => setShowImageInput(false)} style={{ background: 'transparent', border: 'none', color: '#999', cursor: 'pointer', fontSize: '24px' }}>×</button>
+                      </div>
+                      <div style={{ marginBottom: '10px', padding: '8px', background: '#0a2a0a', border: '1px solid #00ff88', borderRadius: '8px', color: '#88ffcc', fontSize: '12px' }}>
+                        💡 <strong>Tip:</strong> You can paste Giphy page URLs directly! Or use "Share" → "Copy GIF Link" from Giphy/Tenor
+                      </div>
+                      <input
+                        type="text"
+                        value={imageUrl}
+                        onChange={(e) => setImageUrl(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && sendImageUrl()}
+                        placeholder="Paste image or GIF URL..."
+                        style={{ width: '100%', padding: '15px', background: '#0a0a0a', border: '1px solid #333', borderRadius: '10px', color: '#fff', fontSize: '15px', marginBottom: '15px' }}
+                      />
+                      {imageUrl && (
+                        <div style={{ marginBottom: '15px', textAlign: 'center' }}>
+                          <img src={imageUrl} alt="Preview" style={{ maxWidth: '100%', maxHeight: '200px', borderRadius: '10px' }} onError={(e) => e.target.style.display = 'none'} />
+                        </div>
+                      )}
+                      <button onClick={sendImageUrl} className="glow-button" style={{ width: '100%', background: '#fff', color: '#000', padding: '15px', borderRadius: '10px', border: 'none', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>
+                        📤 SEND IMAGE
+                      </button>
+                    </div>
+                  )}
+
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <input
+                      type="text"
+                      value={message}
+                      onChange={(e) => {
+                        setMessage(e.target.value);
+                        updateTyping();
+                      }}
+                      onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
+                      placeholder="Type a message..."
+                      style={{ flex: 1, padding: '15px', background: '#1a1a1a', border: '1px solid #333', borderRadius: '10px', color: '#fff', fontSize: '15px' }}
+                    />
+                    <button onClick={sendMessage} className="glow-button" style={{ background: '#fff', color: '#000', padding: '15px 30px', borderRadius: '10px', border: 'none', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Send /> Send
+                    </button>
+                    <button onClick={openSnapCamera} className="glow-button" style={{ background: '#ffeb3b', color: '#000', padding: '15px 30px', borderRadius: '10px', border: 'none', fontSize: '20px', fontWeight: 'bold', cursor: 'pointer' }} title="Take a snap">
+                      📸
+                    </button>
+                    <button onClick={() => setShowImageInput(!showImageInput)} className="glow-button" style={{ background: '#1a1a1a', color: '#fff', padding: '15px 30px', borderRadius: '10px', border: '1px solid #333', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>
+                      🖼️
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {}
+            {openGameWindows.map(window => (
+              <MinimizedWindow 
+                key={window.id}
+                title={window.title}
+                url={window.url}
+                icon={window.icon}
+                onClose={() => closeGameWindow(window.id)}
+              />
+            ))}
+
+            {}
+            {isGroupCall && inCall && (
+              <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: '#111', zIndex: 10000, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+
+                {}
+                {groupCallParticipants.length === 0 ? (
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '20px', minHeight: 0 }}>
+                    {}
+                    <div style={{ position: 'relative', width: '260px', height: '200px', borderRadius: '16px', overflow: 'hidden', border: '2px solid #333', background: '#000', flexShrink: 0 }}>
+                      <video ref={localVideoRef} autoPlay playsInline muted
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', display: isVideoOff ? 'none' : 'block' }} />
+                      {isVideoOff && <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '36px' }}><IconVideo /></div>}
+                      <div style={{ position: 'absolute', bottom: '8px', left: '10px', background: 'rgba(0,0,0,0.6)', padding: '3px 8px', borderRadius: '6px', fontSize: '12px', color: '#fff' }}>{username} (you)</div>
+                    </div>
+                    <div style={{ textAlign: 'center', color: '#666' }}>
+                      <div style={{ fontSize: '36px', marginBottom: '12px' }}><IconUsers /></div>
+                      <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#fff', marginBottom: '6px' }}>You're in the group call</div>
+                      <div style={{ fontSize: '14px' }}>Waiting for others to join...</div>
+                    </div>
+                  </div>
+                ) : (
+                  
+                  <div style={{
+                    flex: 1,
+                    display: 'grid',
+                    gridTemplateColumns: groupCallParticipants.length === 1 ? '1fr 1fr' :
+                                         groupCallParticipants.length <= 3 ? 'repeat(2, 1fr)' :
+                                         'repeat(3, 1fr)',
+                    gridAutoRows: groupCallParticipants.length <= 1 ? '1fr' : 'auto',
+                    gap: '4px',
+                    padding: '8px',
+                    minHeight: 0,
+                    overflow: 'hidden'
+                  }}>
+                    {}
+                    <div style={{ position: 'relative', background: '#000', borderRadius: '12px', overflow: 'hidden', minHeight: '160px' }}>
+                      <video ref={localVideoRef} autoPlay playsInline muted
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', display: isVideoOff ? 'none' : 'block', position: 'absolute', inset: 0 }} />
+                      {isVideoOff && <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '36px' }}><IconVideo /></div>}
+                      <div style={{ position: 'absolute', bottom: '8px', left: '10px', background: 'rgba(0,0,0,0.6)', padding: '3px 8px', borderRadius: '6px', fontSize: '12px', color: '#fff' }}>{username} (you)</div>
+                    </div>
+
+                    {}
+                    {groupCallParticipants.map(participant => (
+                      <div key={participant} style={{ position: 'relative', background: '#000', borderRadius: '12px', overflow: 'hidden', minHeight: '160px' }}>
+                        <video
+                          ref={el => {
+                            
+                            const prev = participantVideoRefs.current[participant];
+                            participantVideoRefs.current[participant] = el;
+                            if (el) {
+                              el.muted = false;
+                              const stream = participantStreamsRef.current[participant];
+                              if (stream && el.srcObject !== stream) {
+                                el.srcObject = stream;
+                                el.play().catch(() => {});
+                              }
+                            } else if (prev) {
+                              prev.srcObject = null;
+                            }
+                          }}
+                          autoPlay playsInline
+                          style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }}
+                        />
+                        <div style={{ position: 'absolute', bottom: '8px', left: '10px', background: 'rgba(0,0,0,0.6)', padding: '3px 8px', borderRadius: '6px', fontSize: '12px', color: '#fff' }}>{participant}</div>
+                      </div>
+                    ))}
                   </div>
                 )}
-                {messages.map(msg => (
-                  <div key={msg.id} className="nxc-msg-row">
-                    <div className="nxc-msg-avatar">{msg.username.charAt(0).toUpperCase()}</div>
-                    <div className="nxc-msg-content">
-                      <div className="nxc-msg-header">
-                        <span className="nxc-msg-user">{msg.username}</span>
-                        <span className="nxc-msg-time">{formatTime(msg.timestamp)}</span>
-                      </div>
-                      <div className="nxc-msg-text">{msg.text}</div>
-                      {msg.image && <img src={msg.image} alt="sent image" className="nxc-msg-image" />}
+
+                {}
+                <div style={{ flexShrink: 0, padding: '16px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '20px', background: '#000', borderTop: '1px solid #222' }}>
+                  <button onClick={toggleMute} className={`call-btn mute ${isMuted ? 'active' : ''}`} title={isMuted ? 'Unmute' : 'Mute'}>
+                    {isMuted ? '🔇' : '🎤'}
+                  </button>
+                  <button onClick={toggleVideo} className={`call-btn video-toggle ${isVideoOff ? 'active' : ''}`} title={isVideoOff ? 'Turn on camera' : 'Turn off camera'}>
+                    {isVideoOff ? '📷 Off' : '🎥 On'}
+                  </button>
+                  <button onClick={endGroupCall} className="call-btn end" title="Leave call">
+                    ☎️
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {}
+            {!isGroupCall && inCall && (
+              <div className="video-call-modal">
+                <div className="video-container">
+                  <video 
+                    ref={remoteVideoRef} 
+                    autoPlay 
+                    playsInline
+                    controls={false}
+                    className="remote-video"
+                    style={{ 
+                      display: 'block', opacity: remoteStream ? 1 : 0,
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover'
+                    }}
+                  />
+                  {!remoteStream && (
+                    <div className="call-status">
+                      <div style={{ fontSize: '48px', marginBottom: '20px' }}>📞</div>
+                      <div>Calling {callWith}...</div>
+                      <div style={{ fontSize: '14px', color: '#999', marginTop: '10px' }}>Waiting for them to answer...</div>
                     </div>
+                  )}
+                  
+                  {}
+                  <video 
+                    ref={localVideoRef} 
+                    autoPlay 
+                    playsInline 
+                    muted 
+                    className="local-video"
+                    style={{
+                      position: 'absolute',
+                      top: '20px',
+                      right: '20px',
+                      width: '220px',
+                      height: '280px',
+                      borderRadius: '15px',
+                      border: '2px solid #fff',
+                      objectFit: 'cover',
+                      boxShadow: '0 4px 15px rgba(0,0,0,0.5)',
+                      zIndex: 10,
+                      display: isVideoOff ? 'none' : 'block'
+                    }}
+                  />
+                  {isVideoOff && (
+                    <div 
+                      style={{ 
+                        position: 'absolute',
+                        top: '20px',
+                        right: '20px',
+                        width: '220px',
+                        height: '280px',
+                        borderRadius: '15px',
+                        border: '2px solid #fff',
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center', 
+                        background: '#1a1a1a',
+                        boxShadow: '0 4px 15px rgba(0,0,0,0.5)',
+                        zIndex: 10
+                      }}
+                    >
+                      <span style={{ fontSize: '48px' }}><IconVideo /></span>
+                    </div>
+                  )}
+                  
+                  {}
+                  {inCallNotifications.map(notif => (
+                    <div
+                      key={notif.id}
+                      style={{
+                        position: 'absolute',
+                        top: '20px',
+                        left: '20px',
+                        maxWidth: '300px',
+                        background: 'rgba(0, 0, 0, 0.9)',
+                        border: '1px solid rgba(255, 255, 255, 0.3)',
+                        borderRadius: '15px',
+                        padding: '15px',
+                        zIndex: 10,
+                        animation: 'slideIn 0.3s ease-out',
+                        backdropFilter: 'blur(10px)',
+                        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.5)'
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                        <div style={{ fontWeight: 'bold', fontSize: '14px' }}><IconChat /> {notif.from}</div>
+                        <button
+                          onClick={() => dismissNotification(notif.id)}
+                          style={{
+                            background: 'transparent',
+                            border: 'none',
+                            color: '#999',
+                            cursor: 'pointer',
+                            fontSize: '16px',
+                            padding: '0 5px'
+                          }}
+                        >
+                          <IconX />
+                        </button>
+                      </div>
+                      <div style={{ 
+                        fontSize: '13px', 
+                        color: '#ccc', 
+                        marginBottom: '10px',
+                        wordBreak: 'break-word',
+                        maxHeight: '60px',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis'
+                      }}>
+                        {notif.text}
+                      </div>
+                      <button
+                        onClick={() => dismissNotification(notif.id)}
+                        style={{
+                          background: 'rgba(255, 255, 255, 0.2)',
+                          border: '1px solid rgba(255, 255, 255, 0.3)',
+                          color: '#fff',
+                          padding: '6px 12px',
+                          borderRadius: '8px',
+                          fontSize: '12px',
+                          cursor: 'pointer',
+                          width: '100%',
+                          transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.3)'}
+                        onMouseLeave={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.2)'}
+                      >
+                        Dismiss
+                      </button>
+                    </div>
+                  ))}
+
+                  <div className="call-controls">
+                    <button 
+                      onClick={toggleMute} 
+                      className={`call-btn mute ${isMuted ? 'active' : ''}`}
+                      title={isMuted ? 'Unmute' : 'Mute'}
+                    >
+                      {isMuted ? '🔇' : '🎤'}
+                    </button>
+                    <button 
+                      onClick={toggleVideo} 
+                      className={`call-btn video-toggle ${isVideoOff ? 'active' : ''}`}
+                      title={isVideoOff ? 'Turn on camera' : 'Turn off camera'}
+                    >
+                      {isVideoOff ? '📷 Off' : '🎥 On'}
+                    </button>
+                    <button 
+                      onClick={endCall} 
+                      className="call-btn end"
+                      title="End call"
+                    >
+                      ☎️
+                    </button>
                   </div>
-                ))}
+                </div>
               </div>
-              <div className="nxc-chat-input">
-                <input className="nxc-inp" value={message} onChange={e=>setMessage(e.target.value)} placeholder="Message during call..." onKeyDown={handleKeyDown} />
-                <button className="nxc-btn-p nxc-btn-sm" onClick={sendMessage}>Send</button>
+            )}
+
+            {}
+            {isCalling && !inCall && (
+              <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
+                background: 'rgba(0,0,0,0.92)', display: 'flex', alignItems: 'center', 
+                justifyContent: 'center', zIndex: 10001 }}>
+                <div className="incoming-call" style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '64px', marginBottom: '20px', animation: 'glow 1s ease-in-out infinite' }}>📲</div>
+                  <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '10px' }}>
+                    Calling {callWith}...
+                  </h2>
+                  <p style={{ fontSize: '16px', color: '#999', marginBottom: '30px' }}>
+                    Ringing... waiting for them to answer
+                  </p>
+                  <button 
+                    onClick={endCall} 
+                    style={{ background: '#ff3b30', color: '#fff', border: 'none', 
+                      borderRadius: '50px', padding: '15px 40px', fontSize: '18px', cursor: 'pointer' }}>
+                    <IconLive /> Cancel
+                  </button>
+                </div>
               </div>
-            </div>
-          </div>
+            )}
+            {incomingCall && !inCall && !isGroupCall && (
+              <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10001 }}>
+                <div className="incoming-call">
+                  <div style={{ fontSize: '64px', marginBottom: '20px', animation: 'glow 1s ease-in-out infinite' }}>📞</div>
+                  <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '10px' }}>Incoming Call</h2>
+                  <p style={{ fontSize: '18px', color: '#999', marginBottom: '30px' }}>{incomingCall.from} is calling you...</p>
+                  <div style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
+                    <button 
+                      onClick={() => answerCall(incomingCall.from)} 
+                      className="glow-button" 
+                      style={{ 
+                        background: '#00ff00', 
+                        color: '#000', 
+                        padding: '15px 40px', 
+                        borderRadius: '50px', 
+                        border: 'none', 
+                        fontSize: '18px', 
+                        fontWeight: 'bold', 
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px'
+                      }}
+                    >
+                      📞 Answer
+                    </button>
+                    <button 
+                      onClick={declineCall} 
+                      style={{ 
+                        background: '#ff3b30', 
+                        color: '#fff', 
+                        padding: '15px 40px', 
+                        borderRadius: '50px', 
+                        border: 'none', 
+                        fontSize: '18px', 
+                        fontWeight: 'bold', 
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px'
+                      }}
+                    >
+                      ❌ Decline
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {}
+            {showSnapCamera && (
+              <div className="snap-camera-modal">
+                <button onClick={closeSnapCamera} className="snap-close-btn">
+                  <IconX />
+                </button>
+                
+                {}
+                <button 
+                  onClick={toggleCaptureMode}
+                  style={{
+                    position: 'absolute',
+                    top: '20px',
+                    right: '20px',
+                    padding: '10px 20px',
+                    borderRadius: '50px',
+                    background: captureMode === 'photo' ? '#ffeb3b' : '#ff4444',
+                    color: '#000',
+                    border: 'none',
+                    fontSize: '14px',
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    zIndex: 11,
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  {captureMode === 'photo' ? '📸 Photo' : '🎥 Video'}
+                </button>
+                
+                <div className="snap-video-container">
+                  {!capturedSnap && !recordedVideo ? (
+                    <>
+                      <video 
+                        ref={snapVideoRef} 
+                        autoPlay 
+                        playsInline 
+                        muted
+                        className="snap-video"
+                        style={{ transform: isFrontCamera ? 'scaleX(-1)' : 'none' }}
+                      />
+                      
+                      {}
+                      {isRecording && (
+                        <div style={{
+                          position: 'absolute',
+                          top: '80px',
+                          left: '50%',
+                          transform: 'translateX(-50%)',
+                          background: 'rgba(255, 0, 0, 0.9)',
+                          color: '#fff',
+                          padding: '10px 20px',
+                          borderRadius: '50px',
+                          fontSize: '16px',
+                          fontWeight: 'bold',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '10px',
+                          zIndex: 11
+                        }}>
+                          <div style={{
+                            width: '12px',
+                            height: '12px',
+                            borderRadius: '50%',
+                            background: '#fff',
+                            animation: 'glow 1s ease-in-out infinite'
+                          }} />
+                          {Math.floor(recordingTime / 60)}:{(recordingTime % 60).toString().padStart(2, '0')}
+                        </div>
+                      )}
+                      
+                      <div className="snap-controls">
+                        <button onClick={flipCamera} className="snap-action-btn" title="Flip camera">
+                          🔄
+                        </button>
+                        
+                        {captureMode === 'photo' ? (
+                          <button onClick={captureSnap} className="snap-capture-btn" title="Capture photo" />
+                        ) : (
+                          <button 
+                            onClick={isRecording ? stopRecording : startRecording}
+                            className="snap-capture-btn"
+                            style={{
+                              background: isRecording ? '#ff4444' : '#fff',
+                              border: isRecording ? '5px solid #fff' : '5px solid rgba(255, 255, 255, 0.3)'
+                            }}
+                            title={isRecording ? 'Stop recording' : 'Start recording'}
+                          />
+                        )}
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      {capturedSnap && (
+                        <img src={capturedSnap} className="snap-preview-image" alt="Captured snap" />
+                      )}
+                      {recordedVideo && (
+                        <video src={recordedVideo} className="snap-preview-image" controls autoPlay loop />
+                      )}
+                      <div className="snap-controls">
+                        <button onClick={retakeSnap} className="snap-action-btn" title="Retake">
+                          ↺
+                        </button>
+                      </div>
+                      <button onClick={sendSnap} className="snap-send-btn">
+                        📤 Send {capturedSnap ? 'Snap' : 'Video'}
+                      </button>
+                    </>
+                  )}
+                  <canvas ref={snapCanvasRef} style={{ display: 'none' }} />
+                </div>
+              </div>
+            )}
+
+            {!showDebug && (
+              <div className="debug-toggle" onClick={() => setShowDebug(true)}>
+                <Bug />
+              </div>
+            )}
+            {showDebug && <DebugConsole logs={logs} onClose={() => setShowDebug(false)} />}
+          </>
         );
       }
 
+      return null;
+    }
+
+    
 ReactDOM.render(<ChatroomApp />, document.getElementById('root'));
 </script>
 
@@ -2861,7 +3684,7 @@ ReactDOM.render(<ChatroomApp />, document.getElementById('root'));
 
 
 <div id="js-error" style="display:none;position:fixed;inset:0;z-index:9999;background:#0e0e12;color:#fff;align-items:center;justify-content:center;flex-direction:column;font-family:sans-serif;text-align:center;padding:24px">
-  <div style="font-size:42px;margin-bottom:12px">NexChat</div>
+  <div style="font-size:42px;margin-bottom:12px">Pioneers Rooms</div>
   <div style="color:#f87171;font-size:16px;max-width:520px">The app didn't finish loading. The file has been patched, but one of the scripts may still be breaking the React render.</div>
 </div>
 <script>
