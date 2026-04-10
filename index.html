@@ -629,13 +629,13 @@ button:active{transform:scale(0.95)!important;}
 </style>
 
 <script>
-console.clear();
+
 console.log('%cNexChat Debug Mode', 'font-size:20px;color:#6c8cff;font-weight:bold');
 console.log('1. HTML loaded');
-setTimeout(() => {
+// // setTimeout(() => {
   console.log('2. React scripts loaded:', typeof React !== 'undefined', typeof ReactDOM !== 'undefined');
 }, 100);
-setTimeout(() => {
+// setTimeout(() => {
   console.log('3. Babel transformed');
   console.log('Root:', document.getElementById('root'));
 }, 500);
@@ -845,7 +845,12 @@ setTimeout(() => {
 
     function ChatroomApp() {
 
+      React.
       React.useEffect(() => {
+        console.log('✅ ChatroomApp mounted, Firebase:', !!db);
+      }, []);
+
+useEffect(() => {
         const fb = document.getElementById('boot-fallback');
         if (fb) fb.remove();
       }, []);
@@ -853,9 +858,6 @@ setTimeout(() => {
       const [tempUsername, setTempUsername] = useState('');
       const [currentView, setCurrentView] = useState('start');
       const [currentRoom, setCu
-      console.log('✅ ChatroomApp mounted');
-      console.log('Firebase:', !!db);
-      console.log('State init complete');
 rrentRoom] = useState(null);
       const [rooms, setRooms] = useState([]);
       const [messages, setMessages] = useState([]);
@@ -931,16 +933,7 @@ rrentRoom] = useState(null);
         const interval = setInterval(() => {
           setLogs([...debugLogs]);
         }, 1000);
-        
-      if (!db) {
-        return <div style={{display:'flex',alignItems:'center',justify-content:'center',minHeight:'100vh',color:'white',fontFamily:'sans-serif'}}>
-          <div style={{textAlign:'center'}}>
-            <h1>Firebase Error</h1>
-            <p>Database not connected. Check console.</p>
-          </div>
-        </div>;
-      }
-return () => clearInterval(interval);
+        return () => clearInterval(interval);
       }, []);
 
       useEffect(() => {
@@ -1052,7 +1045,7 @@ return () => clearInterval(interval);
             setInCallNotifications(prev => [...prev, newNotif]);
             
             
-            setTimeout(() => {
+            // setTimeout(() => {
               setInCallNotifications(prev => prev.filter(n => n.id !== notifId));
             }, 10000);
           }
@@ -1417,7 +1410,7 @@ const startCall = async (targetUser) => {
           setLocalStream(stream);
           
           
-          setTimeout(() => {
+          // setTimeout(() => {
             if (localVideoRef.current && stream) {
               localVideoRef.current.srcObject = stream;
               localVideoRef.current.play().catch(err => console.error('Local video play error:', err));
@@ -2153,7 +2146,7 @@ const endCall = () => {
         if (typingTimeoutRef.current) {
           clearTimeout(typingTimeoutRef.current);
         }
-        typingTimeoutRef.current = setTimeout(() => {
+        typingTimeoutRef.current = // setTimeout(() => {
           db.ref(`typing/${currentRoom}/${username}`).remove();
         }, 3000);
       };
@@ -2929,7 +2922,7 @@ setTimeout(function(){
 
 
 <div id="test-root" style="position:fixed;top:20px;right:20px;z-index:9999">
-  <button onclick="document.getElementById('root').innerHTML='<h1 style='color:white;font-family:sans-serif;'>React Working! <br><small>Click to hide</small></h1>'">Test React</button>
+  <button onclick="document.getElementById('root').innerHTML='<h1 style='color:white;font-family:sans-serif;'>React Working! <br><small>Click to hide</small></h1>'">Debug Mode</button>
 </div>
 <script>
 setTimeout(()=>{document.getElementById('test-root').style.display='none';},5000);
