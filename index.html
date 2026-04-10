@@ -2753,14 +2753,8 @@ const formatTime = (timestamp) => {
                   </div>
                 ))}
               </div>
-              <div className="nxc-chat-input" style={{display:'flex',gap:'8px',alignItems:'center',padding:'10px 12px'}}>
-                <button className="nxc-btn-icon" title="Emoji" onClick={()=>setShowEmojiPicker(!showEmojiPicker)}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
-                </button>
-                <button className="nxc-btn-icon" title="Reply" onClick={()=>replyTo&&setReplyTo(null)}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 10 4 15 9 20"/><path d="M20 4v7a4 4 0 0 1-4 4H4"/></svg>
-                </button>
-                <input className="nxc-inp" style={{flex:1}} value={message} onChange={e=>setMessage(e.target.value)} placeholder="Type a message..." onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}}} />
+              <div className="nxc-chat-input">
+                <input className="nxc-inp" value={message} onChange={e=>setMessage(e.target.value)} placeholder="Message during call..." onKeyDown={handleKeyDown} />
                 <button className="nxc-btn-p nxc-btn-sm" onClick={sendMessage}>Send</button>
               </div>
             </div>
