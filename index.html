@@ -545,9 +545,85 @@ button:active{transform:scale(0.95)!important;}
 .nxc-avatar:hover{box-shadow:0 0 20px var(--nx-glow);transform:scale(1.08)!important;}
 .nxc-inp:focus{transform:none;}
 
+
+.nxc-shell{min-height:100dvh;position:relative;z-index:1;display:flex;flex-direction:column;background:transparent;}
+.nxc-topbar{height:56px;padding:0 20px;display:flex;align-items:center;justify-content:space-between;background:rgba(0,0,0,0.65);backdrop-filter:blur(14px);border-bottom:1px solid var(--nx-border);}
+.nxc-topbar-logo{display:flex;align-items:center;gap:9px;font-weight:700;letter-spacing:-0.03em;}
+.nxc-home-layout{display:flex;min-height:calc(100dvh - 56px);}
+.nxc-sidebar{width:250px;background:rgba(0,0,0,0.35);backdrop-filter:blur(10px);border-right:1px solid var(--nx-border);padding:18px;display:flex;flex-direction:column;gap:10px;}
+.nxc-profile-card{padding:18px;border:1px solid var(--nx-border);background:rgba(255,255,255,0.03);border-radius:16px;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;}
+.nxc-avatar-xl{width:64px;height:64px;font-size:24px;}
+.nxc-sidebar-section{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--nx-muted);margin-top:6px;}
+.nxc-side-item{display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:12px;background:transparent;border:1px solid transparent;color:var(--nx-text);font-size:14px;justify-content:flex-start;}
+.nxc-side-item:hover{background:rgba(255,255,255,0.04);border-color:var(--nx-border);transform:translateX(2px)!important;}
+.nxc-side-item.active{background:rgba(255,255,255,0.06);border-color:var(--nx-border2);}
+.nxc-home-main{flex:1;display:flex;align-items:center;justify-content:center;padding:24px;position:relative;}
+.nxc-hero-card{display:flex;flex-direction:column;align-items:center;justify-content:center;max-width:720px;width:100%;padding:40px;border:1px solid var(--nx-border);background:rgba(255,255,255,0.03);border-radius:24px;backdrop-filter:blur(14px);}
+/* Make theme more black/white */
+:root{--nx-accent:#ffffff;--nx-accent2:#d9d9d9;--nx-glow:rgba(255,255,255,0.14);--nx-text:#ffffff;--nx-muted:#8d8d8d;--nx-green:#ffffff;--nx-red:#ffffff;--nx-yellow:#ffffff;}
+.nxc-btn-p,.nxc-btn-success{background:#ffffff;color:#000000;}
+.nxc-btn-p:hover,.nxc-btn-success:hover{background:#e8e8e8;color:#000000;}
+.nxc-btn-danger,.nxc-badge-green,.nxc-badge{color:#fff;border-color:rgba(255,255,255,0.18);background:rgba(255,255,255,0.06);}
+
+
+.nxc-home-main{align-items:flex-start;justify-content:flex-start;}
+.nxc-hero-card{margin:30px auto 0;max-width:860px;min-height:420px;justify-content:center;}
+.nxc-commandbar{width:min(760px,100%);margin-top:20px;padding:12px 14px;border:1px solid var(--nx-border2);border-radius:16px;background:rgba(255,255,255,0.04);color:var(--nx-text);outline:none;box-shadow:0 0 0 0 transparent;}
+.nxc-commandbar:focus{border-color:rgba(255,255,255,0.35);box-shadow:0 0 0 3px rgba(255,255,255,0.08);}
+.nxc-sidebar{width:220px;padding:16px 14px;gap:8px;}
+.nxc-profile-card{padding:16px 12px;}
+.nxc-side-item{padding:10px 10px;font-size:13px;opacity:0.96;}
+.nxc-side-item svg{flex-shrink:0;opacity:0.95;}
+.nxc-mini-icons{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;}
+.nxc-mini-pill{padding:7px 10px;border:1px solid var(--nx-border);border-radius:999px;font-size:12px;color:var(--nx-muted);background:rgba(255,255,255,0.03);}
+.nxc-dashboard-stack{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-top:22px;}
+.nxc-dashboard-card{width:min(240px,100%);padding:16px;border:1px solid var(--nx-border);border-radius:16px;background:rgba(255,255,255,0.03);}
+.nxc-dashboard-card h4{font-size:14px;margin-bottom:8px;}
+.nxc-dashboard-card p{font-size:12px;color:var(--nx-muted);line-height:1.6;}
+.nxc-side-item.active{background:rgba(255,255,255,0.08);}
+
+
+.nxc-sidebar{width:86px;padding:14px 10px;gap:8px;align-items:center;}
+.nxc-profile-card{padding:14px 8px;width:100%;}
+.nxc-profile-card .nxc-avatar-xl{width:52px;height:52px;font-size:20px;}
+.nxc-sidebar-section{display:none;}
+.nxc-side-item{width:100%;justify-content:center;padding:10px 0;}
+.nxc-side-item svg{width:18px;height:18px;}
+.nxc-mini-icons{display:none;}
+.nxc-home-layout{display:flex;}
+.nxc-home-main{padding:18px;}
+.nxc-hero-card{max-width:900px;}
+
+
+.nxc-side-item{position:relative;}
+.nxc-side-item::after{content:attr(title);position:absolute;left:100%;top:50%;transform:translate(10px,-50%);white-space:nowrap;
+  background:rgba(0,0,0,0.9);color:#fff;border:1px solid var(--nx-border);padding:6px 8px;border-radius:8px;font-size:11px;
+  opacity:0;pointer-events:none;transition:opacity var(--nx-t),transform var(--nx-t);}
+.nxc-side-item:hover::after{opacity:1;transform:translate(6px,-50%);}
+.nxc-side-item:hover{transform:scale(1.03)!important;}
+
 </style>
 </head>
 <body>
+
+<script>
+window.onerror = function(msg, src, line, col, err) {
+  document.getElementById('boot-fallback') && (document.getElementById('boot-fallback').remove());
+  var d = document.createElement('div');
+  d.style.cssText = 'position:fixed;inset:0;z-index:99999;background:#0e0e12;color:#fff;font-family:monospace;padding:30px;overflow:auto;';
+  d.innerHTML = '<div style="color:#f87171;font-size:18px;margin-bottom:16px">⚠️ NexChat App Error</div>' +
+    '<div style="background:#1a0010;border:1px solid #f87171;border-radius:8px;padding:16px;font-size:13px;line-height:1.7">' +
+    '<div><b>Error:</b> ' + msg + '</div>' +
+    '<div><b>File:</b> ' + src + '</div>' +
+    '<div><b>Line:</b> ' + line + ' &nbsp; <b>Col:</b> ' + col + '</div>' +
+    (err && err.stack ? '<div style="margin-top:10px;color:#aaa;white-space:pre-wrap">' + err.stack + '</div>' : '') +
+    '</div>' +
+    '<div style="margin-top:16px;color:#6b6b88;font-size:12px">Copy this error and send it to fix the issue.</div>';
+  document.body.appendChild(d);
+  return true;
+};
+</script>
+
 <div id="root" style="position:relative;z-index:1;"><div id="boot-fallback" style="display:flex;align-items:center;justify-content:center;min-height:100vh;color:#fff;font-family:sans-serif;position:relative;z-index:1">Loading NexChat...</div></div>
 <script type="text/babel">
 
@@ -2244,7 +2320,7 @@ const kickUser = async (targetUser) => {
           addDebugLog(`Leave room error: ${err.message}`, 'error');
         }
         setCurrentRoom(null);
-        setCurrentView('lobby');
+        setCurrentView('home');
         setMessages([]);
       };
 
@@ -2277,7 +2353,7 @@ const kickUser = async (targetUser) => {
           if (!snap.val()) { setError('Account not found'); return; }
           if (snap.val().password !== loginPass.trim()) { setError('Wrong password'); return; }
           setUsername(loginUser.trim());
-          setCurrentView('lobby');
+          setCurrentView('home');
           setError('');
           db.ref('presence/' + loginUser.trim()).set({ online: true, lastSeen: Date.now() });
           db.ref('presence/' + loginUser.trim()).onDisconnect().set({ online: false, lastSeen: Date.now() });
@@ -2293,7 +2369,7 @@ const kickUser = async (targetUser) => {
           if (snap.val()) { setError('Username taken'); return; }
           await db.ref('accounts/' + regUser.trim()).set({ username: regUser.trim(), password: regPass.trim(), createdAt: Date.now() });
           setUsername(regUser.trim());
-          setCurrentView('lobby');
+          setCurrentView('home');
           setError('');
           db.ref('presence/' + regUser.trim()).set({ online: true, lastSeen: Date.now() });
           db.ref('presence/' + regUser.trim()).onDisconnect().set({ online: false, lastSeen: Date.now() });
@@ -2421,6 +2497,68 @@ const formatTime = (timestamp) => {
         );
       }
 
+
+
+      if (currentView === 'home') {
+        return (
+          <div className="nxc-shell">
+            <div className="nxc-topbar">
+              <div className="nxc-topbar-logo">
+                <div className="nxc-nav-dot" />
+                NexChat
+              </div>
+              <div style={{display:'flex',alignItems:'center',gap:'10px'}}>
+                <div className="nxc-mini-pill">Conversations</div>
+                <div className="nxc-mini-pill">Calls</div>
+                <div className="nxc-mini-pill">Friends</div>
+                <div className="nxc-avatar" onClick={()=>setShowProfileModal(true)} title={username}>{username.charAt(0).toUpperCase()}</div>
+              </div>
+            </div>
+            <div className="nxc-home-layout">
+              <aside className="nxc-sidebar">
+                <div className="nxc-profile-card">
+                  <div className="nxc-avatar nxc-avatar-xl">{username.charAt(0).toUpperCase()}</div>
+                  <div style={{marginTop:'12px',fontWeight:'700',fontSize:'15px'}}>{username}</div>
+                  <div style={{fontSize:'12px',color:'var(--nx-muted)',marginTop:'4px'}}>Online</div>
+                </div>
+                <div className="nxc-sidebar-section">Menu</div>
+                <button className="nxc-side-item active" title="Home" onClick={()=>setCurrentView('home')}><IconChat /></button>
+                <button className="nxc-side-item" title="Chatrooms" onClick={()=>setCurrentView('lobby')}><IconChat /></button>
+                <button className="nxc-side-item" title="AI" onClick={()=>setShowDebug(!showDebug)}><IconAI /></button>
+                <button className="nxc-side-item" title="Games" onClick={()=>setShowGamesMenu(!showGamesMenu)}><IconGamepad /></button>
+                <button className="nxc-side-item" title="Calling" onClick={()=>setCurrentView('room')}><IconVideo /></button>
+                <button className="nxc-side-item" title="Friends" onClick={()=>setShowFriendsModal(true)}><IconUsers /></button>
+                <button className="nxc-side-item" title="Create Room" onClick={()=>setCurrentView('create')}><IconChat /></button>
+                <div className="nxc-mini-icons">
+                  <div className="nxc-mini-pill">Hub</div>
+                  <div className="nxc-mini-pill">Rooms</div>
+                  <div className="nxc-mini-pill">AI</div>
+                  <div className="nxc-mini-pill">Call</div>
+                </div>
+                <div style={{marginTop:'auto'}}>
+                  <button className="nxc-btn-g" style={{width:'100%'}} onClick={()=>setCurrentView('start')}>Sign Out</button>
+                </div>
+              </aside>
+              <main className="nxc-home-main">
+                <div className="nxc-hero-card">
+                  <div className="nxc-logo-icon" style={{width:'96px',height:'96px',marginBottom:'18px'}}>
+                    <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                  </div>
+                  <h1 className="nxc-brand" style={{fontSize:'46px',marginBottom:'10px'}}>NexChat</h1>
+                  <p style={{color:'var(--nx-muted)',fontSize:'15px',maxWidth:'620px',textAlign:'center',lineHeight:'1.7'}}>Black, white, and constellation-lit — your dashboard for chats, rooms, calls, and friends.</p>
+                  <input className="nxc-commandbar" placeholder="Search or jump to a room..." />
+                  <div className="nxc-dashboard-stack">
+                    <div className="nxc-dashboard-card"><h4>Chatrooms</h4><p>Jump into rooms and keep the conversation moving with a polished layout.</p></div>
+                    <div className="nxc-dashboard-card"><h4>Calling</h4><p>Use voice or video calls with the same clean dark theme and smooth motion.</p></div>
+                    <div className="nxc-dashboard-card"><h4>AI</h4><p>Open the built-in AI area to keep the hub feeling complete and useful.</p></div>
+                  </div>
+                </div>
+              </main>
+            </div>
+          </div>
+        );
+      }
+
       if (currentView === 'lobby') {
         const pendingCount = friendRequests.length;
         return (
@@ -2529,7 +2667,7 @@ const formatTime = (timestamp) => {
                 ))}
               </div>
             </div>
-            {!showDebug&&<button className="nxc-btn-icon" style={{position:'fixed',bottom:'18px',right:'18px',zIndex:999}} onClick={()=>setShowDebug(true)}><IconBug /><//button>}
+            {!showDebug&&<button className="nxc-btn-icon" style={{position:'fixed',bottom:'18px',right:'18px',zIndex:999}} onClick={()=>setShowDebug(true)}><IconBug /></button>}
             {showDebug&&<DebugConsole logs={logs} onClose={()=>setShowDebug(false)} />}
           </div>
         );
@@ -2550,13 +2688,13 @@ if (currentView === 'room') {
                   </button>
                   <div>
                     <div style={{fontWeight:'700',fontSize:'15px',letterSpacing:'-0.01em'}}>{currentRoomData?.name||'Room'}</div>
-                    <div style={{fontSize:'11px',color:'var(--nx-muted)'}}>{roomUsers.length} online{isOwner?' · <IconCrown />':''}</div>
+                    <div style={{fontSize:'11px',color:'var(--nx-muted)'}}>{roomUsers.length} online{isOwner?' · 👑':''}</div>
                   </div>
                 </div>
                 <div style={{display:'flex',alignItems:'center',gap:'8px'}}>
                   {!inCall&&<button className="nxc-btn-success nxc-btn-sm" onClick={startGroupCall}><IconVideo /><span>Call</span></button>}
                   {isOwner&&<button className="nxc-btn-danger nxc-btn-sm" onClick={clearAllMessages}>Clear</button>}
-                  <button className="nxc-btn-icon" onClick={()=>setShowGamesMenu(!showGamesMenu)} title="Games"><IconGamepad /><//button>
+                  <button className="nxc-btn-icon" onClick={()=>setShowGamesMenu(!showGamesMenu)} title="Games"><IconGamepad /></button>
                   <div className="nxc-avatar">{username.charAt(0).toUpperCase()}</div>
                 </div>
               </div>
@@ -2620,7 +2758,7 @@ if (currentView === 'room') {
                   {gameInvite && (
                     <div className="glow-border" style={{ background: '#0a0a0a', padding: '20px', marginBottom: '20px', borderRadius: '15px', border: '2px solid #4a9eff', animation: 'glow 2s ease-in-out infinite' }}>
                       <div style={{ textAlign: 'center' }}>
-                        <div style={{ fontSize: '24px', marginBottom: '10px' }}><IconGamepad /><//div>
+                        <div style={{ fontSize: '24px', marginBottom: '10px' }}><IconGamepad /></div>
                         <div style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '10px' }}>
                           {gameInvite.sender} wants to play {gameInvite.gameType === 'gartic' ? 'Gartic Phone' : 'Uno'}!
                         </div>
@@ -2905,7 +3043,7 @@ if (currentView === 'room') {
                     {isMuted ? '🔇' : '🎤'}
                   </button>
                   <button onClick={toggleVideo} className={`call-btn video-toggle ${isVideoOff ? 'active' : ''}`} title={isVideoOff ? 'Turn on camera' : 'Turn off camera'}>
-                    {isVideoOff ? '<IconVideo />' : '<IconCamera />'}
+                    {isVideoOff ? '📷 Off' : '🎥 On'}
                   </button>
                   <button onClick={endGroupCall} className="call-btn end" title="Leave call">
                     ☎️
@@ -3062,7 +3200,7 @@ if (currentView === 'room') {
                       className={`call-btn video-toggle ${isVideoOff ? 'active' : ''}`}
                       title={isVideoOff ? 'Turn on camera' : 'Turn off camera'}
                     >
-                      {isVideoOff ? '<IconVideo />' : '<IconCamera />'}
+                      {isVideoOff ? '📷 Off' : '🎥 On'}
                     </button>
                     <button 
                       onClick={endCall} 
@@ -3289,7 +3427,7 @@ ReactDOM.render(<ChatroomApp />, document.getElementById('root'));
   let W = canvas.width = window.innerWidth;
   let H = canvas.height = window.innerHeight;
   let mouse = {x: W/2, y: H/2};
-  const PARTICLE_COUNT = 90;
+  const PARTICLE_COUNT = 120;
   const CONNECTION_DIST = 140;
   const MOUSE_DIST = 160;
   const particles = [];
@@ -3324,7 +3462,7 @@ ReactDOM.render(<ChatroomApp />, document.getElementById('root'));
     draw(){
       ctx.beginPath();
       ctx.arc(this.x,this.y,this.r,0,Math.PI*2);
-      ctx.fillStyle='rgba(255,255,255,'+this.opacity+')';
+      ctx.fillStyle='rgba(255,255,255,'+Math.min(this.opacity*1.2,0.8)+')';
       ctx.fill();
     }
   }
@@ -3351,7 +3489,7 @@ ReactDOM.render(<ChatroomApp />, document.getElementById('root'));
           ctx.beginPath();
           ctx.moveTo(particles[i].x,particles[i].y);
           ctx.lineTo(particles[j].x,particles[j].y);
-          ctx.strokeStyle='rgba(255,255,255,'+alpha+')';
+          ctx.strokeStyle='rgba(255,255,255,'+Math.min(alpha*1.4,0.35)+')';
           ctx.lineWidth=0.7;
           ctx.stroke();
         }
@@ -3363,7 +3501,7 @@ ReactDOM.render(<ChatroomApp />, document.getElementById('root'));
         ctx.beginPath();
         ctx.moveTo(particles[i].x,particles[i].y);
         ctx.lineTo(mouse.x,mouse.y);
-        ctx.strokeStyle='rgba(255,255,255,'+alpha+')';
+        ctx.strokeStyle='rgba(255,255,255,'+Math.min(alpha*1.4,0.35)+')';
         ctx.lineWidth=0.9;
         ctx.stroke();
       }
