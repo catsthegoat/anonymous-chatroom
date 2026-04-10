@@ -626,6 +626,9 @@ button:active{transform:scale(0.95)!important;}
 .nxc-chat-input:focus{border-color:var(--nx-accent) !important;}
 .nxc-chat-msgs{padding:12px 0 !important;}
 
+
+.nxc-mesh{display:none;}
+
 </style>
 
 <script>
@@ -846,7 +849,7 @@ console.log('1. HTML loaded');
     function ChatroomApp() {
 
       React.
-      React.useEffect(() => {
+      
         console.log('✅ ChatroomApp mounted, Firebase:', !!db);
       }, []);
 
@@ -871,7 +874,7 @@ rrentRoom] = useState(null);
       const [showEmojiPicker, setShowEmojiPicker] = useState(null);
       const [logs, setLogs] = useState([]);
       const [showDebug, setShowDebug] = useState(false);
-      const [accountTab, setAccountTab] = React.useState('login');
+      ('login');
       const [loginUser, setLoginUser] = React.useState('');
       const [loginPass, setLoginPass] = React.useState('');
       const [regUser, setRegUser] = React.useState('');
@@ -2393,7 +2396,7 @@ const kickUser = async (targetUser) => {
       };
 
       
-      const loginAccount = async () => {
+      
         if (!loginUser.trim() || !loginPass.trim()) { setError('Fill in all fields'); return; }
         try {
           const snap = await db.ref('accounts/' + loginUser.trim()).once('value');
@@ -2407,7 +2410,7 @@ const kickUser = async (targetUser) => {
         } catch(e) { setError('Login error'); }
       };
 
-      const registerAccount = async () => {
+      
         if (!regUser.trim() || !regPass.trim()) { setError('Fill in all fields'); return; }
         if (regUser.trim().length < 3) { setError('Username must be 3+ chars'); return; }
         if (regPass.trim().length < 4) { setError('Password must be 4+ chars'); return; }
@@ -2456,7 +2459,7 @@ const kickUser = async (targetUser) => {
       };
 
 
-      React.useEffect(() => {
+      
         if (!username || !db) return;
         const frRef = db.ref('friends/' + username);
         frRef.on('value', snap => { const d = snap.val() || {}; setFriends(Object.keys(d)); });
@@ -2481,44 +2484,21 @@ const formatTime = (timestamp) => {
 
       
 
+      
       if (currentView === 'start') {
         return (
-          <div className="nxc-page-center">
-            <div className="nxc-mesh" />
-            <div style={{textAlign:'center',marginBottom:'32px',position:'relative',zIndex:1}}>
-              <div className="nxc-logo-icon">
-                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-              </div>
-              <h1 className="nxc-brand">NexChat</h1>
-              <p style={{color:'var(--nx-muted)',fontSize:'14px',marginTop:'4px'}}>Real-time chat, calls & more</p>
-            </div>
-            <div className="nxc-card nxc-fade-in" style={{width:'100%',maxWidth:'380px',position:'relative',zIndex:1}}>
-              <div className="nxc-tabs">
-                <div className={'nxc-tab'+(accountTab==='login'?' active':'')} onClick={()=>{setAccountTab('login');setError('');}}>Sign In</div>
-                <div className={'nxc-tab'+(accountTab==='register'?' active':'')} onClick={()=>{setAccountTab('register');setError('');}}>Create Account</div>
-              </div>
-              {accountTab === 'login' ? (
-                <div style={{display:'flex',flexDirection:'column',gap:'10px',padding:'24px'}}>
-                  <input className="nxc-inp" type="text" value={loginUser} onChange={e=>setLoginUser(e.target.value)} placeholder="Username" autoFocus onKeyDown={e=>e.key==='Enter'&&loginAccount()} />
-                  <input className="nxc-inp" type="password" value={loginPass} onChange={e=>setLoginPass(e.target.value)} placeholder="Password" onKeyDown={e=>e.key==='Enter'&&loginAccount()} />
-                  <button className="nxc-btn-p" style={{width:'100%',marginTop:'6px'}} onClick={loginAccount}>Sign In →</button>
-                  <p style={{textAlign:'center',fontSize:'12px',color:'var(--nx-muted)'}}>No account? <span style={{color:'var(--nx-accent)',cursor:'pointer'}} onClick={()=>setAccountTab('register')}>Create one</span></p>
-                </div>
-              ) : (
-                <div style={{display:'flex',flexDirection:'column',gap:'10px',padding:'24px'}}>
-                  <input className="nxc-inp" type="text" value={regUser} onChange={e=>setRegUser(e.target.value)} placeholder="Choose username" autoFocus onKeyDown={e=>e.key==='Enter'&&registerAccount()} />
-                  <input className="nxc-inp" type="password" value={regPass} onChange={e=>setRegPass(e.target.value)} placeholder="Choose password" onKeyDown={e=>e.key==='Enter'&&registerAccount()} />
-                  <button className="nxc-btn-p" style={{width:'100%',marginTop:'6px'}} onClick={registerAccount}>Create Account →</button>
-                  <p style={{textAlign:'center',fontSize:'12px',color:'var(--nx-muted)'}}>Have an account? <span style={{color:'var(--nx-accent)',cursor:'pointer'}} onClick={()=>setAccountTab('login')}>Sign in</span></p>
-                </div>
-              )}
-              {error && <div className="nxc-error" style={{margin:'0 24px 20px'}}>{error}</div>}
+          <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',padding:'20px',background:'transparent'}}>
+            <div style={{background:'rgba(0,0,0,0.7)',padding:'40px 32px',borderRadius:'20px',border:'1px solid rgba(255,255,255,0.1)',maxWidth:'380px',width:'100%'}}>
+              <h1 style={{textAlign:'center',fontSize:'28px',marginBottom:'8px'}}>NexChat</h1>
+              <input style={{width:'100%',padding:'12px',marginBottom:'12px',background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.1)',borderRadius:'8px',color:'white'}} placeholder="Username" value={tempUsername} onChange={e=>setTempUsername(e.target.value)} onKeyDown={e=>e.key==='Enter'&&tempUsername.trim()&&(setUsername(tempUsername.trim()),setCurrentView('lobby'))}/>
+              <button style={{width:'100%',padding:'12px',background:'white',color:'black',border:'none',borderRadius:'8px',fontWeight:'600',cursor:'pointer',marginBottom:'8px'}} onClick={tempUsername.trim()?(setUsername(tempUsername.trim()),setCurrentView('lobby')):setError('Enter username')}>Join</button>
+              <button style={{width:'100%',padding:'12px',background:'rgba(255,255,255,0.1)',color:'white',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',fontWeight:'500',cursor:'pointer'}} onClick={tempUsername.trim()?(setUsername(tempUsername.trim()),setCurrentView('create')):setError('Enter username')}>Create Room</button>
+              {error && <div style={{marginTop:'12px',padding:'8px',background:'rgba(248,113,113,0.2)',borderRadius:'6px',color:'rgb(248,113,113)',fontSize:'13px'}}>{error}</div>}
             </div>
           </div>
         );
       }
-
-      if (currentView === 'create') {
+if (currentView === 'create') {
         return (
           <div className="nxc-page-center">
             <div className="nxc-mesh" />
@@ -2568,20 +2548,7 @@ const formatTime = (timestamp) => {
                   <div style={{marginTop:'12px',fontWeight:'700',fontSize:'15px'}}>{username}</div>
                   <div style={{fontSize:'12px',color:'var(--nx-muted)',marginTop:'4px'}}>Online</div>
                 </div>
-                <div className="nxc-sidebar-section">Menu</div>
-                <button className="nxc-side-item active" title="Home" onClick={()=>setCurrentView('home')}><IconChat /></button>
-                <button className="nxc-side-item" title="Chatrooms" onClick={()=>setCurrentView('lobby')}><IconChat /></button>
-                <button className="nxc-side-item" title="AI" onClick={()=>setShowDebug(!showDebug)}><IconAI /></button>
-                <button className="nxc-side-item" title="Games" onClick={()=>setShowGamesMenu(!showGamesMenu)}><IconGamepad /></button>
-                <button className="nxc-side-item" title="Calling" onClick={()=>setCurrentView('room')}><IconVideo /></button>
-                <button className="nxc-side-item" title="Friends" onClick={()=>setShowFriendsModal(true)}><IconUsers /></button>
-                <button className="nxc-side-item" title="Create Room" onClick={()=>setCurrentView('create')}><IconChat /></button>
-                <div className="nxc-mini-icons">
-                  <div className="nxc-mini-pill">Hub</div>
-                  <div className="nxc-mini-pill">Rooms</div>
-                  <div className="nxc-mini-pill">AI</div>
-                  <div className="nxc-mini-pill">Call</div>
-                </div>
+
                 <div style={{marginTop:'auto'}}>
                   <button className="nxc-btn-g" style={{width:'100%'}} onClick={()=>setCurrentView('start')}>Sign Out</button>
                 </div>
