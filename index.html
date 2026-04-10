@@ -548,7 +548,7 @@ button:active{transform:scale(0.95)!important;}
 </style>
 </head>
 <body>
-<div id="root" style="position:relative;z-index:1;"></div>
+<div id="root" style="position:relative;z-index:1;"><div id="boot-fallback" style="display:flex;align-items:center;justify-content:center;min-height:100vh;color:#fff;font-family:sans-serif;position:relative;z-index:1">Loading NexChat...</div></div>
 <script type="text/babel">
 
     const { useState, useEffect, useRef } = React;
@@ -727,6 +727,11 @@ button:active{transform:scale(0.95)!important;}
     );
 
     function ChatroomApp() {
+
+      React.useEffect(() => {
+        const fb = document.getElementById('boot-fallback');
+        if (fb) fb.remove();
+      }, []);
       const [username, setUsername] = useState('');
       const [tempUsername, setTempUsername] = useState('');
       const [currentView, setCurrentView] = useState('start');
@@ -3278,7 +3283,7 @@ ReactDOM.render(<ChatroomApp />, document.getElementById('root'));
 <script>
 (function(){
   const canvas = document.createElement('canvas');
-  canvas.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;';
+  canvas.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;pointer-events:none;' ;
   document.body.prepend(canvas);
   const ctx = canvas.getContext('2d');
   let W = canvas.width = window.innerWidth;
@@ -3367,6 +3372,21 @@ ReactDOM.render(<ChatroomApp />, document.getElementById('root'));
   }
   draw();
 })();
+</script>
+
+
+<div id="js-error" style="display:none;position:fixed;inset:0;z-index:9999;background:#0e0e12;color:#fff;align-items:center;justify-content:center;flex-direction:column;font-family:sans-serif;text-align:center;padding:24px">
+  <div style="font-size:42px;margin-bottom:12px">NexChat</div>
+  <div style="color:#f87171;font-size:16px;max-width:520px">The app didn't finish loading. The file has been patched, but one of the scripts may still be breaking the React render.</div>
+</div>
+<script>
+setTimeout(function(){
+  var root = document.getElementById('root');
+  if (root && !root.innerText.trim()) {
+    var err = document.getElementById('js-error');
+    if (err) err.style.display = 'flex';
+  }
+}, 2500);
 </script>
 
 </body>
