@@ -627,6 +627,20 @@ button:active{transform:scale(0.95)!important;}
 .nxc-chat-msgs{padding:12px 0 !important;}
 
 </style>
+
+<script>
+console.clear();
+console.log('%cNexChat Debug Mode', 'font-size:20px;color:#6c8cff;font-weight:bold');
+console.log('1. HTML loaded');
+setTimeout(() => {
+  console.log('2. React scripts loaded:', typeof React !== 'undefined', typeof ReactDOM !== 'undefined');
+}, 100);
+setTimeout(() => {
+  console.log('3. Babel transformed');
+  console.log('Root:', document.getElementById('root'));
+}, 500);
+</script>
+
 </head>
 <body>
 
@@ -838,7 +852,11 @@ button:active{transform:scale(0.95)!important;}
       const [username, setUsername] = useState('');
       const [tempUsername, setTempUsername] = useState('');
       const [currentView, setCurrentView] = useState('start');
-      const [currentRoom, setCurrentRoom] = useState(null);
+      const [currentRoom, setCu
+      console.log('✅ ChatroomApp mounted');
+      console.log('Firebase:', !!db);
+      console.log('State init complete');
+rrentRoom] = useState(null);
       const [rooms, setRooms] = useState([]);
       const [messages, setMessages] = useState([]);
       const [message, setMessage] = useState('');
@@ -913,7 +931,16 @@ button:active{transform:scale(0.95)!important;}
         const interval = setInterval(() => {
           setLogs([...debugLogs]);
         }, 1000);
-        return () => clearInterval(interval);
+        
+      if (!db) {
+        return <div style={{display:'flex',alignItems:'center',justify-content:'center',minHeight:'100vh',color:'white',fontFamily:'sans-serif'}}>
+          <div style={{textAlign:'center'}}>
+            <h1>Firebase Error</h1>
+            <p>Database not connected. Check console.</p>
+          </div>
+        </div>;
+      }
+return () => clearInterval(interval);
       }, []);
 
       useEffect(() => {
