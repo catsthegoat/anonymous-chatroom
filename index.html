@@ -667,6 +667,63 @@ button:active{transform:scale(0.95)!important;}
   transform: none !important;
 }
 
+
+.call-controls {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 16px !important;
+  padding: 20px 24px !important;
+  flex-shrink: 0 !important;
+  background: rgba(0,0,0,0.6) !important;
+  backdrop-filter: blur(12px) !important;
+}
+.call-btn {
+  width: 54px !important;
+  height: 54px !important;
+  border-radius: 50% !important;
+  border: none !important;
+  background: rgba(255,255,255,0.12) !important;
+  color: #fff !important;
+  font-size: 22px !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: background 0.2s, transform 0.15s !important;
+  flex-shrink: 0 !important;
+}
+.call-btn:hover {
+  background: rgba(255,255,255,0.22) !important;
+  transform: scale(1.08) !important;
+}
+.call-btn.end {
+  background: #e53935 !important;
+  width: 60px !important;
+  height: 60px !important;
+}
+.call-btn.end:hover {
+  background: #ff5252 !important;
+}
+.call-btn.active {
+  background: rgba(255,255,255,0.25) !important;
+}
+.incoming-call {
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  background: #0e0e12 !important;
+  border: 1px solid rgba(255,255,255,0.15) !important;
+  border-radius: 24px !important;
+  padding: 40px !important;
+  text-align: center !important;
+  min-width: 300px !important;
+  backdrop-filter: blur(20px) !important;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6) !important;
+  animation: none !important;
+}
+
 </style>
 </head>
 <body>
@@ -2860,7 +2917,7 @@ if (currentView === 'room') {
 
               {}
               {groupCallActive && !inCall && (
-                <div style={{ background: 'linear-gradient(90deg, #003322, #004433)', padding: '10px 20px', borderBottom: '1px solid #00ff88', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ background: 'linear-gradient(90deg, #003322, #004433)', padding: '10px 20px', borderBottom: '1px solid #00ff88', display: 'flex', alignItems: 'center', flexShrink: 0, justifyContent: 'space-between' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#00ff88', fontSize: '14px', fontWeight: 'bold' }}>
                     <span style={{ animation: 'glow 1s ease-in-out infinite' }}><IconLive /></span>
                     Group call in progress
@@ -3130,11 +3187,11 @@ if (currentView === 'room') {
 
             {}
             {isGroupCall && inCall && (
-              <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: '#111', zIndex: 10000, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+              <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: '#0a0a0a', zIndex: 10000, display: 'flex', flexDirection: 'column', overflow: 'hidden', height: '100dvh', maxHeight: '100dvh' }}>
 
                 {}
                 {groupCallParticipants.length === 0 ? (
-                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '20px', minHeight: 0 }}>
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '20px', minHeight: 0, overflow: 'hidden' }}>
                     {}
                     <div style={{ position: 'relative', width: '260px', height: '200px', borderRadius: '16px', overflow: 'hidden', border: '2px solid #333', background: '#000', flexShrink: 0 }}>
                       <video ref={localVideoRef} autoPlay playsInline muted
@@ -3152,18 +3209,20 @@ if (currentView === 'room') {
                   
                   <div style={{
                     flex: 1,
+                    minHeight: 0,
+                    overflow: 'hidden',
                     display: 'grid',
                     gridTemplateColumns: groupCallParticipants.length === 1 ? '1fr 1fr' :
                                          groupCallParticipants.length <= 3 ? 'repeat(2, 1fr)' :
                                          'repeat(3, 1fr)',
-                    gridAutoRows: groupCallParticipants.length <= 1 ? '1fr' : 'auto',
+                    gridAutoRows: '1fr',
                     gap: '4px',
                     padding: '8px',
                     minHeight: 0,
                     overflow: 'hidden'
                   }}>
                     {}
-                    <div style={{ position: 'relative', background: '#000', borderRadius: '12px', overflow: 'hidden', minHeight: '160px' }}>
+                    <div style={{ position: 'relative', background: '#000', borderRadius: '12px', overflow: 'hidden', minHeight: 0, height: '100%', willChange: 'transform' }}>
                       <video ref={localVideoRef} autoPlay playsInline muted
                         style={{ width: '100%', height: '100%', objectFit: 'cover', display: isVideoOff ? 'none' : 'block', position: 'absolute', inset: 0 }} />
                       {isVideoOff && <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '36px' }}><IconVideo /></div>}
@@ -3172,7 +3231,7 @@ if (currentView === 'room') {
 
                     {}
                     {groupCallParticipants.map(participant => (
-                      <div key={participant} style={{ position: 'relative', background: '#000', borderRadius: '12px', overflow: 'hidden', minHeight: '160px' }}>
+                      <div key={participant} style={{ position: 'relative', background: '#000', borderRadius: '12px', overflow: 'hidden', minHeight: 0, height: '100%', willChange: 'transform' }}>
                         <video
                           ref={el => {
                             
