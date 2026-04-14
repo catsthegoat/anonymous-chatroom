@@ -923,6 +923,9 @@ const PIONEER_GAMES = [{"label": "1v1.LOL", "url": "https://catsthegoat.github.i
       const IconVideo = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>;
       const IconGamepad = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="6" y1="12" x2="10" y2="12"/><line x1="8" y1="10" x2="8" y2="14"/><line x1="15" y1="13" x2="15.01" y2="13"/><line x1="18" y1="11" x2="18.01" y2="11"/><rect x="2" y="6" width="20" height="12" rx="2"/></svg>;
       const IconBug = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="8" y="6" width="8" height="14" rx="4"/><path d="M6 12h4m8 0h4M8 6V4a2 2 0 0 1 4 0v2m4 0V4a2 2 0 0 1 4 0v2M8 18v2a2 2 0 0 0 4 0v-2m4 0v2a2 2 0 0 0 4 0v-2"/></svg>;
+      const IconHome = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>;
+      const IconRooms = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>;
+      const IconCreateRoom = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="12" y1="8" x2="12" y2="14"/><line x1="9" y1="11" x2="15" y2="11"/></svg>;
       const IconChat = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>;
       const IconLock = () => <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>;
       const IconCrown = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 20h20M4 20l2-8 6 4 6-4 2 8"/></svg>;
@@ -2773,12 +2776,14 @@ const formatTime = (timestamp) => {
                   <div style={{fontSize:'12px',color:'var(--nx-muted)',marginTop:'4px'}}>Online</div>
                 </div>
                 <div className="nxc-sidebar-section">Menu</div>
-                <button className="nxc-side-item active" title="Home" onClick={()=>setCurrentView('home')}><IconChat /></button>
-                <button className="nxc-side-item" title="Chatrooms" onClick={()=>setCurrentView('lobby')}><IconChat /></button>
+                <button className="nxc-side-item active" title="Home" onClick={()=>setCurrentView('home')}><IconHome /></button>
                 <button className="nxc-side-item" title="AI" onClick={()=>setShowDebug(!showDebug)}><IconAI /></button>
-                
                 <button className="nxc-side-item" title="Games" onClick={()=>setShowGamesMenu(!showGamesMenu)}><IconGamepad /></button>
                 <button className="nxc-side-item" title="Calling" onClick={()=>setCurrentView('room')}><IconVideo /></button>
+                <div style={{width:'100%',height:'1px',background:'rgba(255,255,255,0.08)',margin:'4px 0'}}></div>
+                <button className="nxc-side-item" title="Chatrooms" onClick={()=>setCurrentView('lobby')}><IconRooms /></button>
+                <button className="nxc-side-item" title="Create Room" onClick={()=>setCurrentView('create')}><IconCreateRoom /></button>
+                <button className="nxc-side-item" title="Friends" onClick={()=>setShowFriendsModal(true)}><IconUsers /></button>
                 <button className="nxc-side-item" title="Friends" onClick={()=>setShowFriendsModal(true)}><IconUsers /></button>
                 <button className="nxc-side-item" title="Create Room" onClick={()=>setCurrentView('create')}><IconChat /></button>
                 <div className="nxc-mini-icons">
@@ -2837,6 +2842,63 @@ const formatTime = (timestamp) => {
                   </div>
                 </div>
               )}
+              {showGamesMenu && (
+                    <div className="games-overlay" style={{ position:'fixed',top:0,left:0,right:0,bottom:0,background:'rgba(0,0,0,0.93)',zIndex:2000,display:'flex',flexDirection:'column',backdropFilter:'blur(16px)' }}>
+                      {activeGame && (
+                        <div className="game-iframe-overlay" style={{ position:'fixed',top:0,left:0,right:0,bottom:0,zIndex:3000,background:'#000',display:'flex',flexDirection:'column' }}>
+                          <div style={{ display:'flex',alignItems:'center',justifyContent:'space-between',padding:'10px 16px',background:'rgba(0,0,0,0.85)',flexShrink:0,borderBottom:'1px solid rgba(255,255,255,0.1)' }}>
+                            <div style={{ display:'flex',alignItems:'center',gap:'10px' }}>
+                              <img src={activeGame.image} onError={e=>e.target.style.display='none'} style={{ width:'28px',height:'28px',borderRadius:'6px',objectFit:'cover' }} />
+                              <span style={{ fontWeight:700,fontSize:'15px',color:'#fff' }}>{activeGame.label}</span>
+                            </div>
+                            <button onClick={() => setActiveGame(null)} style={{ background:'rgba(255,255,255,0.1)',border:'1px solid rgba(255,255,255,0.2)',color:'#fff',borderRadius:'8px',padding:'6px 14px',cursor:'pointer',fontSize:'13px' }}>✕ Close</button>
+                          </div>
+                          <iframe src={activeGame.url} style={{ flex:1,border:'none',width:'100%',height:'100%' }} allowFullScreen sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-pointer-lock" />
+                        </div>
+                      )}
+                      <div className="games-header" style={{ display:'flex',alignItems:'center',justifyContent:'space-between',padding:'16px 24px',borderBottom:'1px solid rgba(255,255,255,0.08)',flexShrink:0 }}>
+                        <span style={{ fontWeight:800,fontSize:'20px',color:'#fff',display:'flex',alignItems:'center',gap:'8px' }}>🎮 Games <span style={{ fontSize:'13px',fontWeight:400,color:'#666' }}>{PIONEER_GAMES.length} games</span></span>
+                        <button onClick={() => { setShowGamesMenu(false); setActiveGame(null); setGameSearch(''); setGameCategory('all'); }} style={{ background:'rgba(255,255,255,0.08)',border:'1px solid rgba(255,255,255,0.15)',color:'#fff',borderRadius:'8px',padding:'6px 14px',cursor:'pointer',fontSize:'13px' }}>✕ Close</button>
+                      </div>
+                      <div className="games-filters" style={{ padding:'12px 24px',display:'flex',gap:'8px',flexWrap:'wrap',flexShrink:0,borderBottom:'1px solid rgba(255,255,255,0.06)',alignItems:'center' }}>
+                        <input value={gameSearch} onChange={e => { setGameSearch(e.target.value); setGameLimit(40); }} placeholder="Search games..." className="games-search" style={{ flex:1,minWidth:'180px',padding:'9px 14px',background:'rgba(255,255,255,0.06)',border:'1px solid rgba(255,255,255,0.12)',borderRadius:'10px',color:'#fff',fontSize:'14px',outline:'none',transition:'border-color 0.2s, box-shadow 0.2s' }} />
+                        {['all','action','shooting','racing','skill','strategy','io','sports','2 player'].map(cat => (
+                          <button key={cat} onClick={() => { setGameCategory(cat); setGameLimit(40); }}
+                            className="games-cat-btn" style={{ padding:'6px 14px',borderRadius:'99px',border:'1px solid rgba(255,255,255,0.15)',background:gameCategory===cat?'#fff':'rgba(255,255,255,0.05)',color:gameCategory===cat?'#000':'#fff',fontSize:'12px',fontWeight:600,cursor:'pointer',textTransform:'capitalize',whiteSpace:'nowrap' }}>
+                            {cat==='all'?'All':cat}
+                          </button>
+                        ))}
+                      </div>
+                      <div className="games-grid" style={{ flex:1,overflowY:'auto',padding:'20px 24px',display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(155px,1fr))',gap:'14px',alignContent:'start' }}>
+                        {PIONEER_GAMES
+                          .filter(g => gameCategory==='all' || g.categories.includes(gameCategory))
+                          .filter(g => g.label.toLowerCase().includes(gameSearch.toLowerCase()))
+                          .slice(0, gameLimit)
+                          .map(game => (
+                            <div key={game.folder} onClick={() => setActiveGame(game)}
+                              className="game-card" style={{ background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'14px',overflow:'hidden',cursor:'pointer' }}
+                            >
+                              <div style={{ width:'100%',height:'100px',background:'rgba(255,255,255,0.03)',overflow:'hidden',position:'relative' }}>
+                                <img src={game.image} alt={game.label}
+                                  className="game-card-img" style={{ width:'100%',height:'100%',objectFit:'cover',display:'block' }}
+                                  onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }}
+                                />
+                                <div style={{ display:'none',position:'absolute',inset:0,alignItems:'center',justifyContent:'center',fontSize:'36px',background:'rgba(255,255,255,0.03)' }}>🎮</div>
+                              </div>
+                              <div style={{ padding:'10px 12px' }}>
+                                <div style={{ fontWeight:700,fontSize:'12px',marginBottom:'5px',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',color:'#fff' }}>{game.label}</div>
+                                <div style={{ display:'flex',gap:'3px',flexWrap:'wrap' }}>
+                                  {game.categories.map(cat => (
+                                    <span key={cat} style={{ fontSize:'9px',padding:'2px 6px',borderRadius:'99px',background:'rgba(255,255,255,0.07)',color:'#888' }}>{cat}</span>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          ))
+                        }
+                      </div>
+                    </div>
+                  )}
               </main>
             </div>
           </div>
@@ -2968,8 +3030,9 @@ if (currentView === 'room') {
             <div style={{height:'100dvh',display:'flex',flexDirection:'column',background:'transparent',position:'relative'}}>
               <div className="nxc-nav">
                 <div style={{display:'flex',alignItems:'center',gap:'10px'}}>
-                  <button className="nxc-btn-icon" onClick={leaveRoom} title="Leave">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                  <button onClick={leaveRoom} title="Back to Lobby" style={{display:'flex',alignItems:'center',gap:'6px',background:'rgba(255,255,255,0.07)',border:'1px solid rgba(255,255,255,0.15)',color:'#fff',borderRadius:'10px',padding:'7px 14px',cursor:'pointer',fontSize:'13px',fontWeight:600}}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                    Back
                   </button>
                   <div>
                     <div style={{fontWeight:'700',fontSize:'15px',letterSpacing:'-0.01em'}}>{currentRoomData?.name||'Room'}</div>
@@ -3069,63 +3132,7 @@ if (currentView === 'room') {
                     </div>
                   )}
 
-                  {showGamesMenu && (
-                    <div className="games-overlay" style={{ position:'fixed',top:0,left:0,right:0,bottom:0,background:'rgba(0,0,0,0.93)',zIndex:2000,display:'flex',flexDirection:'column',backdropFilter:'blur(16px)' }}>
-                      {activeGame && (
-                        <div className="game-iframe-overlay" style={{ position:'fixed',top:0,left:0,right:0,bottom:0,zIndex:3000,background:'#000',display:'flex',flexDirection:'column' }}>
-                          <div style={{ display:'flex',alignItems:'center',justifyContent:'space-between',padding:'10px 16px',background:'rgba(0,0,0,0.85)',flexShrink:0,borderBottom:'1px solid rgba(255,255,255,0.1)' }}>
-                            <div style={{ display:'flex',alignItems:'center',gap:'10px' }}>
-                              <img src={activeGame.image} onError={e=>e.target.style.display='none'} style={{ width:'28px',height:'28px',borderRadius:'6px',objectFit:'cover' }} />
-                              <span style={{ fontWeight:700,fontSize:'15px',color:'#fff' }}>{activeGame.label}</span>
-                            </div>
-                            <button onClick={() => setActiveGame(null)} style={{ background:'rgba(255,255,255,0.1)',border:'1px solid rgba(255,255,255,0.2)',color:'#fff',borderRadius:'8px',padding:'6px 14px',cursor:'pointer',fontSize:'13px' }}>✕ Close</button>
-                          </div>
-                          <iframe src={activeGame.url} style={{ flex:1,border:'none',width:'100%',height:'100%' }} allowFullScreen sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-pointer-lock" />
-                        </div>
-                      )}
-                      <div className="games-header" style={{ display:'flex',alignItems:'center',justifyContent:'space-between',padding:'16px 24px',borderBottom:'1px solid rgba(255,255,255,0.08)',flexShrink:0 }}>
-                        <span style={{ fontWeight:800,fontSize:'20px',color:'#fff',display:'flex',alignItems:'center',gap:'8px' }}>🎮 Games <span style={{ fontSize:'13px',fontWeight:400,color:'#666' }}>{PIONEER_GAMES.length} games</span></span>
-                        <button onClick={() => { setShowGamesMenu(false); setActiveGame(null); setGameSearch(''); setGameCategory('all'); }} style={{ background:'rgba(255,255,255,0.08)',border:'1px solid rgba(255,255,255,0.15)',color:'#fff',borderRadius:'8px',padding:'6px 14px',cursor:'pointer',fontSize:'13px' }}>✕ Close</button>
-                      </div>
-                      <div className="games-filters" style={{ padding:'12px 24px',display:'flex',gap:'8px',flexWrap:'wrap',flexShrink:0,borderBottom:'1px solid rgba(255,255,255,0.06)',alignItems:'center' }}>
-                        <input value={gameSearch} onChange={e => { setGameSearch(e.target.value); setGameLimit(40); }} placeholder="Search games..." className="games-search" style={{ flex:1,minWidth:'180px',padding:'9px 14px',background:'rgba(255,255,255,0.06)',border:'1px solid rgba(255,255,255,0.12)',borderRadius:'10px',color:'#fff',fontSize:'14px',outline:'none',transition:'border-color 0.2s, box-shadow 0.2s' }} />
-                        {['all','action','shooting','racing','skill','strategy','io','sports','2 player'].map(cat => (
-                          <button key={cat} onClick={() => { setGameCategory(cat); setGameLimit(40); }}
-                            className="games-cat-btn" style={{ padding:'6px 14px',borderRadius:'99px',border:'1px solid rgba(255,255,255,0.15)',background:gameCategory===cat?'#fff':'rgba(255,255,255,0.05)',color:gameCategory===cat?'#000':'#fff',fontSize:'12px',fontWeight:600,cursor:'pointer',textTransform:'capitalize',whiteSpace:'nowrap' }}>
-                            {cat==='all'?'All':cat}
-                          </button>
-                        ))}
-                      </div>
-                      <div className="games-grid" style={{ flex:1,overflowY:'auto',padding:'20px 24px',display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(155px,1fr))',gap:'14px',alignContent:'start' }}>
-                        {PIONEER_GAMES
-                          .filter(g => gameCategory==='all' || g.categories.includes(gameCategory))
-                          .filter(g => g.label.toLowerCase().includes(gameSearch.toLowerCase()))
-                          .slice(0, gameLimit)
-                          .map(game => (
-                            <div key={game.folder} onClick={() => setActiveGame(game)}
-                              className="game-card" style={{ background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'14px',overflow:'hidden',cursor:'pointer' }}
-                            >
-                              <div style={{ width:'100%',height:'100px',background:'rgba(255,255,255,0.03)',overflow:'hidden',position:'relative' }}>
-                                <img src={game.image} alt={game.label}
-                                  className="game-card-img" style={{ width:'100%',height:'100%',objectFit:'cover',display:'block' }}
-                                  onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }}
-                                />
-                                <div style={{ display:'none',position:'absolute',inset:0,alignItems:'center',justifyContent:'center',fontSize:'36px',background:'rgba(255,255,255,0.03)' }}>🎮</div>
-                              </div>
-                              <div style={{ padding:'10px 12px' }}>
-                                <div style={{ fontWeight:700,fontSize:'12px',marginBottom:'5px',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',color:'#fff' }}>{game.label}</div>
-                                <div style={{ display:'flex',gap:'3px',flexWrap:'wrap' }}>
-                                  {game.categories.map(cat => (
-                                    <span key={cat} style={{ fontSize:'9px',padding:'2px 6px',borderRadius:'99px',background:'rgba(255,255,255,0.07)',color:'#888' }}>{cat}</span>
-                                  ))}
-                                </div>
-                              </div>
-                            </div>
-                          ))
-                        }
-                      </div>
-                    </div>
-                  )}}
+                  }}
                   
                   {messages.map((msg) => {
                     if (msg.type === 'system') {
