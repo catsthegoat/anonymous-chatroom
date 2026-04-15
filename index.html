@@ -17,8 +17,8 @@
 
 :root {
   --nx-bg: #08080f;
-  --nx-s1: rgba(10,10,16,0.75);
-  --nx-s2: rgba(20,20,28,0.7);
+  --nx-s1: rgba(10,10,16,0.45);
+  --nx-s2: rgba(20,20,28,0.45);
   --nx-s3: rgba(28,28,40,0.65);
   --nx-s4: #242433;
   --nx-border: rgba(255,255,255,0.06);
@@ -51,8 +51,8 @@ body{font-family:var(--nx-font);background:transparent;color:var(--nx-text);min-
 
 .nxc-page-center{min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;position:relative;}
 
-.nxc-card{background:var(--nx-s1);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid var(--nx-border2);border-radius:var(--nx-rlg);
-  box-shadow:0 8px 32px rgba(0,0,0,0.4),0 1px 0 rgba(255,255,255,0.04) inset;overflow:hidden;}
+.nxc-card{background:rgba(8,8,15,0.32);backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);border:1px solid rgba(255,255,255,0.14);border-radius:var(--nx-rlg);
+  box-shadow:0 8px 40px rgba(0,0,0,0.3),0 1px 0 rgba(255,255,255,0.14) inset,0 0 32px rgba(255,255,255,0.03) inset;overflow:hidden;}
 
 .nxc-logo-icon{width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,var(--nx-accent),var(--nx-accent2));
   display:flex;align-items:center;justify-content:center;margin:0 auto 16px;
@@ -865,120 +865,22 @@ body { background: #08080f !important; }
 </style>
 <canvas id="constellation-canvas"></canvas>
 <script>
-(function(){
-  var canvas = document.getElementById('constellation-canvas');
-  var ctx = canvas.getContext('2d');
-  var W, H, stars = [];
-  var mx = -9999, my = -9999;
-
-  window.addEventListener('mousemove', function(e){ mx = e.clientX; my = e.clientY; });
-  window.addEventListener('mouseleave', function(){ mx = -9999; my = -9999; });
-
-  function resize(){
-    W = canvas.width = window.innerWidth;
-    H = canvas.height = window.innerHeight;
-  }
-  resize();
-  window.addEventListener('resize', resize);
-
-  for(var i = 0; i < 140; i++){
-    stars.push({
-      x: Math.random()*W, y: Math.random()*H,
-      r: Math.random()*1.4+0.4,
-      vx: (Math.random()-0.5)*1.2,
-      vy: (Math.random()-0.5)*1.2,
-      opacity: Math.random()*0.5+0.4
-    });
-  }
-
-  function draw(){
-    ctx.clearRect(0,0,W,H);
-
-    // Move stars
-    for(var i = 0; i < stars.length; i++){
-      var s = stars[i];
-      s.x += s.vx; s.y += s.vy;
-      if(s.x < 0){ s.x = 0; s.vx *= -1; }
-      if(s.x > W){ s.x = W; s.vx *= -1; }
-      if(s.y < 0){ s.y = 0; s.vy *= -1; }
-      if(s.y > H){ s.y = H; s.vy *= -1; }
-
-      // Mouse repulsion
-      var dx = s.x - mx, dy = s.y - my;
-      var d = Math.sqrt(dx*dx+dy*dy);
-      if(d < 100 && d > 0){
-        var force = (100-d)/100 * 0.4;
-        s.vx += (dx/d)*force;
-        s.vy += (dy/d)*force;
-      }
-      // Speed cap
-      var spd = Math.sqrt(s.vx*s.vx+s.vy*s.vy);
-      if(spd > 2.5){ s.vx=(s.vx/spd)*2.5; s.vy=(s.vy/spd)*2.5; }
-    }
-
-    // Draw star-to-star lines
-    for(var i = 0; i < stars.length; i++){
-      for(var j = i+1; j < stars.length; j++){
-        var dx=stars[i].x-stars[j].x, dy=stars[i].y-stars[j].y;
-        var d=Math.sqrt(dx*dx+dy*dy);
-        if(d < 120){
-          ctx.beginPath();
-          ctx.moveTo(stars[i].x,stars[i].y);
-          ctx.lineTo(stars[j].x,stars[j].y);
-          ctx.strokeStyle='rgba(255,255,255,'+(0.15*(1-d/120))+')';
-          ctx.lineWidth=0.5;
-          ctx.stroke();
-        }
-      }
-    }
-
-    // Draw mouse-to-star lines
-    for(var i = 0; i < stars.length; i++){
-      var dx=mx-stars[i].x, dy=my-stars[i].y;
-      var d=Math.sqrt(dx*dx+dy*dy);
-      if(d < 180){
-        ctx.beginPath();
-        ctx.moveTo(mx,my);
-        ctx.lineTo(stars[i].x,stars[i].y);
-        ctx.strokeStyle='rgba(255,255,255,'+(0.5*(1-d/180))+')';
-        ctx.lineWidth=0.9;
-        ctx.stroke();
-      }
-    }
-
-    // Draw stars
-    for(var i = 0; i < stars.length; i++){
-      ctx.beginPath();
-      ctx.arc(stars[i].x,stars[i].y,stars[i].r,0,Math.PI*2);
-      ctx.fillStyle='rgba(255,255,255,'+stars[i].opacity+')';
-      ctx.fill();
-    }
-
-    requestAnimationFrame(draw);
-  }
-  draw();
-})();
-</script>
-<script>
 window._cMouse = {x:-9999,y:-9999};
 window.addEventListener('mousemove',function(e){window._cMouse.x=e.clientX;window._cMouse.y=e.clientY;});
 window.addEventListener('mouseleave',function(){window._cMouse.x=-9999;window._cMouse.y=-9999;});
-(function(){
-  // Defer start to not block initial render
-  window.addEventListener("load", startConstellation);
-  function startConstellation(){
+window.addEventListener('load', function startConstellation(){
   const canvas = document.getElementById('constellation-canvas');
   const ctx = canvas.getContext('2d');
-  let W, H, stars = [], lines = [];
+  let W, H, stars = [];
   function resize(){ W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
   resize();
   window.addEventListener('resize', resize);
-  for(let i=0;i<140;i++){
+  for(let i=0;i<100;i++){
     stars.push({
       x: Math.random()*W, y: Math.random()*H,
-      r: Math.random()*1.4+0.3,
-      vx:(Math.random()-0.5)*0.5, vy:(Math.random()-0.5)*0.5,
-      opacity: Math.random()*0.5+0.4
+      r: Math.random()*0.9+0.2,
+      vx:(Math.random()-0.5)*0.18, vy:(Math.random()-0.5)*0.18,
+      opacity: Math.random()*0.4+0.3
     });
   }
   function draw(){
@@ -999,16 +901,38 @@ window.addEventListener('mouseleave',function(){window._cMouse.x=-9999;window._c
       }
     }
     stars.forEach(s=>{
+      // Mouse repulsion
+      const rdx = s.x - window._cMouse.x, rdy = s.y - window._cMouse.y;
+      const rd = Math.sqrt(rdx*rdx+rdy*rdy);
+      if(rd < 80 && rd > 0){
+        const force = (80 - rd) / 80 * 1.5;
+        s.x += (rdx/rd) * force;
+        s.y += (rdy/rd) * force;
+      }
       ctx.beginPath();
       ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
       ctx.fillStyle=`rgba(255,255,255,${s.opacity})`;
       ctx.fill();
     });
+    // Mouse interaction lines
+    const mx = window._cMouse.x, my = window._cMouse.y;
+    if(mx > -9000){
+      stars.forEach(s=>{
+        const dx=mx-s.x, dy=my-s.y, d=Math.sqrt(dx*dx+dy*dy);
+        if(d<160){
+          ctx.beginPath();
+          ctx.moveTo(mx,my);
+          ctx.lineTo(s.x,s.y);
+          ctx.strokeStyle=`rgba(255,255,255,${0.4*(1-d/160)})`;
+          ctx.lineWidth=0.8;
+          ctx.stroke();
+        }
+      });
+    }
     requestAnimationFrame(draw);
   }
   draw();
-  } // end startConstellation
-})();
+});
 </script>
 
 
