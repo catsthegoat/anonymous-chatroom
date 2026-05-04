@@ -491,6 +491,18 @@ button:active{transform:scale(0.95)!important;}
     /* Video call modal fade in */
     .video-call-modal {
       animation: fadeIn 0.3s ease both !important;
+      position: fixed !important;
+      inset: 0 !important;
+      z-index: 10000 !important;
+      background: #000 !important;
+    }
+    .video-call-modal .video-container {
+      position: relative !important;
+      width: 100% !important;
+      height: 100% !important;
+      display: flex !important;
+      flex-direction: column !important;
+      background: #000 !important;
     }
 
     /* Reply preview slide down */
@@ -3868,103 +3880,8 @@ if (currentView === 'room') {
 ReactDOM.render(<ChatroomApp />, document.getElementById('root'));
 </script>
 
-<script>
-window._cMouse = {x:-9999,y:-9999};
-window.addEventListener('mousemove',function(e){window._cMouse.x=e.clientX;window._cMouse.y=e.clientY;});
-window.addEventListener('mouseleave',function(){window._cMouse.x=-9999;window._cMouse.y=-9999;});
-(function(){
-  const canvas = document.createElement('canvas');
-  canvas.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;pointer-events:none;' ;
-  document.body.prepend(canvas);
-  const ctx = canvas.getContext('2d');
-  let W = canvas.width = window.innerWidth;
-  let H = canvas.height = window.innerHeight;
-  let mouse = {x: W/2, y: H/2};
-  const PARTICLE_COUNT = 120;
-  const CONNECTION_DIST = 140;
-  const MOUSE_DIST = 160;
-  const particles = [];
 
-  class Particle {
-    constructor(){
-      this.x = Math.random()*W;
-      this.y = Math.random()*H;
-      this.vx = (Math.random()-0.5)*0.35;
-      this.vy = (Math.random()-0.5)*0.35;
-      this.r = Math.random()*1.8+0.6;
-      this.opacity = Math.random()*0.5+0.3;
-    }
-    update(){
-      this.x += this.vx;
-      this.y += this.vy;
-      if(this.x<0||this.x>W) this.vx*=-1;
-      if(this.y<0||this.y>H) this.vy*=-1;
-      const dx = mouse.x-this.x, dy = mouse.y-this.y;
-      const dist = Math.sqrt(dx*dx+dy*dy);
-      if(dist<MOUSE_DIST){
-        const force = (MOUSE_DIST-dist)/MOUSE_DIST*0.012;
-        this.vx -= dx*force;
-        this.vy -= dy*force;
-        const speed = Math.sqrt(this.vx*this.vx+this.vy*this.vy);
-        if(speed>1.2){this.vx=(this.vx/speed)*1.2;this.vy=(this.vy/speed)*1.2;}
-      }
-      const maxSpeed = 0.8;
-      const spd = Math.sqrt(this.vx*this.vx+this.vy*this.vy);
-      if(spd>maxSpeed){this.vx=(this.vx/spd)*maxSpeed;this.vy=(this.vy/spd)*maxSpeed;}
-    }
-    draw(){
-      ctx.beginPath();
-      ctx.arc(this.x,this.y,this.r,0,Math.PI*2);
-      ctx.fillStyle='rgba(255,255,255,'+Math.min(this.opacity*1.2,0.8)+')';
-      ctx.fill();
-    }
-  }
 
-  for(let i=0;i<PARTICLE_COUNT;i++) particles.push(new Particle());
-
-  window.addEventListener('mousemove',e=>{mouse.x=e.clientX;mouse.y=e.clientY;});
-  window.addEventListener('resize',()=>{
-    W=canvas.width=window.innerWidth;
-    H=canvas.height=window.innerHeight;
-  });
-
-  function draw(){
-    ctx.clearRect(0,0,W,H);
-    for(let i=0;i<particles.length;i++){
-      particles[i].update();
-      particles[i].draw();
-      for(let j=i+1;j<particles.length;j++){
-        const dx=particles[i].x-particles[j].x;
-        const dy=particles[i].y-particles[j].y;
-        const d=Math.sqrt(dx*dx+dy*dy);
-        if(d<CONNECTION_DIST){
-          const alpha=(1-d/CONNECTION_DIST)*0.18;
-          ctx.beginPath();
-          ctx.moveTo(particles[i].x,particles[i].y);
-          ctx.lineTo(particles[j].x,particles[j].y);
-          ctx.strokeStyle='rgba(255,255,255,'+Math.min(alpha*1.4,0.35)+')';
-          ctx.lineWidth=0.7;
-          ctx.stroke();
-        }
-      }
-      const mdx=mouse.x-particles[i].x, mdy=mouse.y-particles[i].y;
-      const md=Math.sqrt(mdx*mdx+mdy*mdy);
-      if(md<MOUSE_DIST){
-        const alpha=(1-md/MOUSE_DIST)*0.35;
-        ctx.beginPath();
-        ctx.moveTo(particles[i].x,particles[i].y);
-        ctx.lineTo(mouse.x,mouse.y);
-        ctx.strokeStyle='rgba(255,255,255,'+Math.min(alpha*1.4,0.35)+')';
-        ctx.lineWidth=0.9;
-        ctx.stroke();
-      }
-    }
-    requestAnimationFrame(draw);
-  }
-  draw();
-  } // end startConstellation
-})();
-</script>
 
 
 <div id="js-error" style="display:none;position:fixed;inset:0;z-index:9999;background:#0e0e12;color:#fff;align-items:center;justify-content:center;flex-direction:column;font-family:sans-serif;text-align:center;padding:24px">
@@ -3989,23 +3906,8 @@ setTimeout(function(){
 setTimeout(()=>{document.getElementById('test-root').style.display='none';},5000);
 </script>
 
-<div id="const-debug" style="position:fixed;bottom:12px;left:12px;z-index:99999;background:rgba(0,0,0,0.85);color:#0f0;font-family:monospace;font-size:11px;padding:10px 14px;border-radius:8px;border:1px solid #0f0;pointer-events:none;"></div>
-<script>
-window._cMouse = {x:-9999,y:-9999};
-window.addEventListener('mousemove',function(e){window._cMouse.x=e.clientX;window._cMouse.y=e.clientY;});
-window.addEventListener('mouseleave',function(){window._cMouse.x=-9999;window._cMouse.y=-9999;});
-(function(){
-  var el = document.getElementById('const-debug');
-  var frames = 0;
-  function update(){
-    var canvas = document.getElementById('constellation-canvas');
-    if(!canvas){ el.innerHTML='❌ canvas NOT FOUND'; return; }
-    el.innerHTML = '✅ canvas: '+canvas.width+'x'+canvas.height+'<br>frames: '+(++frames)+'<br>z-index: '+getComputedStyle(canvas).zIndex+'<br>display: '+getComputedStyle(canvas).display;
-    if(frames < 200) requestAnimationFrame(update);
-    else { setTimeout(()=>el.remove(), 1000); }
-  }
-  update();
-})();
-</script>
+<div id="const-debug" style="display:none"></div>
+
+
 </body>
 </html>
