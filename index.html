@@ -1017,6 +1017,15 @@ button.nxc-mini-pill:hover { color: #fff; background: rgba(255,255,255,.08); }
 .pr-react-menu { display: flex; gap: 2px; padding: 6px; }
 .pr-react-menu button { font-size: 26px; width: 46px; height: 46px; border-radius: 12px; background: transparent; }
 .pr-react-menu button:hover { background: rgba(255,255,255,.1); transform: translateY(-4px) scale(1.15) !important; }
+.pr-home-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: min(700px, 100%); margin-top: 26px; }
+.pr-home-action { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; padding: 16px; border-radius: 16px; text-align: left; color: #fff; background: rgba(255,255,255,.04); border: 1px solid var(--pr-line); }
+.pr-home-action:hover { background: rgba(255,255,255,.08); border-color: var(--pr-line-2); }
+.pr-home-action svg { width: 20px; height: 20px; margin-bottom: 4px; }
+.pr-home-action b { font-size: 15px; }
+.pr-home-action span { font-size: 12.5px; color: var(--nx-muted); }
+.pr-home-action.primary { background: #fff; color: #000; border-color: #fff; }
+.pr-home-action.primary span { color: rgba(0,0,0,.55); }
+@media (max-width: 640px) { .pr-home-actions { grid-template-columns: 1fr; } }
 .pr-effects-menu { width: 340px; max-width: calc(100vw - 20px); padding: 14px; display: flex; flex-direction: column; gap: 8px; }
 .pr-fx-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: rgba(255,255,255,.5); margin-top: 4px; }
 .pr-fx-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
@@ -1354,9 +1363,6 @@ window.addEventListener('load', function startConstellation(){
 
 
 <div id="root" style="position:relative;z-index:1;"><div id="boot-fallback" style="display:flex;align-items:center;justify-content:center;min-height:100vh;color:#fff;font-family:sans-serif;position:relative;z-index:1">Loading Pioneers Rooms...</div></div>
-<script>
-const PIONEER_GAMES = [{"label": "1v1.LOL", "url": "https://catsthegoat.github.io/Games-lib/1v1lol/", "folder": "1v1lol", "image": "https://catsthegoat.github.io/Games-lib/1v1lol/splash.png", "categories": ["shooting"]}, {"label": "Tag", "url": "https://catsthegoat.github.io/Games-lib/tag/", "folder": "tag", "image": "https://catsthegoat.github.io/Games-lib/tag/splash.png", "categories": ["2 player"]}, {"label": "Poly Track", "url": "https://catsthegoat.github.io/Games-lib/polytrack/", "folder": "polytrack", "image": "https://catsthegoat.github.io/Games-lib/polytrack/splash.png", "categories": ["racing"]}, {"label": "N-Gon", "url": "https://catsthegoat.github.io/Games-lib/n-gon/", "folder": "n-gon", "image": "https://catsthegoat.github.io/Games-lib/n-gon/splash.png", "categories": ["strategy"]}, {"label": "Ragdoll Archers", "url": "https://catsthegoat.github.io/Games-lib/ragdoll-archers/", "folder": "ragdoll-archers", "image": "https://catsthegoat.github.io/Games-lib/ragdoll-archers/splash.png", "categories": ["2 player", "skill"]}, {"label": "Ragdoll Hit", "url": "https://catsthegoat.github.io/Games-lib/ragdoll-hit/", "folder": "ragdoll-hit", "image": "https://catsthegoat.github.io/Games-lib/ragdoll-hit/splash.png", "categories": ["2 player", "skill"]}, {"label": "Fortnite", "url": "https://catsthegoat.github.io/Games-lib/fortnight/", "folder": "fortnight", "image": "https://catsthegoat.github.io/Games-lib/fortnight/splash.png", "categories": ["shooting"]}, {"label": "Smashy Roads", "url": "https://catsthegoat.github.io/Games-lib/smashyroad/", "folder": "smashyroad", "image": "https://catsthegoat.github.io/Games-lib/smashyroad/splash.png", "categories": ["action"]}, {"label": "Smashy Roads 2", "url": "https://catsthegoat.github.io/Games-lib/smashy-roads-2/", "folder": "smashy-roads-2", "image": "https://catsthegoat.github.io/Games-lib/smashy-roads-2/splash.png", "categories": ["action"]}, {"label": "Stickman Hook", "url": "https://catsthegoat.github.io/Games-lib/stickman-hook/", "folder": "stickman-hook", "image": "https://catsthegoat.github.io/Games-lib/stickman-hook/splash.png", "categories": ["skill"]}, {"label": "Stick Slasher", "url": "https://catsthegoat.github.io/Games-lib/stickslasher/", "folder": "stickslasher", "image": "https://catsthegoat.github.io/Games-lib/stickslasher/splash.png", "categories": ["skill"]}, {"label": "Gladihoppers", "url": "https://catsthegoat.github.io/Games-lib/gladi/", "folder": "gladi", "image": "https://catsthegoat.github.io/Games-lib/gladi/splash.png", "categories": ["action"]}, {"label": "Table Tennis", "url": "https://catsthegoat.github.io/Games-lib/tabletennis/", "folder": "tabletennis", "image": "https://catsthegoat.github.io/Games-lib/tabletennis/splash.png", "categories": ["skill"]}, {"label": "Rip-Off Brawl Stars", "url": "https://catsthegoat.github.io/Games-lib/brawlstars/", "folder": "brawlstars", "image": "https://catsthegoat.github.io/Games-lib/brawlstars/splash.png", "categories": ["action"]}, {"label": "Bowmasters", "url": "https://catsthegoat.github.io/Games-lib/bowmasters/", "folder": "bowmasters", "image": "https://catsthegoat.github.io/Games-lib/bowmasters/splash.png", "categories": ["skill"]}, {"label": "Super Auto Pets", "url": "https://catsthegoat.github.io/Games-lib/superautopets/", "folder": "superautopets", "image": "https://catsthegoat.github.io/Games-lib/superautopets/splash.png", "categories": ["skill", "strategy"]}, {"label": "Resent Client", "url": "https://catsthegoat.github.io/Games-lib/ResentCli/", "folder": "ResentCli", "image": "https://catsthegoat.github.io/Games-lib/ResentCli/splash.png", "categories": ["strategy"]}, {"label": "Race Survival Car", "url": "https://catsthegoat.github.io/Games-lib/racesurvival/", "folder": "racesurvival", "image": "https://catsthegoat.github.io/Games-lib/racesurvival/splash.png", "categories": ["racing", "action"]}, {"label": "Call of Duty", "url": "https://catsthegoat.github.io/Games-lib/callofduty/", "folder": "callofduty", "image": "https://catsthegoat.github.io/Games-lib/callofduty/splash.png", "categories": ["shooting"]}, {"label": "Territorial.io", "url": "https://catsthegoat.github.io/Games-lib/territorial/", "folder": "territorial", "image": "https://catsthegoat.github.io/Games-lib/territorial/splash.png", "categories": ["io"]}, {"label": "Slither.io", "url": "https://catsthegoat.github.io/Games-lib/slither/", "folder": "slither", "image": "https://catsthegoat.github.io/Games-lib/slither/splash.png", "categories": ["io"]}, {"label": "Agar.io", "url": "https://catsthegoat.github.io/Games-lib/agar/", "folder": "agar", "image": "https://catsthegoat.github.io/Games-lib/agar/splash.png", "categories": ["io"]}, {"label": "Kour.io", "url": "https://catsthegoat.github.io/Games-lib/kour/", "folder": "kour", "image": "https://catsthegoat.github.io/Games-lib/kour/splash.png", "categories": ["io"]}, {"label": "Miniblox.io", "url": "https://catsthegoat.github.io/Games-lib/miniblox/", "folder": "miniblox", "image": "https://catsthegoat.github.io/Games-lib/miniblox/splash.png", "categories": ["io"]}, {"label": "Yohoho.io", "url": "https://catsthegoat.github.io/Games-lib/yohoho/", "folder": "yohoho", "image": "https://catsthegoat.github.io/Games-lib/yohoho/splash.png", "categories": ["io"]}, {"label": "Hole.io", "url": "https://catsthegoat.github.io/Games-lib/holeio/", "folder": "holeio", "image": "https://catsthegoat.github.io/Games-lib/holeio/splash.png", "categories": ["io"]}, {"label": "Skribbl.io", "url": "https://catsthegoat.github.io/Games-lib/skribbl/", "folder": "skribbl", "image": "https://catsthegoat.github.io/Games-lib/skribbl/splash.png", "categories": ["io"]}, {"label": "Smash Karts.io", "url": "https://catsthegoat.github.io/Games-lib/smashkarts/", "folder": "smashkarts", "image": "https://catsthegoat.github.io/Games-lib/smashkarts/splash.png", "categories": ["io"]}, {"label": "Arras.io", "url": "https://catsthegoat.github.io/Games-lib/arras/", "folder": "arras", "image": "https://catsthegoat.github.io/Games-lib/arras/splash.png", "categories": ["io"]}, {"label": "Hexanaut.io", "url": "https://catsthegoat.github.io/Games-lib/hexa/", "folder": "hexa", "image": "https://catsthegoat.github.io/Games-lib/hexa/splash.png", "categories": ["io"]}, {"label": "Deeeep.io", "url": "https://catsthegoat.github.io/Games-lib/dieeeeeep/", "folder": "dieeeeeep", "image": "https://catsthegoat.github.io/Games-lib/dieeeeeep/splash.png", "categories": ["io"]}, {"label": "Paper.io", "url": "https://catsthegoat.github.io/Games-lib/paperio/", "folder": "paperio", "image": "https://catsthegoat.github.io/Games-lib/paperio/splash.png", "categories": ["io"]}, {"label": "Paper.io 2", "url": "https://catsthegoat.github.io/Games-lib/paperio2/", "folder": "paperio2", "image": "https://catsthegoat.github.io/Games-lib/paperio2/splash.png", "categories": ["io"]}, {"label": "Stumble Guys", "url": "https://catsthegoat.github.io/Games-lib/stumbleguys/", "folder": "stumbleguys", "image": "https://catsthegoat.github.io/Games-lib/stumbleguys/splash.png", "categories": ["action"]}, {"label": "Space Huggers", "url": "https://catsthegoat.github.io/Games-lib/spacehuggers/", "folder": "spacehuggers", "image": "https://catsthegoat.github.io/Games-lib/spacehuggers/splash.png", "categories": ["shooting"]}, {"label": "Funny Shooter", "url": "https://catsthegoat.github.io/Games-lib/funnyshooter/", "folder": "funnyshooter", "image": "https://catsthegoat.github.io/Games-lib/funnyshooter/splash.png", "categories": ["shooting"]}, {"label": "Slope 2", "url": "https://catsthegoat.github.io/Games-lib/slope2/", "folder": "slope2", "image": "https://catsthegoat.github.io/Games-lib/slope2/splash.png", "categories": ["action"]}, {"label": "Slope", "url": "https://catsthegoat.github.io/Games-lib/slope/", "folder": "slope", "image": "https://catsthegoat.github.io/Games-lib/slope/splash.png", "categories": ["skill"]}, {"label": "Geometry Dash", "url": "https://catsthegoat.github.io/Games-lib/geometrydash/", "folder": "geometrydash", "image": "https://catsthegoat.github.io/Games-lib/geometrydash/splash.png", "categories": ["skill"]}, {"label": "Geometry Dash Full Version", "url": "https://catsthegoat.github.io/Games-lib/geometrydash2/", "folder": "geometrydash2", "image": "https://catsthegoat.github.io/Games-lib/geometrydash2/splash.png", "categories": ["skill"]}, {"label": "Cookie Clicker", "url": "https://catsthegoat.github.io/Games-lib/cookie-clicker/", "folder": "cookie-clicker", "image": "https://catsthegoat.github.io/Games-lib/cookie-clicker/splash.png", "categories": ["skill"]}, {"label": "Moto X3M", "url": "https://catsthegoat.github.io/Games-lib/motox3m/", "folder": "motox3m", "image": "https://catsthegoat.github.io/Games-lib/motox3m/splash.png", "categories": ["action"]}, {"label": "Moto X3M 2", "url": "https://catsthegoat.github.io/Games-lib/motox3m2/", "folder": "motox3m2", "image": "https://catsthegoat.github.io/Games-lib/motox3m2/splash.png", "categories": ["action"]}, {"label": "Moto X3M 3", "url": "https://catsthegoat.github.io/Games-lib/motox3m3/", "folder": "motox3m3", "image": "https://catsthegoat.github.io/Games-lib/motox3m3/splash.png", "categories": ["action"]}, {"label": "Moto X3M 4: Winter", "url": "https://catsthegoat.github.io/Games-lib/motox3m-winter/", "folder": "motox3m-winter", "image": "https://catsthegoat.github.io/Games-lib/motox3m-winter/splash.png", "categories": ["action"]}, {"label": "Moto X3M 5: Pool", "url": "https://catsthegoat.github.io/Games-lib/motox3m-pool/", "folder": "motox3m-pool", "image": "https://catsthegoat.github.io/Games-lib/motox3m-pool/splash.png", "categories": ["action"]}, {"label": "Getaway Shootout", "url": "https://catsthegoat.github.io/Games-lib/getawayshootout/", "folder": "getawayshootout", "image": "https://catsthegoat.github.io/Games-lib/getawayshootout/splash.png", "categories": ["2 player"]}, {"label": "Rooftop Snipers", "url": "https://catsthegoat.github.io/Games-lib/rooftopsnipers/", "folder": "rooftopsnipers", "image": "https://catsthegoat.github.io/Games-lib/rooftopsnipers/splash.png", "categories": ["2 player"]}, {"label": "Rooftop Snipers 2", "url": "https://catsthegoat.github.io/Games-lib/rooftopsnipers2/", "folder": "rooftopsnipers2", "image": "https://catsthegoat.github.io/Games-lib/rooftopsnipers2/splash.png", "categories": ["2 player"]}, {"label": "Flight Simulator", "url": "https://catsthegoat.github.io/Games-lib/geofs/", "folder": "geofs", "image": "https://catsthegoat.github.io/Games-lib/geofs/splash.png", "categories": ["action"]}, {"label": "Kart Wars", "url": "https://catsthegoat.github.io/Games-lib/kartwars/", "folder": "kartwars", "image": "https://catsthegoat.github.io/Games-lib/kartwars/splash.png", "categories": ["io"]}, {"label": "Bullet Force", "url": "https://catsthegoat.github.io/Games-lib/bulletforce/", "folder": "bulletforce", "image": "https://catsthegoat.github.io/Games-lib/bulletforce/splash.png", "categories": ["shooting"]}, {"label": "Tunnel Rush", "url": "https://catsthegoat.github.io/Games-lib/tunnelrush/", "folder": "tunnelrush", "image": "https://catsthegoat.github.io/Games-lib/tunnelrush/splash.png", "categories": ["skill"]}, {"label": "Downtown Mafia", "url": "https://catsthegoat.github.io/Games-lib/gta/", "folder": "gta", "image": "https://catsthegoat.github.io/Games-lib/gta/splash.png", "categories": ["action", "shooting"]}, {"label": "CSGO Clicker", "url": "https://catsthegoat.github.io/Games-lib/csgoclicker/", "folder": "csgoclicker", "image": "https://catsthegoat.github.io/Games-lib/csgoclicker/splash.png", "categories": ["skill"]}, {"label": "Papery Planes", "url": "https://catsthegoat.github.io/Games-lib/papery-planes/", "folder": "papery-planes", "image": "https://catsthegoat.github.io/Games-lib/papery-planes/splash.png", "categories": ["skill"]}, {"label": "SUPERHOT", "url": "https://catsthegoat.github.io/Games-lib/superhot/", "folder": "superhot", "image": "https://catsthegoat.github.io/Games-lib/superhot/splash.png", "categories": ["shooting"]}, {"label": "World Guesser", "url": "https://catsthegoat.github.io/Games-lib/worldg/", "folder": "worldg", "image": "https://catsthegoat.github.io/Games-lib/worldg/splash.png", "categories": ["strategy"]}, {"label": "Super Mario 64", "url": "https://catsthegoat.github.io/Games-lib/mario/", "folder": "mario", "image": "https://catsthegoat.github.io/Games-lib/mario/splash.png", "categories": ["skill"]}, {"label": "Tetris", "url": "https://catsthegoat.github.io/Games-lib/tetris/", "folder": "tetris", "image": "https://catsthegoat.github.io/Games-lib/tetris/splash.png", "categories": ["strategy"]}, {"label": "Wordle", "url": "https://catsthegoat.github.io/Games-lib/wordle/", "folder": "wordle", "image": "https://catsthegoat.github.io/Games-lib/wordle/splash.png", "categories": ["strategy"]}, {"label": "Tiny Fishing", "url": "https://catsthegoat.github.io/Games-lib/tinyfishing/", "folder": "tinyfishing", "image": "https://catsthegoat.github.io/Games-lib/tinyfishing/splash.png", "categories": ["skill"]}, {"label": "10 Minutes Till Dawn", "url": "https://catsthegoat.github.io/Games-lib/10minutestilldawn/", "folder": "10minutestilldawn", "image": "https://catsthegoat.github.io/Games-lib/10minutestilldawn/splash.png", "categories": ["strategy", "action"]}, {"label": "Minecraft", "url": "https://catsthegoat.github.io/Games-lib/mc/", "folder": "mc", "image": "https://catsthegoat.github.io/Games-lib/mc/splash.png", "categories": ["action"]}, {"label": "Eggy Car", "url": "https://catsthegoat.github.io/Games-lib/eggycar/", "folder": "eggycar", "image": "https://catsthegoat.github.io/Games-lib/eggycar/splash.png", "categories": ["skill"]}, {"label": "Hextris", "url": "https://catsthegoat.github.io/Games-lib/hextris/", "folder": "hextris", "image": "https://catsthegoat.github.io/Games-lib/hextris/splash.png", "categories": ["strategy"]}, {"label": "House of Hazards", "url": "https://catsthegoat.github.io/Games-lib/houseofhazards/", "folder": "houseofhazards", "image": "https://catsthegoat.github.io/Games-lib/houseofhazards/splash.png", "categories": ["2 player"]}, {"label": "Fallen London", "url": "https://catsthegoat.github.io/Games-lib/fallenlondon/", "folder": "fallenlondon", "image": "https://catsthegoat.github.io/Games-lib/fallenlondon/splash.png", "categories": ["strategy"]}, {"label": "Zombie Apocolypse", "url": "https://catsthegoat.github.io/Games-lib/zombocalypse/", "folder": "zombocalypse", "image": "https://catsthegoat.github.io/Games-lib/zombocalypse/splash.png", "categories": ["skill"]}, {"label": "Infinite Craft", "url": "https://catsthegoat.github.io/Games-lib/infinitecraft/", "folder": "infinitecraft", "image": "https://catsthegoat.github.io/Games-lib/infinitecraft/splash.png", "categories": ["skill"]}, {"label": "2048", "url": "https://catsthegoat.github.io/Games-lib/2048/", "folder": "2048", "image": "https://catsthegoat.github.io/Games-lib/2048/splash.png", "categories": ["strategy"]}, {"label": "Snow Battle", "url": "https://catsthegoat.github.io/Games-lib/snowbattle/", "folder": "snowbattle", "image": "https://catsthegoat.github.io/Games-lib/snowbattle/splash.png", "categories": ["skill"]}, {"label": "Vex 6", "url": "https://catsthegoat.github.io/Games-lib/vex6/", "folder": "vex6", "image": "https://catsthegoat.github.io/Games-lib/vex6/splash.png", "categories": ["skill"]}, {"label": "Doge Miner", "url": "https://catsthegoat.github.io/Games-lib/DogeMiner/", "folder": "DogeMiner", "image": "https://catsthegoat.github.io/Games-lib/DogeMiner/splash.png", "categories": ["skill"]}, {"label": "Death Run 3D", "url": "https://catsthegoat.github.io/Games-lib/death-run-3d/", "folder": "death-run-3d", "image": "https://catsthegoat.github.io/Games-lib/death-run-3d/splash.png", "categories": ["skill"]}, {"label": "Drift Boss", "url": "https://catsthegoat.github.io/Games-lib/drift-boss/", "folder": "drift-boss", "image": "https://catsthegoat.github.io/Games-lib/drift-boss/splash.png", "categories": ["skill"]}, {"label": "Recoil", "url": "https://catsthegoat.github.io/Games-lib/recoil/", "folder": "recoil", "image": "https://catsthegoat.github.io/Games-lib/recoil/splash.png", "categories": ["action", "shooting"]}, {"label": "Bitlife", "url": "https://catsthegoat.github.io/Games-lib/bite/", "folder": "bite", "image": "https://catsthegoat.github.io/Games-lib/bite/splash.png", "categories": ["skill"]}, {"label": "Crusher Clicker", "url": "https://catsthegoat.github.io/Games-lib/crusherclicker/", "folder": "crusherclicker", "image": "https://catsthegoat.github.io/Games-lib/crusherclicker/splash.png", "categories": ["strategy"]}, {"label": "A.D.O.F.A.I", "url": "https://catsthegoat.github.io/Games-lib/adofai/", "folder": "adofai", "image": "https://catsthegoat.github.io/Games-lib/adofai/splash.png", "categories": ["action"]}, {"label": "Basketball Stars", "url": "https://catsthegoat.github.io/Games-lib/basketball-stars/", "folder": "basketball-stars", "image": "https://catsthegoat.github.io/Games-lib/basketball-stars/splash.png", "categories": ["sports"]}, {"label": "Basketbros.io", "url": "https://catsthegoat.github.io/Games-lib/basketbros-io/", "folder": "basketbros-io", "image": "https://catsthegoat.github.io/Games-lib/basketbros-io/splash.png", "categories": ["sports"]}, {"label": "Awesome Tanks 2", "url": "https://catsthegoat.github.io/Games-lib/awesometanks2/", "folder": "awesometanks2", "image": "https://catsthegoat.github.io/Games-lib/awesometanks2/splash.png", "categories": ["action"]}, {"label": "Basketball Random", "url": "https://catsthegoat.github.io/Games-lib/basketrandom/", "folder": "basketrandom", "image": "https://catsthegoat.github.io/Games-lib/basketrandom/splash.png", "categories": ["sports"]}, {"label": "Boxing Random", "url": "https://catsthegoat.github.io/Games-lib/boxing-random/", "folder": "boxing-random", "image": "https://catsthegoat.github.io/Games-lib/boxing-random/splash.png", "categories": ["sports"]}, {"label": "Soccer Random", "url": "https://catsthegoat.github.io/Games-lib/soccerrandom/", "folder": "soccerrandom", "image": "https://catsthegoat.github.io/Games-lib/soccerrandom/splash.png", "categories": ["sports"]}, {"label": "Bad Ice Cream", "url": "https://catsthegoat.github.io/Games-lib/bad-ice-cream/", "folder": "bad-ice-cream", "image": "https://catsthegoat.github.io/Games-lib/bad-ice-cream/splash.png", "categories": ["action"]}, {"label": "Bad Ice Cream 2", "url": "https://catsthegoat.github.io/Games-lib/bad-ice-cream-2/", "folder": "bad-ice-cream-2", "image": "https://catsthegoat.github.io/Games-lib/bad-ice-cream-2/splash.png", "categories": ["action"]}, {"label": "Bad Ice Cream 3", "url": "https://catsthegoat.github.io/Games-lib/bad-ice-cream-3/", "folder": "bad-ice-cream-3", "image": "https://catsthegoat.github.io/Games-lib/bad-ice-cream-3/splash.png", "categories": ["action"]}, {"label": "Stunt Paradise", "url": "https://catsthegoat.github.io/Games-lib/stuntparadise/", "folder": "stuntparadise", "image": "https://catsthegoat.github.io/Games-lib/stuntparadise/splash.png", "categories": ["skill"]}, {"label": "Melon Playground", "url": "https://catsthegoat.github.io/Games-lib/melonplayground/", "folder": "melonplayground", "image": "https://catsthegoat.github.io/Games-lib/melonplayground/splash.png", "categories": ["action"]}, {"label": "FC Mobile", "url": "https://catsthegoat.github.io/Games-lib/fc/", "folder": "fc", "image": "https://catsthegoat.github.io/Games-lib/fc/splash.png", "categories": ["sports"]}, {"label": "Angry Sharks", "url": "https://catsthegoat.github.io/Games-lib/angry-sharks/", "folder": "angry-sharks", "image": "https://catsthegoat.github.io/Games-lib/angry-sharks/splash.png", "categories": ["action"]}, {"label": "Breaking the Bank", "url": "https://catsthegoat.github.io/Games-lib/breakingthebank/", "folder": "breakingthebank", "image": "https://catsthegoat.github.io/Games-lib/breakingthebank/splash.png", "categories": ["action"]}, {"label": "Venge", "url": "https://catsthegoat.github.io/Games-lib/venge/", "folder": "venge", "image": "https://catsthegoat.github.io/Games-lib/venge/splash.png", "categories": ["shooting"]}, {"label": "Drive Mad", "url": "https://catsthegoat.github.io/Games-lib/drive-mad/", "folder": "drive-mad", "image": "https://catsthegoat.github.io/Games-lib/drive-mad/splash.png", "categories": ["skill"]}, {"label": "Creative Kill Chamber", "url": "https://catsthegoat.github.io/Games-lib/creativekillchamber/", "folder": "creativekillchamber", "image": "https://catsthegoat.github.io/Games-lib/creativekillchamber/splash.png", "categories": ["skill", "shooting"]}, {"label": "Gravity Soccer", "url": "https://catsthegoat.github.io/Games-lib/gravity-soccer/", "folder": "gravity-soccer", "image": "https://catsthegoat.github.io/Games-lib/gravity-soccer/splash.png", "categories": ["sports"]}, {"label": "LOL Beans", "url": "https://catsthegoat.github.io/Games-lib/lolbeans/", "folder": "lolbeans", "image": "https://catsthegoat.github.io/Games-lib/lolbeans/splash.png", "categories": ["action"]}, {"label": "Krunker", "url": "https://catsthegoat.github.io/Games-lib/krunker/", "folder": "krunker", "image": "https://catsthegoat.github.io/Games-lib/krunker/splash.png", "categories": ["io"]}, {"label": "Shell Shockers", "url": "https://catsthegoat.github.io/Games-lib/shellshockersio/", "folder": "shellshockersio", "image": "https://catsthegoat.github.io/Games-lib/shellshockersio/splash.png", "categories": ["io"]}, {"label": "Flappy Bird", "url": "https://catsthegoat.github.io/Games-lib/flappy-bird/", "folder": "flappy-bird", "image": "https://catsthegoat.github.io/Games-lib/flappy-bird/splash.png", "categories": ["skill"]}, {"label": "Ducklife", "url": "https://catsthegoat.github.io/Games-lib/ducklife/", "folder": "ducklife", "image": "https://catsthegoat.github.io/Games-lib/ducklife/splash.png", "categories": ["action"]}, {"label": "Ducklife 2", "url": "https://catsthegoat.github.io/Games-lib/ducklife2/", "folder": "ducklife2", "image": "https://catsthegoat.github.io/Games-lib/ducklife2/splash.png", "categories": ["action"]}, {"label": "Ducklife 3", "url": "https://catsthegoat.github.io/Games-lib/ducklife3/", "folder": "ducklife3", "image": "https://catsthegoat.github.io/Games-lib/ducklife3/splash.png", "categories": ["action"]}, {"label": "Ducklife 4", "url": "https://catsthegoat.github.io/Games-lib/ducklife4/", "folder": "ducklife4", "image": "https://catsthegoat.github.io/Games-lib/ducklife4/splash.png", "categories": ["action"]}, {"label": "Red Ball 4", "url": "https://catsthegoat.github.io/Games-lib/redball/", "folder": "redball", "image": "https://catsthegoat.github.io/Games-lib/redball/splash.png", "categories": ["skill"]}, {"label": "Red Ball 4 Vol 2", "url": "https://catsthegoat.github.io/Games-lib/redball/", "folder": "redball", "image": "https://catsthegoat.github.io/Games-lib/redball/splash.png", "categories": ["skill"]}, {"label": "Red Ball 4 Vol 3", "url": "https://catsthegoat.github.io/Games-lib/redball/", "folder": "redball", "image": "https://catsthegoat.github.io/Games-lib/redball/splash.png", "categories": ["skill"]}, {"label": "Eaglercraft", "url": "https://catsthegoat.github.io/Games-lib/eaglercraft/", "folder": "eaglercraft", "image": "https://catsthegoat.github.io/Games-lib/eaglercraft/splash.png", "categories": ["action"]}, {"label": "Diggy", "url": "https://catsthegoat.github.io/Games-lib/diggy/", "folder": "diggy", "image": "https://catsthegoat.github.io/Games-lib/diggy/splash.png", "categories": ["skill"]}, {"label": "Gun Mayhem", "url": "https://catsthegoat.github.io/Games-lib/guymayhem/", "folder": "guymayhem", "image": "https://catsthegoat.github.io/Games-lib/guymayhem/splash.png", "categories": ["shooting"]}, {"label": "Gun Mayhem 2", "url": "https://catsthegoat.github.io/Games-lib/gunmayhem2/", "folder": "gunmayhem2", "image": "https://catsthegoat.github.io/Games-lib/gunmayhem2/splash.png", "categories": ["shooting"]}, {"label": "Gun Mayhem Redux", "url": "https://catsthegoat.github.io/Games-lib/gunmayhemredux/", "folder": "gunmayhemredux", "image": "https://catsthegoat.github.io/Games-lib/gunmayhemredux/splash.png", "categories": ["shooting"]}, {"label": "Run 3", "url": "https://catsthegoat.github.io/Games-lib/run3/", "folder": "run3", "image": "https://catsthegoat.github.io/Games-lib/run3/splash.png", "categories": ["skill"]}, {"label": "Tomb of the Mask", "url": "https://catsthegoat.github.io/Games-lib/totm/", "folder": "totm", "image": "https://catsthegoat.github.io/Games-lib/totm/splash.png", "categories": ["skill"]}, {"label": "Paper Minecraft", "url": "https://catsthegoat.github.io/Games-lib/paperminecraft/", "folder": "paperminecraft", "image": "https://catsthegoat.github.io/Games-lib/paperminecraft/splash.png", "categories": ["action"]}, {"label": "Madness Accelerant", "url": "https://catsthegoat.github.io/Games-lib/ma/", "folder": "ma", "image": "https://catsthegoat.github.io/Games-lib/ma/splash.png", "categories": ["skill"]}, {"label": "A Small World Cup", "url": "https://catsthegoat.github.io/Games-lib/asmallworldcup/", "folder": "asmallworldcup", "image": "https://catsthegoat.github.io/Games-lib/asmallworldcup/splash.png", "categories": ["sports"]}, {"label": "Block Blast", "url": "https://catsthegoat.github.io/Games-lib/blockblast/", "folder": "blockblast", "image": "https://catsthegoat.github.io/Games-lib/blockblast/splash.png", "categories": ["strategy"]}, {"label": "Snow Rider 3D", "url": "https://catsthegoat.github.io/Games-lib/snowrider3d/", "folder": "snowrider3d", "image": "https://catsthegoat.github.io/Games-lib/snowrider3d/splash.png", "categories": ["skill"]}, {"label": "Google Snake", "url": "https://catsthegoat.github.io/Games-lib/google-snake/", "folder": "google-snake", "image": "https://catsthegoat.github.io/Games-lib/google-snake/splash.png", "categories": ["skill"]}, {"label": "Age of War", "url": "https://catsthegoat.github.io/Games-lib/age-of-war/", "folder": "age-of-war", "image": "https://catsthegoat.github.io/Games-lib/age-of-war/splash.png", "categories": ["action"]}, {"label": "Angry Birds", "url": "https://catsthegoat.github.io/Games-lib/angrybirds/", "folder": "angrybirds", "image": "https://catsthegoat.github.io/Games-lib/angrybirds/splash.png", "categories": ["skill"]}, {"label": "Astray", "url": "https://catsthegoat.github.io/Games-lib/astray/", "folder": "astray", "image": "https://catsthegoat.github.io/Games-lib/astray/splash.png", "categories": ["action"]}, {"label": "Bounce Back", "url": "https://catsthegoat.github.io/Games-lib/bounceback/", "folder": "bounceback", "image": "https://catsthegoat.github.io/Games-lib/bounceback/splash.png", "categories": ["skill"]}, {"label": "Blocky Snakes", "url": "https://catsthegoat.github.io/Games-lib/blocky-snakes/", "folder": "blocky-snakes", "image": "https://catsthegoat.github.io/Games-lib/blocky-snakes/splash.png", "categories": ["skill"]}, {"label": "Little Alchemy", "url": "https://catsthegoat.github.io/Games-lib/littlealchemy/", "folder": "littlealchemy", "image": "https://catsthegoat.github.io/Games-lib/littlealchemy/splash.png", "categories": ["strategy"]}, {"label": "Little Alchemy 2", "url": "https://catsthegoat.github.io/Games-lib/littlealchemy2/", "folder": "littlealchemy2", "image": "https://catsthegoat.github.io/Games-lib/littlealchemy2/splash.png", "categories": ["strategy"]}, {"label": "Space Waves", "url": "https://catsthegoat.github.io/Games-lib/crazygames/", "folder": "crazygames", "image": "https://catsthegoat.github.io/Games-lib/crazygames/splash.png", "categories": ["skill"]}, {"label": "Stick Merge", "url": "https://catsthegoat.github.io/Games-lib/stick-merge/", "folder": "stick-merge", "image": "https://catsthegoat.github.io/Games-lib/stick-merge/splash.png", "categories": ["skill"]}, {"label": "Retro Bowl", "url": "https://catsthegoat.github.io/Games-lib/retro-bowl/", "folder": "retro-bowl", "image": "https://catsthegoat.github.io/Games-lib/retro-bowl/splash.png", "categories": ["sports"]}, {"label": "Core Ball", "url": "https://catsthegoat.github.io/Games-lib/core-ball/", "folder": "core-ball", "image": "https://catsthegoat.github.io/Games-lib/core-ball/splash.png", "categories": ["strategy"]}, {"label": "Deepest Sword", "url": "https://catsthegoat.github.io/Games-lib/deepest-sword/", "folder": "deepest-sword", "image": "https://catsthegoat.github.io/Games-lib/deepest-sword/splash.png", "categories": ["action"]}, {"label": "Zombs Royale", "url": "https://catsthegoat.github.io/Games-lib/zombsroyale/", "folder": "zombsroyale", "image": "https://catsthegoat.github.io/Games-lib/zombsroyale/splash.png", "categories": ["skill"]}, {"label": "Pokemon Ruby", "url": "https://catsthegoat.github.io/Games-lib/pokemongames/", "folder": "pokemongames", "image": "https://catsthegoat.github.io/Games-lib/pokemongames/splash.png", "categories": ["action"]}, {"label": "Spider-Man Venoms Vengence", "url": "https://catsthegoat.github.io/Games-lib/spidermanvenomsvengence/", "folder": "spidermanvenomsvengence", "image": "https://catsthegoat.github.io/Games-lib/spidermanvenomsvengence/splash.png", "categories": ["action"]}, {"label": "Slow Roads", "url": "https://catsthegoat.github.io/Games-lib/slow-roads/", "folder": "slow-roads", "image": "https://catsthegoat.github.io/Games-lib/slow-roads/splash.png", "categories": ["action"]}];
-</script>
 
 <script type="text/babel">
 
@@ -1427,117 +1433,6 @@ const PIONEER_GAMES = [{"label": "1v1.LOL", "url": "https://catsthegoat.github.i
 
 
     
-    const MinimizedWindow = ({ title, url, onClose, icon }) => {
-      const [isMaximized, setIsMaximized] = useState(false);
-      const [position, setPosition] = useState({ x: window.innerWidth - 320, y: window.innerHeight - 250 });
-      const [isDragging, setIsDragging] = useState(false);
-      const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
-
-      const handleMouseDown = (e) => {
-        if (e.target.closest('.window-btn')) return;
-        setIsDragging(true);
-        setDragOffset({
-          x: e.clientX - position.x,
-          y: e.clientY - position.y
-        });
-      };
-
-      const handleMouseMove = (e) => {
-        if (isDragging && !isMaximized) {
-          setPosition({
-            x: e.clientX - dragOffset.x,
-            y: e.clientY - dragOffset.y
-          });
-        }
-      };
-
-      const handleMouseUp = () => {
-        setIsDragging(false);
-      };
-
-      useEffect(() => {
-        if (isDragging) {
-          document.addEventListener('mousemove', handleMouseMove);
-          document.addEventListener('mouseup', handleMouseUp);
-          return () => {
-            document.removeEventListener('mousemove', handleMouseMove);
-            document.removeEventListener('mouseup', handleMouseUp);
-          };
-        }
-      }, [isDragging, dragOffset]);
-
-      return (
-        <div 
-          className={`minimized-window ${isMaximized ? 'maximized' : ''}`}
-          style={!isMaximized ? { 
-            left: `${position.x}px`, 
-            top: `${position.y}px`,
-            right: 'auto',
-            bottom: 'auto'
-          } : {}}
-        >
-          <div 
-            className="minimized-window-header"
-            onMouseDown={handleMouseDown}
-          >
-            <div className="minimized-window-title">
-              <span>{icon}</span>
-              <span>{title}</span>
-            </div>
-            <div className="minimized-window-controls">
-              <button 
-                className="window-btn" 
-                onClick={() => setIsMaximized(!isMaximized)}
-                title={isMaximized ? "Minimize" : "Maximize"}
-              >
-                {isMaximized ? '🗗' : '🗖'}
-              </button>
-              <button 
-                className="window-btn" 
-                onClick={onClose}
-                title="Close"
-              >
-                <IconX />
-              </button>
-            </div>
-          </div>
-          <div className="minimized-window-content">
-            <iframe 
-              src={url} 
-              className="game-iframe"
-              title={title}
-              allow="camera; microphone; fullscreen"
-            />
-          </div>
-        </div>
-      );
-    };
-
-    const DebugConsole = ({ logs, onClose }) => (
-      <div className="debug-console">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', borderBottom: '1px solid #333', paddingBottom: '10px' }}>
-          <strong><IconBug /> Debug Console</strong>
-          <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: '#999', cursor: 'pointer', fontSize: '18px' }}>×</button>
-        </div>
-        <div style={{ marginBottom: '10px', padding: '10px', background: '#1a1a1a', borderRadius: '8px', fontSize: '12px' }}>
-          <strong style={{ color: '#4CAF50' }}>📋 Browser Console Instructions:</strong>
-          <div style={{ marginTop: '5px', color: '#999' }}>
-            Press <strong style={{ color: '#fff' }}>F12</strong> or <strong style={{ color: '#fff' }}>Ctrl+Shift+I</strong> (Windows) / <strong style={{ color: '#fff' }}>Cmd+Option+I</strong> (Mac)
-          </div>
-          <div style={{ color: '#999' }}>
-            Click the <strong style={{ color: '#fff' }}>"Console"</strong> tab to see detailed camera & snap debugging
-          </div>
-        </div>
-        <div>
-          {logs.slice(-20).map((log, i) => (
-            <div key={i} className={`debug-log ${log.type}`}>
-              <div style={{ fontSize: '10px', color: '#666', marginBottom: '2px' }}>{new Date(log.timestamp).toLocaleTimeString()}</div>
-              <div>{log.message}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
 
     /* =====================================================================
        Shared helpers
@@ -2954,8 +2849,6 @@ const PIONEER_GAMES = [{"label": "1v1.LOL", "url": "https://catsthegoat.github.i
       const [typingUsers, setTypingUsers] = useState([]);
       const [replyTo, setReplyTo] = useState(null);
       const [showEmojiPicker, setShowEmojiPicker] = useState(null);
-      const [logs, setLogs] = useState([]);
-      const [showDebug, setShowDebug] = useState(false);
       const [accountTab, setAccountTab] = React.useState('login');
       const [loginUser, setLoginUser] = React.useState('');
       const [loginPass, setLoginPass] = React.useState('');
@@ -2970,15 +2863,7 @@ const PIONEER_GAMES = [{"label": "1v1.LOL", "url": "https://catsthegoat.github.i
       const [showProfileModal, setShowProfileModal] = React.useState(false);
       const [showImageInput, setShowImageInput] = useState(false);
       const [imageUrl, setImageUrl] = useState('');
-      const [showGamesMenu, setShowGamesMenu] = useState(false);
-      const [isTransitioning, setIsTransitioning] = useState(false);
-      const [gameSearch, setGameSearch] = useState('');
-      const [gameCategory, setGameCategory] = useState('all');
-      const [activeGame, setActiveGame] = useState(null);
-      const [gameLimit, setGameLimit] = useState(40);
       const [showSettingsModal, setShowSettingsModal] = useState(false);
-      const [gameInvite, setGameInvite] = useState(null);
-      const [openGameWindows, setOpenGameWindows] = useState([]);
       const [showSnapCamera, setShowSnapCamera] = useState(false);
       const [snapStream, setSnapStream] = useState(null);
       const [capturedSnap, setCapturedSnap] = useState(null);
@@ -2988,11 +2873,6 @@ const PIONEER_GAMES = [{"label": "1v1.LOL", "url": "https://catsthegoat.github.i
       const [mediaRecorder, setMediaRecorder] = useState(null);
       const [recordingTime, setRecordingTime] = useState(0);
       const [captureMode, setCaptureMode] = useState('photo'); 
-      const [showProxy, setShowProxy] = useState(false);
-      const [proxyUrl, setProxyUrl] = useState('');
-      const [proxyInput, setProxyInput] = useState('');
-      const [proxyHistory, setProxyHistory] = useState([]);
-      const BARE_SERVER = '/bare/';
 
       const [toasts, notify] = useToasts();
       const engine = useCallEngine(username, notify);
@@ -3021,13 +2901,6 @@ const PIONEER_GAMES = [{"label": "1v1.LOL", "url": "https://catsthegoat.github.i
       const addDebugLog = (message, type = 'info') => {
         addDebugLogGlobal(message, type);
       };
-
-      useEffect(() => {
-        const interval = setInterval(() => {
-          if (showDebug) setLogs([...debugLogs]);
-        }, 1000);
-        return () => clearInterval(interval);
-      }, [showDebug]);
 
       useEffect(() => {
         if (db) {
@@ -3143,18 +3016,6 @@ const PIONEER_GAMES = [{"label": "1v1.LOL", "url": "https://catsthegoat.github.i
           };
           messagesRef.on('value', handleMessages);
           return () => messagesRef.off('value', handleMessages);
-        }
-      }, [currentRoom]);
-
-      useEffect(() => {
-        if (currentRoom && db) {
-          const inviteRef = db.ref(`gameInvites/${currentRoom}`);
-          const handleInvite = (snapshot) => {
-            const data = snapshot.val();
-            setGameInvite(data);
-          };
-          inviteRef.on('value', handleInvite);
-          return () => inviteRef.off('value', handleInvite);
         }
       }, [currentRoom]);
 
@@ -3417,40 +3278,6 @@ const PIONEER_GAMES = [{"label": "1v1.LOL", "url": "https://catsthegoat.github.i
         }
       };
 
-      const sendGameInvite = async (gameType) => {
-        try {
-          await db.ref(`gameInvites/${currentRoom}`).set({
-            sender: username,
-            gameType: gameType,
-            timestamp: Date.now()
-          });
-          setShowGamesMenu(false);
-        } catch (err) {
-          addDebugLog(`Game invite error: ${err.message}`, 'error');
-        }
-      };
-
-      const acceptGameInvite = async () => {
-        if (!gameInvite) return;
-        const games = {
-          gartic: { title: 'Gartic Phone', url: 'https://garlicphone.vercel.app', icon: '🎨' },
-          uno: { title: 'Uno Online', url: 'https://unoonline-delta.vercel.app', icon: '🃏' },
-        };
-        const g = games[gameInvite.gameType];
-        if (g) setOpenGameWindows(prev => [...prev, { id: Date.now().toString(), ...g }]);
-        await db.ref(`gameInvites/${currentRoom}`).remove();
-        setGameInvite(null);
-      };
-
-      const declineGameInvite = async () => {
-        await db.ref(`gameInvites/${currentRoom}`).remove();
-        setGameInvite(null);
-      };
-
-      const closeGameWindow = (windowId) => {
-        setOpenGameWindows(prev => prev.filter(w => w.id !== windowId));
-      };
-
       const joinRoom = async (room, password = '') => {
         const kicked = await db.ref(`kicked/${room.id}/${username}`).once('value').catch(() => null);
         if (kicked && kicked.val()) { notify('You were removed from this room', 'error'); return; }
@@ -3543,13 +3370,7 @@ const PIONEER_GAMES = [{"label": "1v1.LOL", "url": "https://catsthegoat.github.i
         }
       };
 
-      const switchView = (view) => {
-        setIsTransitioning(true);
-        setTimeout(() => {
-          setCurrentView(view);
-          setIsTransitioning(false);
-        }, 220);
-      };
+      const switchView = (view) => setCurrentView(view);
 
       const leaveRoom = () => {
         if (!currentRoom || !username) return;
@@ -3682,22 +3503,6 @@ const PIONEER_GAMES = [{"label": "1v1.LOL", "url": "https://catsthegoat.github.i
         presRef.on('value', onPres);
         return () => { frRef.off('value', onFr); reqRef.off('value', onReq); presRef.off('value', onPres); };
       }, [username]);
-
-      const proxyNavigate = (raw) => {
-        let url = (raw || '').trim();
-        if (!url) return;
-        if (!url.startsWith('http://') && !url.startsWith('https://')) {
-          if (url.includes('.') && !url.includes(' ')) {
-            url = 'https://' + url;
-          } else {
-            url = 'https://www.google.com/search?q=' + encodeURIComponent(url);
-          }
-        }
-        setProxyUrl(url);
-        setProxyHistory(h => [url, ...h.filter(x => x !== url)].slice(0, 12));
-        setShowProxy(true);
-        setProxyInput('');
-      };
 
       const formatTime = (timestamp) => {
         const date = new Date(timestamp);
@@ -3833,9 +3638,6 @@ const PIONEER_GAMES = [{"label": "1v1.LOL", "url": "https://catsthegoat.github.i
                 </div>
                 <div style={{width:'32px',height:'1px',background:'rgba(255,255,255,0.07)',margin:'4px 0'}}></div>
                 <button className="nxc-side-item active" title="Home" onClick={()=>switchView('home')}><IconHome /></button>
-                <button className="nxc-side-item" title="AI" onClick={()=>setShowDebug(!showDebug)}><IconAI /></button>
-                <button className="nxc-side-item" title="Games" onClick={()=>setShowGamesMenu(!showGamesMenu)}><IconGamepad /></button>
-                <button className="nxc-side-item" title="Browser" onClick={()=>setShowProxy(true)}><IconGlobe /></button>
                 <button className="nxc-side-item" title={inCall?'Return to call':'Calls'} onClick={()=>inCall?setCallMinimized(false):switchView('lobby')}><IconVideo /></button>
                 <div style={{width:'32px',height:'1px',background:'rgba(255,255,255,0.07)',margin:'4px 0'}}></div>
                 <button className="nxc-side-item" title="Chatrooms" onClick={()=>switchView('lobby')}><IconRooms /></button>
@@ -3854,19 +3656,18 @@ const PIONEER_GAMES = [{"label": "1v1.LOL", "url": "https://catsthegoat.github.i
                     <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                   </div>
                   <h1 className="nxc-brand" style={{fontSize:'46px',marginBottom:'10px'}}>Pioneers Rooms</h1>
-                  <p style={{color:'var(--nx-muted)',fontSize:'15px',maxWidth:'620px',textAlign:'center',lineHeight:'1.7'}}></p>
-                  <div style={{width:'min(700px,100%)',marginTop:'20px',display:'flex',gap:'8px'}}>
-                    <input
-                      className="nxc-commandbar"
-                      style={{marginTop:0,flex:1}}
-                      placeholder="Search the web or enter a URL..."
-                      value={proxyInput}
-                      onChange={e=>setProxyInput(e.target.value)}
-                      onKeyDown={e=>e.key==='Enter'&&proxyNavigate(proxyInput)}
-                    />
-                    <button className="nxc-btn-p" style={{padding:'11px 20px',borderRadius:'14px',flexShrink:0}} onClick={()=>proxyNavigate(proxyInput)}>Go</button>
+                  <p style={{color:'var(--nx-muted)',fontSize:'15px',maxWidth:'620px',textAlign:'center',lineHeight:'1.7'}}>Chat, call and hang out with your friends.</p>
+                  <div className="pr-home-actions">
+                    <button className="pr-home-action primary" onClick={()=>switchView('lobby')}>
+                      <IconRooms /><b>Browse rooms</b><span>{rooms.length} room{rooms.length!==1?'s':''} open</span>
+                    </button>
+                    <button className="pr-home-action" onClick={()=>switchView('create')}>
+                      <IconCreateRoom /><b>Create a room</b><span>Public or password-locked</span>
+                    </button>
+                    <button className="pr-home-action" onClick={()=>setShowFriendsModal(true)}>
+                      <IconUsers /><b>Friends</b><span>{friends.filter(f=>onlineUsers[f]?.online).length} online{friendRequests.length>0?` · ${friendRequests.length} request${friendRequests.length>1?'s':''}`:''}</span>
+                    </button>
                   </div>
-                  
                 </div>
 
               {showSettingsModal && (
@@ -3901,133 +3702,6 @@ const PIONEER_GAMES = [{"label": "1v1.LOL", "url": "https://catsthegoat.github.i
                       </div>
                     </div>
                   </div>
-                </div>
-              )}
-              {showProxy && (
-                <div style={{position:'fixed',inset:0,zIndex:4000,display:'flex',flexDirection:'column',background:'#08080f'}}>
-                  {/* toolbar */}
-                  <div style={{display:'flex',alignItems:'center',gap:'8px',padding:'10px 14px',background:'rgba(0,0,0,0.8)',borderBottom:'1px solid rgba(255,255,255,0.09)',flexShrink:0}}>
-                    <button onClick={()=>{setShowProxy(false);setProxyUrl('');}} style={{background:'rgba(255,255,255,0.07)',border:'1px solid rgba(255,255,255,0.13)',color:'#fff',borderRadius:'9px',padding:'6px 12px',cursor:'pointer',fontSize:'13px',fontWeight:600,display:'flex',alignItems:'center',gap:'5px',flexShrink:0}}>
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>Back
-                    </button>
-                    <input
-                      style={{flex:1,padding:'8px 13px',background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.12)',borderRadius:'9px',color:'#fff',fontSize:'14px',outline:'none',fontFamily:'inherit'}}
-                      placeholder="Search or enter a URL..."
-                      value={proxyInput}
-                      onChange={e=>setProxyInput(e.target.value)}
-                      onKeyDown={e=>e.key==='Enter'&&proxyNavigate(proxyInput)}
-                      autoFocus
-                    />
-                    <button onClick={()=>proxyNavigate(proxyInput)} style={{background:'#fff',color:'#000',border:'none',borderRadius:'9px',padding:'8px 16px',fontWeight:700,cursor:'pointer',fontSize:'13px',flexShrink:0}}>Go</button>
-                    {proxyUrl && <button onClick={()=>setProxyUrl('')} style={{background:'transparent',border:'1px solid rgba(255,255,255,0.1)',color:'rgba(255,255,255,0.4)',borderRadius:'8px',padding:'6px 10px',cursor:'pointer',fontSize:'12px',flexShrink:0}}>Home</button>}
-                  </div>
-                  {/* home screen */}
-                  {!proxyUrl && (
-                    <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',flex:1,gap:'28px',padding:'32px 20px',overflowY:'auto'}}>
-                      <div style={{textAlign:'center'}}>
-                        <div style={{width:'60px',height:'60px',borderRadius:'50%',background:'rgba(255,255,255,0.06)',border:'1px solid rgba(255,255,255,0.12)',display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 14px'}}><IconGlobe /></div>
-                        <h2 style={{fontSize:'24px',fontWeight:'800',letterSpacing:'-0.03em',marginBottom:'6px'}}>Pioneers Browser</h2>
-                        <p style={{color:'rgba(255,255,255,0.35)',fontSize:'13px'}}>Powered by bare-server-deno</p>
-                      </div>
-                      <div style={{display:'flex',gap:'10px',flexWrap:'wrap',justifyContent:'center',maxWidth:'560px'}}>
-                        {[
-                          {label:'Google',url:'https://www.google.com',icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>},
-                          {label:'YouTube',url:'https://www.youtube.com',icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>},
-                          {label:'Reddit',url:'https://www.reddit.com',icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>},
-                          {label:'Wikipedia',url:'https://www.wikipedia.org',icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>},
-                          {label:'GitHub',url:'https://github.com',icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>},
-                          {label:'Spotify',url:'https://open.spotify.com',icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9 17H7v-7l5 2 5-2v7h-2"/><polyline points="9 13 12 15 15 13"/></svg>},
-                        ].map(s=>(
-                          <button key={s.url} onClick={()=>proxyNavigate(s.url)} style={{background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.09)',borderRadius:'12px',padding:'14px 18px',color:'#fff',cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',gap:'7px',fontSize:'12px',fontWeight:600,minWidth:'88px',transition:'background 0.15s'}}>
-                            {s.icon}{s.label}
-                          </button>
-                        ))}
-                      </div>
-                      {proxyHistory.length > 0 && (
-                        <div style={{width:'100%',maxWidth:'480px'}}>
-                          <div style={{fontSize:'10px',fontWeight:700,textTransform:'uppercase',letterSpacing:'0.07em',color:'rgba(255,255,255,0.25)',marginBottom:'8px'}}>Recent</div>
-                          {proxyHistory.map((h,i)=>(
-                            <button key={i} onClick={()=>proxyNavigate(h)} style={{width:'100%',background:'rgba(255,255,255,0.03)',border:'1px solid rgba(255,255,255,0.07)',borderRadius:'9px',padding:'9px 13px',color:'rgba(255,255,255,0.6)',cursor:'pointer',textAlign:'left',fontSize:'13px',marginBottom:'5px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',display:'flex',alignItems:'center',gap:'8px'}}>
-                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>{h}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  {/* iframe */}
-                  {proxyUrl && (
-                    <iframe
-                      key={proxyUrl}
-                      src={'/bare/client/#' + encodeURIComponent(proxyUrl)}
-                      style={{flex:1,border:'none',width:'100%',height:'100%'}}
-                      allow="fullscreen"
-                      title="Proxy Browser"
-                    />
-                  )}
-                </div>
-              )}
-              {showGamesMenu && (
-                    <div className="games-overlay" style={{ position:'fixed',top:0,left:0,right:0,bottom:0,background:'rgba(0,0,0,0.93)',zIndex:2000,display:'flex',flexDirection:'column',backdropFilter:'blur(16px)' }}>
-                      {activeGame && (
-                        <div className="game-iframe-overlay" style={{ position:'fixed',top:0,left:0,right:0,bottom:0,zIndex:3000,background:'#000',display:'flex',flexDirection:'column' }}>
-                          <div style={{ display:'flex',alignItems:'center',justifyContent:'space-between',padding:'10px 16px',background:'rgba(0,0,0,0.85)',flexShrink:0,borderBottom:'1px solid rgba(255,255,255,0.1)' }}>
-                            <div style={{ display:'flex',alignItems:'center',gap:'10px' }}>
-                              <img src={activeGame.image} onError={e=>e.target.style.display='none'} style={{ width:'28px',height:'28px',borderRadius:'6px',objectFit:'cover' }} />
-                              <span style={{ fontWeight:700,fontSize:'15px',color:'#fff' }}>{activeGame.label}</span>
-                            </div>
-                            <button onClick={() => setActiveGame(null)} style={{ background:'rgba(255,255,255,0.1)',border:'1px solid rgba(255,255,255,0.2)',color:'#fff',borderRadius:'8px',padding:'6px 14px',cursor:'pointer',fontSize:'13px' }}>✕ Close</button>
-                          </div>
-                          <iframe src={activeGame.url} style={{ flex:1,border:'none',width:'100%',height:'100%' }} allowFullScreen sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-pointer-lock" />
-                        </div>
-                      )}
-                      <div className="games-header" style={{ display:'flex',alignItems:'center',justifyContent:'space-between',padding:'16px 24px',borderBottom:'1px solid rgba(255,255,255,0.08)',flexShrink:0 }}>
-                        <span style={{ fontWeight:800,fontSize:'20px',color:'#fff',display:'flex',alignItems:'center',gap:'8px' }}>🎮 Games <span style={{ fontSize:'13px',fontWeight:400,color:'#666' }}>{PIONEER_GAMES.length} games</span></span>
-                        <button onClick={() => { setShowGamesMenu(false); setActiveGame(null); setGameSearch(''); setGameCategory('all'); }} style={{ background:'rgba(255,255,255,0.08)',border:'1px solid rgba(255,255,255,0.15)',color:'#fff',borderRadius:'8px',padding:'6px 14px',cursor:'pointer',fontSize:'13px' }}>✕ Close</button>
-                      </div>
-                      <div className="games-filters" style={{ padding:'12px 24px',display:'flex',gap:'8px',flexWrap:'wrap',flexShrink:0,borderBottom:'1px solid rgba(255,255,255,0.06)',alignItems:'center' }}>
-                        <input value={gameSearch} onChange={e => { setGameSearch(e.target.value); setGameLimit(40); }} placeholder="Search games..." className="games-search" style={{ flex:1,minWidth:'180px',padding:'9px 14px',background:'rgba(255,255,255,0.06)',border:'1px solid rgba(255,255,255,0.12)',borderRadius:'10px',color:'#fff',fontSize:'14px',outline:'none',transition:'border-color 0.2s, box-shadow 0.2s' }} />
-                        {['all','action','shooting','racing','skill','strategy','io','sports','2 player'].map(cat => (
-                          <button key={cat} onClick={() => { setGameCategory(cat); setGameLimit(40); }}
-                            className="games-cat-btn" style={{ padding:'6px 14px',borderRadius:'99px',border:'1px solid rgba(255,255,255,0.15)',background:gameCategory===cat?'#fff':'rgba(255,255,255,0.05)',color:gameCategory===cat?'#000':'#fff',fontSize:'12px',fontWeight:600,cursor:'pointer',textTransform:'capitalize',whiteSpace:'nowrap' }}>
-                            {cat==='all'?'All':cat}
-                          </button>
-                        ))}
-                      </div>
-                      <div className="games-grid" style={{ flex:1,overflowY:'auto',padding:'20px 24px',display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(155px,1fr))',gap:'14px',alignContent:'start' }}>
-                        {PIONEER_GAMES
-                          .filter(g => gameCategory==='all' || g.categories.includes(gameCategory))
-                          .filter(g => g.label.toLowerCase().includes(gameSearch.toLowerCase()))
-                          .slice(0, gameLimit)
-                          .map(game => (
-                            <div key={game.folder} onClick={() => setActiveGame(game)}
-                              className="game-card" style={{ background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'14px',overflow:'hidden',cursor:'pointer' }}
-                            >
-                              <div style={{ width:'100%',height:'100px',background:'rgba(255,255,255,0.03)',overflow:'hidden',position:'relative' }}>
-                                <img src={game.image} alt={game.label}
-                                  className="game-card-img" style={{ width:'100%',height:'100%',objectFit:'cover',display:'block' }}
-                                  onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }}
-                                />
-                                <div style={{ display:'none',position:'absolute',inset:0,alignItems:'center',justifyContent:'center',fontSize:'36px',background:'rgba(255,255,255,0.03)' }}>🎮</div>
-                              </div>
-                              <div style={{ padding:'10px 12px' }}>
-                                <div style={{ fontWeight:700,fontSize:'12px',marginBottom:'5px',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',color:'#fff' }}>{game.label}</div>
-                                <div style={{ display:'flex',gap:'3px',flexWrap:'wrap' }}>
-                                  {game.categories.map(cat => (
-                                    <span key={cat} style={{ fontSize:'9px',padding:'2px 6px',borderRadius:'99px',background:'rgba(255,255,255,0.07)',color:'#888' }}>{cat}</span>
-                                  ))}
-                                </div>
-                              </div>
-                            </div>
-                          ))
-                        }
-                      </div>
-                    </div>
-                  )}
-              {isTransitioning && (
-                <div className="view-transition">
-                  <div className="view-transition-spinner"></div>
-                  
                 </div>
               )}
               </main>
@@ -4086,8 +3760,6 @@ const PIONEER_GAMES = [{"label": "1v1.LOL", "url": "https://catsthegoat.github.i
                 ))}
               </div>
             </div>
-            {!showDebug&&<button className="nxc-btn-icon" style={{position:'fixed',bottom:'18px',right:'18px',zIndex:999}} onClick={()=>setShowDebug(true)}><IconBug /></button>}
-            {showDebug&&<DebugConsole logs={logs} onClose={()=>setShowDebug(false)} />}
           </div>
         );
       }
@@ -4163,17 +3835,6 @@ if (currentView === 'room') {
 
               <div className="pr-messages" ref={messagesBoxRef} onScroll={onMessagesScroll}>
                 <div className="pr-messages-inner">
-                  {gameInvite && (
-                    <div className="pr-invite">
-                      <div className="pr-invite-icon"><IconGamepad /></div>
-                      <div style={{ flex: 1 }}>
-                        <b>{gameInvite.sender}</b> wants to play {gameInvite.gameType === 'gartic' ? 'Gartic Phone' : 'Uno'}
-                      </div>
-                      <button className="pr-pill-btn solid" onClick={acceptGameInvite}>Play</button>
-                      <button className="pr-icon-btn" onClick={declineGameInvite}>{I.x}</button>
-                    </div>
-                  )}
-
                   {messages.length === 0 && (
                     <div className="pr-empty-room">
                       <div className="nxc-logo-icon" style={{ width: 64, height: 64 }}>
@@ -4341,16 +4002,6 @@ if (currentView === 'room') {
 
               {dragOver && <div className="pr-drop"><div>{I.image}<b>Drop to send</b></div></div>}
             </div>
-
-            {openGameWindows.map(window => (
-              <MinimizedWindow
-                key={window.id}
-                title={window.title}
-                url={window.url}
-                icon={window.icon}
-                onClose={() => closeGameWindow(window.id)}
-              />
-            ))}
 
             {showSnapCamera && (
               <div className="snap-camera-modal">
