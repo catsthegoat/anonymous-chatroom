@@ -10,7 +10,7 @@ const CORS = {
 };
 
 // Sites allowed to ask for TURN credentials (the GitHub Pages copy and any deno.dev copy).
-const TURN_ORIGINS = [/^https:\/\/catsthegoat\.github\.io$/, /^https:\/\/[a-z0-9-]+\.deno\.dev$/, /^http:\/\/localhost(:\d+)?$/];
+const TURN_ORIGINS = [/^https:\/\/catsthegoat\.github\.io$/, /^https:\/\/[a-z0-9-.]+\.deno\.(dev|net)$/, /^http:\/\/localhost(:\d+)?$/];
 
 // bare-server is only loaded when /bare/ is used, so if it fails on this
 // runtime it can't take down the rest of the site (pages + TURN).
