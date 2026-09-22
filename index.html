@@ -2631,7 +2631,7 @@ window.addEventListener('load', function startConstellation(){
        ===================================================================== */
 
     const CallTile = ({ name, stream, isMe, info = {}, speaking, state, videoOn, mirror, pinned, onPin, compact, reactionsFor }) => {
-      const hasVideo = videoOn && stream && stream.getVideoTracks().some(t => t.readyState === 'live' && !t.muted);
+      const hasVideo = videoOn && stream && stream.getVideoTracks().some(t => t.readyState === 'live' && (isMe || !t.muted));
       const reconnecting = !isMe && state && state !== 'connected';
       return (
         <div className={`pr-tile${speaking && !info.muted ? ' speaking' : ''}${pinned ? ' pinned' : ''}${compact ? ' compact' : ''}`} onDoubleClick={onPin}>
