@@ -2695,6 +2695,8 @@ const PIONEER_GAMES = [{"label": "1v1.LOL", "url": "https://catsthegoat.github.i
       const snapCanvasRef = useRef(null);
       const recordingIntervalRef = useRef(null);
       const lastMsgIdRef = useRef(null);
+      const sendingSnapRef = useRef(false);
+      const sendingFilesRef = useRef(false);
       const addDebugLog = (message, type = 'info') => {
         addDebugLogGlobal(message, type);
       };
@@ -2917,19 +2919,23 @@ const PIONEER_GAMES = [{"label": "1v1.LOL", "url": "https://catsthegoat.github.i
         const giphy = url.match(/giphy\.com\/gifs\/(?:[^\/]+-)?([A-Za-z0-9]+)\/?$/);
         if (giphy) url = `https://media.giphy.com/media/${giphy[1]}/giphy.gif`;
         if (url.includes('tenor.com/view/')) { notify('For Tenor, right-click the GIF and choose "Copy image address"', 'error'); return; }
-        if (await pushMessage({ type: 'snap', image: url })) { setImageUrl(''); setShowImageInput(false); }
+        setImageUrl(''); setShowImageInput(false);
+        if (!(await pushMessage({ type: 'snap', image: url }))) setImageUrl(url);
       };
 
       const sendImageFiles = async (files) => {
         const list = Array.from(files || []).filter(f => f.type.startsWith('image/')).slice(0, 5);
-        if (!list.length) return;
-        for (const f of list) {
-          try {
-            const data = await fileToDataUrl(f);
-            if (data.length > 2.5e6) { notify(`${f.name} is too big even after compressing`, 'error'); continue; }
-            await pushMessage({ type: 'snap', image: data });
-          } catch (e) { notify(e.message, 'error'); }
-        }
+        if (!list.length || sendingFilesRef.current) return;
+        sendingFilesRef.current = true;
+        try {
+          for (const f of list) {
+            try {
+              const data = await fileToDataUrl(f, 1080, 0.75);
+              if (data.length > 2.5e6) { notify(`${f.name} is too big even after compressing`, 'error'); continue; }
+              await pushMessage({ type: 'snap', image: data });
+            } catch (e) { notify(e.message, 'error'); }
+          }
+        } finally { sendingFilesRef.current = false; }
       };
 
       const openSnapCamera = async () => {
@@ -2965,13 +2971,13 @@ const PIONEER_GAMES = [{"label": "1v1.LOL", "url": "https://catsthegoat.github.i
         if (snapVideoRef.current && snapCanvasRef.current) {
           const video = snapVideoRef.current;
           const canvas = snapCanvasRef.current;
-          const scale = Math.min(1, 1280 / Math.max(video.videoWidth, video.videoHeight));
+          const scale = Math.min(1, 1080 / Math.max(video.videoWidth, video.videoHeight));
           canvas.width = video.videoWidth * scale;
           canvas.height = video.videoHeight * scale;
           const ctx = canvas.getContext('2d');
           if (isFrontCamera) { ctx.translate(canvas.width, 0); ctx.scale(-1, 1); }
           ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-          setCapturedSnap(canvas.toDataURL('image/jpeg', 0.82));
+          setCapturedSnap(canvas.toDataURL('image/jpeg', 0.75));
         }
       };
 
@@ -3029,13 +3035,15 @@ const PIONEER_GAMES = [{"label": "1v1.LOL", "url": "https://catsthegoat.github.i
         }
       };
 
+      // Close the camera right away and upload in the background; extra taps are ignored.
       const sendSnap = async () => {
-        if (!capturedSnap && !recordedVideo) return;
+        if (sendingSnapRef.current || (!capturedSnap && !recordedVideo)) return;
         if (recordedVideo && recordedVideo.length > 9e6) { notify('That video is too long to send. Try a shorter one.', 'error'); return; }
-        const ok = capturedSnap
-          ? await pushMessage({ type: 'snap', image: capturedSnap })
-          : await pushMessage({ type: 'video', videoUrl: recordedVideo });
-        if (ok) closeSnapCamera();
+        sendingSnapRef.current = true;
+        const payload = capturedSnap ? { type: 'snap', image: capturedSnap } : { type: 'video', videoUrl: recordedVideo };
+        closeSnapCamera();
+        const slow = setTimeout(() => notify(payload.type === 'snap' ? 'Sending photo…' : 'Sending video…', 'info'), 600);
+        try { await pushMessage(payload); } finally { clearTimeout(slow); sendingSnapRef.current = false; }
       };
 
       const toggleCaptureMode = () => {
@@ -3222,14 +3230,11 @@ const PIONEER_GAMES = [{"label": "1v1.LOL", "url": "https://catsthegoat.github.i
         }, 220);
       };
 
-      const leaveRoom = async () => {
+      const leaveRoom = () => {
         if (!currentRoom || !username) return;
         stopTyping();
-        try {
-          await db.ref(`roomUsers/${currentRoom}/${username}`).remove();
-        } catch (err) {
-          addDebugLog(`Leave room error: ${err.message}`, 'error');
-        }
+        // Switch screens immediately; the presence cleanup finishes in the background.
+        db.ref(`roomUsers/${currentRoom}/${username}`).remove().catch(err => addDebugLog(`Leave room error: ${err.message}`, 'error'));
         if (engine.call && engine.call.kind === 'room' && engine.call.roomId === currentRoom) setCallMinimized(true);
         setCurrentRoom(null);
         setCurrentView('lobby');
@@ -3745,7 +3750,7 @@ const PIONEER_GAMES = [{"label": "1v1.LOL", "url": "https://catsthegoat.github.i
                     <button className="nxc-btn-p" onClick={()=>setCurrentView('create')}>Create Room →</button>
                   </div>
                 ) : rooms.map((room,i) => (
-                  <div key={room.id} className="nxc-room-card" style={{animationDelay:i*0.05+'s'}}>
+                  <div key={room.id} className="nxc-room-card" style={{animationDelay:Math.min(i,8)*0.03+'s'}}>
                     <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',marginBottom:'14px'}}>
                       <div className="nxc-room-icon">{room.name.charAt(0).toUpperCase()}</div>
                       {(room.locked||room.passHash||room.password) && <span className="nxc-badge"><IconLock /> Private</span>}
