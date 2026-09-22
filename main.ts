@@ -1,5 +1,7 @@
-import { serve } from "https://deno.land/std@0.208.0/http/server.ts";
 import { serveFile } from "https://deno.land/std@0.208.0/http/file_server.ts";
+
+// Resolve index.html next to this file, whatever directory the app starts in.
+const INDEX_PATH = decodeURIComponent(new URL("./index.html", import.meta.url).pathname);
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -22,7 +24,7 @@ const getBare = () => {
   return barePromise;
 };
 
-serve(async (req: Request) => {
+const handler = async (req: Request): Promise<Response> => {
   const url = new URL(req.url);
 
   // OPTIONS preflight
@@ -69,10 +71,11 @@ serve(async (req: Request) => {
 
   // Serve index.html for everything else
   try {
-    return await serveFile(req, "./index.html");
+    return await serveFile(req, INDEX_PATH);
   } catch {
     return new Response("Not found", { status: 404 });
   }
-}, { port: 8000 });
+};
 
-console.log("🚀 Pioneers Rooms running on http://localhost:8000");
+// Deno Deploy hooks into Deno.serve and picks the port itself; locally it uses PORT or 8000.
+Deno.serve({ port: Number(Deno.env.get("PORT") ?? 8000) }, handler);
