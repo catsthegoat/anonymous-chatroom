@@ -2059,9 +2059,9 @@ const PIONEER_GAMES = [{"label": "1v1.LOL", "url": "https://catsthegoat.github.i
           if (m && m.from && callRef.current === info) handleSignal(m.from, m);
         });
 
-        listen(b.child('reactions').orderByChild('ts').startAt(Date.now() - 1500), 'child_added', snap => {
+        listen(b.child('reactions').limitToLast(10), 'child_added', snap => {
           const r = snap.val();
-          if (!r) return;
+          if (!r || (r.ts && Date.now() - r.ts > 5000)) return;
           const id = snap.key;
           const x = 10 + Math.random() * 80;
           setReactions(p => [...p.slice(-20), { id, x, ...r }]);
@@ -2796,7 +2796,7 @@ const PIONEER_GAMES = [{"label": "1v1.LOL", "url": "https://catsthegoat.github.i
           lastMsgIdRef.current = null;
           setAtBottom(true);
           setNewBelow(0);
-          const messagesRef = db.ref(`messages/${currentRoom}`).orderByChild('timestamp').limitToLast(200);
+          const messagesRef = db.ref(`messages/${currentRoom}`).orderByKey().limitToLast(200);
           const handleMessages = (snapshot) => {
             const data = snapshot.val();
             setMessages(data ? Object.values(data).filter(m => m && m.id).sort((a, b) => a.timestamp - b.timestamp) : []);
@@ -3966,6 +3966,7 @@ if (currentView === 'room') {
                   <textarea
                     ref={composerRef}
                     rows={1}
+                    autoFocus
                     value={message}
                     onChange={(e) => {
                       setMessage(e.target.value);
