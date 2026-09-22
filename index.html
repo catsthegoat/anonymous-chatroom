@@ -974,7 +974,7 @@ button.nxc-mini-pill:hover { color: #fff; background: rgba(255,255,255,.08); }
 .pr-tile-avatar-ring { border-radius: 50%; padding: 5px; transition: box-shadow .2s ease; }
 .pr-tile.speaking .pr-tile-avatar-ring { box-shadow: 0 0 0 3px rgba(255,255,255,.7), 0 0 40px rgba(255,255,255,.25); animation: prBreath 1.2s ease-in-out infinite; }
 @keyframes prBreath { 50% { box-shadow: 0 0 0 6px rgba(255,255,255,.35), 0 0 50px rgba(255,255,255,.2); } }
-.pr-tile-name { position: absolute; left: 10px; bottom: 10px; display: flex; align-items: center; gap: 6px; max-width: calc(100% - 20px); padding: 5px 10px; border-radius: 10px; font-size: 12.5px; font-weight: 600; background: rgba(0,0,0,.55); backdrop-filter: blur(10px); }
+.pr-tile-name { position: absolute; left: 10px; bottom: 10px; display: flex; align-items: center; gap: 6px; max-width: calc(100% - 20px); padding: 5px 10px; border-radius: 10px; font-size: 12.5px; font-weight: 600; background: rgba(0,0,0,.62); }
 .pr-tile-name > span:not(.pr-tile-muted):not(.pr-tile-chip) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pr-tile-muted { display: inline-flex; color: var(--pr-red); }
 .pr-tile-muted svg { width: 14px; height: 14px; }
@@ -997,7 +997,7 @@ button.nxc-mini-pill:hover { color: #fff; background: rgba(255,255,255,.08); }
 @keyframes prFloat { 0% { opacity: 0; transform: translateY(20px) scale(.5); } 12% { opacity: 1; transform: translateY(0) scale(1.1); } 80% { opacity: 1; } 100% { opacity: 0; transform: translateY(-55vh) translateX(20px) scale(.9); } }
 
 /* control bar */
-.pr-controls { position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%); z-index: 7; display: flex; align-items: center; gap: 6px; padding: 8px; border-radius: 22px; background: var(--pr-glass-strong); border: 1px solid var(--pr-line); backdrop-filter: blur(24px); box-shadow: 0 18px 50px rgba(0,0,0,.5); transition: opacity .35s ease, transform .35s var(--pr-ease); animation: prBarIn .5s var(--pr-spring) .1s backwards; max-width: calc(100vw - 20px); }
+.pr-controls { position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%); z-index: 7; display: flex; align-items: center; gap: 6px; padding: 8px; border-radius: 22px; background: rgba(14,14,20,.94); border: 1px solid var(--pr-line); box-shadow: 0 18px 50px rgba(0,0,0,.5); transition: opacity .35s ease, transform .35s var(--pr-ease); animation: prBarIn .5s var(--pr-spring) .1s backwards; max-width: calc(100vw - 20px); }
 @keyframes prBarIn { from { opacity: 0; transform: translate(-50%, 30px); } }
 .pr-ctl-wrap { position: relative; }
 .pr-ctl { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; width: 64px; height: 56px; border-radius: 16px; color: #fff; background: rgba(255,255,255,.06); }
@@ -1051,7 +1051,7 @@ button.nxc-mini-pill:hover { color: #fff; background: rgba(255,255,255,.08); }
 @keyframes prRipple { from { transform: scale(1); opacity: .8; } to { transform: scale(1.9); opacity: 0; } }
 
 /* minimized player */
-.pr-mini { position: fixed; right: 18px; bottom: 18px; z-index: 9000; width: 300px; border-radius: 20px; overflow: hidden; background: var(--pr-glass-strong); border: 1px solid var(--pr-line-2); backdrop-filter: blur(24px); box-shadow: 0 24px 60px rgba(0,0,0,.6); cursor: pointer; animation: prMiniIn .45s var(--pr-spring) both; }
+.pr-mini { position: fixed; right: 18px; bottom: 18px; z-index: 9000; width: 300px; border-radius: 20px; overflow: hidden; background: rgba(14,14,20,.96); border: 1px solid var(--pr-line-2); box-shadow: 0 24px 60px rgba(0,0,0,.6); cursor: pointer; animation: prMiniIn .45s var(--pr-spring) both; }
 @keyframes prMiniIn { from { opacity: 0; transform: translateY(24px) scale(.9); } to { opacity: 1; transform: none; } }
 .pr-mini-stage { height: 168px; display: flex; padding: 6px 6px 0; }
 .pr-mini-stage .pr-tile { border-radius: 14px; animation: none; }
@@ -1289,6 +1289,7 @@ window.addEventListener('load', function startConstellation(){
     });
   }
   function draw(){
+    if (document.body.classList.contains('pr-in-call') || document.hidden) { requestAnimationFrame(draw); return; }
     stars.forEach(s=>{ s.x+=s.vx; s.y+=s.vy; if(s.x<0||s.x>W)s.vx*=-1; if(s.y<0||s.y>H)s.vy*=-1; });
     ctx.clearRect(0,0,W,H);
     for(let i=0;i<stars.length;i++){
@@ -1813,7 +1814,7 @@ const PIONEER_GAMES = [{"label": "1v1.LOL", "url": "https://catsthegoat.github.i
         ...(devicesRef.current.mic ? { deviceId: { exact: devicesRef.current.mic } } : {}),
       });
       const videoConstraints = (facingMode) => ({
-        width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30, max: 30 },
+        width: { ideal: 960 }, height: { ideal: 540 }, frameRate: { ideal: 30, max: 30 },
         ...(devicesRef.current.cam && !facingMode ? { deviceId: { exact: devicesRef.current.cam } } : { facingMode: facingMode || stateRef.current.facing }),
       });
 
@@ -1850,13 +1851,17 @@ const PIONEER_GAMES = [{"label": "1v1.LOL", "url": "https://catsthegoat.github.i
       // Lower per-peer bitrate as the mesh grows so bigger calls stay smooth.
       const tuneBitrates = () => {
         const n = Object.keys(peersRef.current).length;
-        const cap = screenTrackRef.current ? 1_500_000 : n <= 1 ? 1_800_000 : n <= 3 ? 800_000 : n <= 5 ? 450_000 : 250_000;
+        const sharing = !!screenTrackRef.current;
+        const cap = sharing ? 1_500_000 : n <= 1 ? 1_200_000 : n <= 3 ? 700_000 : n <= 5 ? 400_000 : 250_000;
+        const scale = sharing || n <= 2 ? 1 : n <= 4 ? 1.5 : 2;
         forEachPeer(st => {
           const sender = st.videoTx && st.videoTx.sender;
           if (!sender || !sender.getParameters) return;
           const p = sender.getParameters();
           if (!p.encodings || !p.encodings.length) return;
           p.encodings[0].maxBitrate = cap;
+          p.encodings[0].scaleResolutionDownBy = scale;
+          p.encodings[0].maxFramerate = n > 4 && !sharing ? 20 : 30;
           sender.setParameters(p).catch(() => {});
         });
       };
@@ -1871,6 +1876,10 @@ const PIONEER_GAMES = [{"label": "1v1.LOL", "url": "https://catsthegoat.github.i
         // Callee side: reuse the transceivers the caller created, so only one negotiation is needed.
         st.pc.getTransceivers().forEach(tx => {
           const kind = tx.receiver.track && tx.receiver.track.kind;
+          if ((kind === 'audio' && !st.audioTx) || (kind === 'video' && !st.videoTx)) {
+            // Same stream id on audio + video lets the other side keep lips in sync.
+            if (tx.sender.setStreams) { try { tx.sender.setStreams(callRef.current.sync); } catch (e) {} }
+          }
           if (kind === 'audio' && !st.audioTx) {
             st.audioTx = tx; tx.direction = 'sendrecv';
             tx.sender.replaceTrack((streamRef.current && streamRef.current.getAudioTracks()[0]) || null).catch(() => {});
@@ -1903,8 +1912,9 @@ const PIONEER_GAMES = [{"label": "1v1.LOL", "url": "https://catsthegoat.github.i
         if (me.current < peer) {
           // Caller side: create both transceivers up front so camera/screen can be swapped later with replaceTrack.
           const s = streamRef.current;
-          st.audioTx = pc.addTransceiver((s && s.getAudioTracks()[0]) || 'audio', { direction: 'sendrecv' });
-          st.videoTx = pc.addTransceiver(outgoingVideoTrack() || 'video', { direction: 'sendrecv' });
+          const sync = [callRef.current.sync];
+          st.audioTx = pc.addTransceiver((s && s.getAudioTracks()[0]) || 'audio', { direction: 'sendrecv', streams: sync });
+          st.videoTx = pc.addTransceiver(outgoingVideoTrack() || 'video', { direction: 'sendrecv', streams: sync });
         }
 
         pc.onnegotiationneeded = async () => {
@@ -2001,7 +2011,7 @@ const PIONEER_GAMES = [{"label": "1v1.LOL", "url": "https://catsthegoat.github.i
           if (callRef.current.id === callId) return;
           await leave({ silent: true });
         }
-        const info = { id: callId, ...meta };
+        const info = { id: callId, ...meta, sync: new MediaStream() };
         callRef.current = info;
         hadOthersRef.current = false;
         setCall(info);
@@ -2859,6 +2869,7 @@ const PIONEER_GAMES = [{"label": "1v1.LOL", "url": "https://catsthegoat.github.i
 
       // Expand the call again when it starts; warn before closing the tab mid-call.
       useEffect(() => { if (!inCall) setCallMinimized(false); }, [inCall]);
+      useEffect(() => { document.body.classList.toggle('pr-in-call', inCall && !callMinimized); }, [inCall, callMinimized]);
       useEffect(() => {
         const handleBeforeUnload = (e) => {
           if (inCall) { e.preventDefault(); e.returnValue = ''; return ''; }
