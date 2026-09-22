@@ -1610,22 +1610,29 @@ const PIONEER_GAMES = [{"label": "1v1.LOL", "url": "https://catsthegoat.github.i
     })();
 
     // TURN credentials come from our own server so the Cloudflare secret is never shipped to browsers.
+    // Where to ask for TURN credentials: this site's own server first (Deno Deploy),
+    // then the Deno Deploy copy (used when the site is opened from GitHub Pages).
+    const TURN_ENDPOINTS = ['/api/turn', 'https://anonymous-chatroom.deno.dev/api/turn'];
+
     const fetchIceServers = (() => {
       let cache = null, at = 0;
       const stun = [{ urls: ['stun:stun.cloudflare.com:3478', 'stun:stun.l.google.com:19302'] }];
       return async () => {
         if (cache && Date.now() - at < 3600e3) return cache;
-        try {
-          const ctl = new AbortController();
-          const timer = setTimeout(() => ctl.abort(), 4000);
-          const r = await fetch('/api/turn', { method: 'POST', signal: ctl.signal });
-          clearTimeout(timer);
-          if (r.ok) {
-            const d = await r.json();
-            const s = d.iceServers ? (Array.isArray(d.iceServers) ? d.iceServers : [d.iceServers]) : [];
-            if (s.length) { cache = [...s, ...stun]; at = Date.now(); return cache; }
-          }
-        } catch (e) {}
+        for (const endpoint of TURN_ENDPOINTS) {
+          if (endpoint.startsWith('http') && endpoint.startsWith(location.origin)) continue;
+          try {
+            const ctl = new AbortController();
+            const timer = setTimeout(() => ctl.abort(), 4000);
+            const r = await fetch(endpoint, { method: 'POST', signal: ctl.signal });
+            clearTimeout(timer);
+            if (r.ok) {
+              const d = await r.json();
+              const s = d.iceServers ? (Array.isArray(d.iceServers) ? d.iceServers : [d.iceServers]) : [];
+              if (s.length) { cache = [...s, ...stun]; at = Date.now(); return cache; }
+            }
+          } catch (e) {}
+        }
         addDebugLogGlobal('TURN unavailable, using STUN only (calls may fail on strict networks)', 'warning');
         return stun;
       };

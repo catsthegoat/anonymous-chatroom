@@ -1,15 +1,25 @@
 import { serve } from "https://deno.land/std@0.208.0/http/server.ts";
 import { serveFile } from "https://deno.land/std@0.208.0/http/file_server.ts";
 
-// bare-server-deno — handles the raw HTTP tunneling for the proxy
-import { createBareServer } from "https://esm.sh/@tomphttp/bare-server-node@2.0.2";
-
-const bare = createBareServer("/bare/");
-
 const CORS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS, PUT, PATCH, DELETE",
   "Access-Control-Allow-Headers": "*",
+};
+
+// Sites allowed to ask for TURN credentials (the GitHub Pages copy and any deno.dev copy).
+const TURN_ORIGINS = [/^https:\/\/catsthegoat\.github\.io$/, /^https:\/\/[a-z0-9-]+\.deno\.dev$/, /^http:\/\/localhost(:\d+)?$/];
+
+// bare-server is only loaded when /bare/ is used, so if it fails on this
+// runtime it can't take down the rest of the site (pages + TURN).
+let barePromise: Promise<any> | null = null;
+const getBare = () => {
+  if (!barePromise) {
+    barePromise = import("https://esm.sh/@tomphttp/bare-server-node@2.0.2")
+      .then((m) => m.createBareServer("/bare/"))
+      .catch((e) => { barePromise = null; throw e; });
+  }
+  return barePromise;
 };
 
 serve(async (req: Request) => {
@@ -23,10 +33,13 @@ serve(async (req: Request) => {
   // TURN credentials for video calls. The Cloudflare secret stays on the server
   // (set CF_TURN_KEY_ID and CF_TURN_API_TOKEN in the Deno Deploy env settings).
   if (url.pathname === "/api/turn") {
+    const origin = req.headers.get("Origin") || "";
+    const allowed = !origin || TURN_ORIGINS.some((re) => re.test(origin)) || origin === url.origin;
+    const headers = { ...CORS, "Access-Control-Allow-Origin": origin || "*", "Content-Type": "application/json", "Cache-Control": "no-store" };
+    const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers });
+    if (!allowed) return json({ error: "origin not allowed" }, 403);
     const keyId = Deno.env.get("CF_TURN_KEY_ID");
     const token = Deno.env.get("CF_TURN_API_TOKEN");
-    const json = (body: unknown, status = 200) =>
-      new Response(JSON.stringify(body), { status, headers: { ...CORS, "Content-Type": "application/json" } });
     if (!keyId || !token) return json({ error: "TURN not configured" }, 503);
     try {
       const res = await fetch(`https://rtc.live.cloudflare.com/v1/turn/keys/${keyId}/credentials/generate`, {
@@ -44,10 +57,8 @@ serve(async (req: Request) => {
   // Bare server handles /bare/* — this is what the proxy client talks to
   if (url.pathname.startsWith("/bare/")) {
     try {
-      // bare-server-node expects a Node-style IncomingMessage,
-      // so we use the fetch-compatible wrapper built into bare-server-deno
+      const bare = await getBare();
       const res = await bare.handleRequest(req);
-      // Add CORS to bare responses so the iframe can reach it
       const headers = new Headers(res.headers);
       Object.entries(CORS).forEach(([k, v]) => headers.set(k, v));
       return new Response(res.body, { status: res.status, headers });
