@@ -1612,7 +1612,7 @@ const PIONEER_GAMES = [{"label": "1v1.LOL", "url": "https://catsthegoat.github.i
     // TURN credentials come from our own server so the Cloudflare secret is never shipped to browsers.
     // Where to ask for TURN credentials: this site's own server first (Deno Deploy),
     // then the Deno Deploy copy (used when the site is opened from GitHub Pages).
-    const TURN_ENDPOINTS = ['/api/turn', 'https://anonymous-chatroom.deno.dev/api/turn'];
+    const TURN_ENDPOINTS = ['/api/turn', 'https://anonymous-chatroom.catsthegoat.deno.net/api/turn'];
 
     const fetchIceServers = (() => {
       let cache = null, at = 0;
