@@ -20,6 +20,27 @@ serve(async (req: Request) => {
     return new Response(null, { status: 204, headers: CORS });
   }
 
+  // TURN credentials for video calls. The Cloudflare secret stays on the server
+  // (set CF_TURN_KEY_ID and CF_TURN_API_TOKEN in the Deno Deploy env settings).
+  if (url.pathname === "/api/turn") {
+    const keyId = Deno.env.get("CF_TURN_KEY_ID");
+    const token = Deno.env.get("CF_TURN_API_TOKEN");
+    const json = (body: unknown, status = 200) =>
+      new Response(JSON.stringify(body), { status, headers: { ...CORS, "Content-Type": "application/json" } });
+    if (!keyId || !token) return json({ error: "TURN not configured" }, 503);
+    try {
+      const res = await fetch(`https://rtc.live.cloudflare.com/v1/turn/keys/${keyId}/credentials/generate`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ ttl: 86400 }),
+      });
+      if (!res.ok) return json({ error: `TURN upstream ${res.status}` }, 502);
+      return json(await res.json());
+    } catch (e) {
+      return json({ error: `TURN error: ${e}` }, 502);
+    }
+  }
+
   // Bare server handles /bare/* — this is what the proxy client talks to
   if (url.pathname.startsWith("/bare/")) {
     try {
