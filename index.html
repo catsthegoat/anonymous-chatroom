@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pioneers Rooms</title>
+<title>Chatrooms</title>
 <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600,700,800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
@@ -861,7 +861,7 @@ button:active{transform:scale(0.95)!important;}
 </style>
 <style>
 /* =====================================================================
-   Pioneers Rooms: calls, chat & motion (same dark-glass vibe)
+   Chatrooms: calls, chat & motion (same dark-glass vibe)
    ===================================================================== */
 :root {
   --pr-ease: cubic-bezier(0.22, 1, 0.36, 1);
@@ -1362,7 +1362,7 @@ window.addEventListener('load', function startConstellation(){
 
 
 
-<div id="root" style="position:relative;z-index:1;"><div id="boot-fallback" style="display:flex;align-items:center;justify-content:center;min-height:100vh;color:#fff;font-family:sans-serif;position:relative;z-index:1">Loading Pioneers Rooms...</div></div>
+<div id="root" style="position:relative;z-index:1;"><div id="boot-fallback" style="display:flex;align-items:center;justify-content:center;min-height:100vh;color:#fff;font-family:sans-serif;position:relative;z-index:1">Loading Chatrooms...</div></div>
 
 <script type="text/babel">
 
@@ -1520,6 +1520,18 @@ window.addEventListener('load', function startConstellation(){
     // then the Deno Deploy copy (used when the site is opened from GitHub Pages).
     const TURN_ENDPOINTS = ['/api/turn', 'https://anonymous-chatroom.catsthegoat.deno.net/api/turn'];
 
+    // School/office firewalls often only allow web ports, so also offer Cloudflare's relay on
+    // 443 (TLS) and 80 (TCP). Same credentials; Cloudflare's default list only has 3478/5349.
+    const withFirewallPorts = (servers) => servers.map(srv => {
+      if (!srv.username) return srv;
+      const urls = (Array.isArray(srv.urls) ? srv.urls : [srv.urls]).filter(u => !/:53\?/.test(u));
+      if (urls.some(u => u.includes('turn.cloudflare.com'))) {
+        ['turns:turn.cloudflare.com:443?transport=tcp', 'turn:turn.cloudflare.com:80?transport=tcp']
+          .forEach(u => { if (!urls.includes(u)) urls.push(u); });
+      }
+      return { ...srv, urls };
+    });
+
     const fetchIceServers = (() => {
       let cache = null, at = 0;
       const stun = [{ urls: ['stun:stun.cloudflare.com:3478', 'stun:stun.l.google.com:19302'] }];
@@ -1535,7 +1547,7 @@ window.addEventListener('load', function startConstellation(){
             if (r.ok) {
               const d = await r.json();
               const s = d.iceServers ? (Array.isArray(d.iceServers) ? d.iceServers : [d.iceServers]) : [];
-              if (s.length) { cache = [...s, ...stun]; at = Date.now(); return cache; }
+              if (s.length) { cache = [...withFirewallPorts(s), ...stun]; at = Date.now(); return cache; }
             }
           } catch (e) {}
         }
@@ -3560,7 +3572,7 @@ window.addEventListener('load', function startConstellation(){
               <div className="nxc-logo-icon">
                 <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
               </div>
-              <h1 className="nxc-brand">Pioneers Rooms</h1>
+              <h1 className="nxc-brand">Chatrooms</h1>
               <p style={{color:'var(--nx-muted)',fontSize:'14px',marginTop:'4px'}}>Real-time chat, calls & more</p>
             </div>
             <div className="nxc-card nxc-fade-in" style={{width:'100%',maxWidth:'380px',position:'relative',zIndex:1}}>
@@ -3623,7 +3635,7 @@ window.addEventListener('load', function startConstellation(){
             <div className="nxc-topbar">
               <div className="nxc-topbar-logo">
                 <div className="nxc-nav-dot" />
-                Pioneers Rooms
+                Chatrooms
               </div>
               <div style={{display:'flex',alignItems:'center',gap:'10px'}}>
                 <button className="nxc-mini-pill" onClick={()=>switchView('lobby')}>Rooms</button>
@@ -3655,7 +3667,7 @@ window.addEventListener('load', function startConstellation(){
                   <div className="nxc-logo-icon" style={{width:'96px',height:'96px',marginBottom:'18px'}}>
                     <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                   </div>
-                  <h1 className="nxc-brand" style={{fontSize:'46px',marginBottom:'10px'}}>Pioneers Rooms</h1>
+                  <h1 className="nxc-brand" style={{fontSize:'46px',marginBottom:'10px'}}>Chatrooms</h1>
                   <p style={{color:'var(--nx-muted)',fontSize:'15px',maxWidth:'620px',textAlign:'center',lineHeight:'1.7'}}>Chat, call and hang out with your friends.</p>
                   <div className="pr-home-actions">
                     <button className="pr-home-action primary" onClick={()=>switchView('lobby')}>
@@ -3694,7 +3706,7 @@ window.addEventListener('load', function startConstellation(){
                           setShowSettingsModal(false);
                         }}>🟢 Cloak as Khan Academy</button>
                         <button className="nxc-btn-g" style={{textAlign:'left',display:'flex',alignItems:'center',gap:'10px'}} onClick={() => {
-                          document.title = 'Pioneers Rooms';
+                          document.title = 'Chatrooms';
                           let l = document.querySelector("link[rel*='icon']") || document.createElement('link');
                           l.rel = 'shortcut icon'; l.href = ''; document.head.appendChild(l);
                           setShowSettingsModal(false);
@@ -3719,7 +3731,7 @@ window.addEventListener('load', function startConstellation(){
             <nav className="nxc-nav">
               <div className="nxc-nav-logo">
                 <div className="nxc-nav-dot" />
-                Pioneers Rooms
+                Chatrooms
               </div>
               <div style={{display:'flex',alignItems:'center',gap:'10px'}}>
                 <button className="nxc-btn-icon" style={{position:'relative'}} onClick={()=>setShowFriendsModal(true)}>
@@ -4137,7 +4149,7 @@ if (currentView === 'room') {
 
 
 <div id="js-error" style="display:none;position:fixed;inset:0;z-index:9999;background:#0e0e12;color:#fff;align-items:center;justify-content:center;flex-direction:column;font-family:sans-serif;text-align:center;padding:24px">
-  <div style="font-size:42px;margin-bottom:12px">Pioneers Rooms</div>
+  <div style="font-size:42px;margin-bottom:12px">Chatrooms</div>
   <div style="color:#f87171;font-size:16px;max-width:520px">Something went wrong while loading. Try refreshing the page.</div>
 </div>
 <script>
