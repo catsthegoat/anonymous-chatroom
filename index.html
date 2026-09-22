@@ -1017,6 +1017,16 @@ button.nxc-mini-pill:hover { color: #fff; background: rgba(255,255,255,.08); }
 .pr-react-menu { display: flex; gap: 2px; padding: 6px; }
 .pr-react-menu button { font-size: 26px; width: 46px; height: 46px; border-radius: 12px; background: transparent; }
 .pr-react-menu button:hover { background: rgba(255,255,255,.1); transform: translateY(-4px) scale(1.15) !important; }
+.pr-effects-menu { width: 340px; max-width: calc(100vw - 20px); padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+.pr-fx-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: rgba(255,255,255,.5); margin-top: 4px; }
+.pr-fx-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.pr-fx { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 4px; border-radius: 12px; background: rgba(255,255,255,.05); border: 1px solid transparent; color: #fff; }
+.pr-fx:hover { background: rgba(255,255,255,.1); }
+.pr-fx.on { background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.7); }
+.pr-fx small { font-size: 10.5px; font-weight: 600; color: rgba(255,255,255,.75); }
+.pr-fx-icon { font-size: 24px; line-height: 1; }
+.pr-fx-swatch { width: 26px; height: 26px; border-radius: 50%; background: conic-gradient(from 200deg, #ff6b6b, #ffd166, #06d6a0, #4cc9f0, #9b5de5, #ff6b6b); box-shadow: inset 0 0 0 2px rgba(255,255,255,.25); }
+.pr-fx-note { font-size: 12px; color: rgba(255,255,255,.55); text-align: center; padding-top: 2px; }
 .pr-device-menu { width: 300px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
 .pr-popover-title { display: flex; align-items: center; justify-content: space-between; font-weight: 700; font-size: 14px; }
 .pr-device-row { display: flex; flex-direction: column; gap: 5px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: rgba(255,255,255,.5); }
@@ -1655,6 +1665,7 @@ const PIONEER_GAMES = [{"label": "1v1.LOL", "url": "https://catsthegoat.github.i
       expand: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>,
       flip: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 7h-3.2l-1.6-2.4A1.3 1.3 0 0 0 14.1 4H9.9a1.3 1.3 0 0 0-1.1.6L7.2 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="m15 11-1.5 1.5L12 11"/><path d="M9 15a3 3 0 0 0 4.5-2.5"/><path d="m9 13 1.5-1.5L12 13"/><path d="M15 11a3 3 0 0 0-4.5 2.5"/></svg>,
       pin: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17h14v-1.8a2 2 0 0 0-1.1-1.8l-1.8-.9A2 2 0 0 1 15 10.8V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.8a2 2 0 0 1-1.1 1.8l-1.8.9A2 2 0 0 0 5 15.2z"/></svg>,
+ sparkle: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg>,
       x: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
       send: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>,
       image: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></svg>,
@@ -1730,6 +1741,228 @@ const PIONEER_GAMES = [{"label": "1v1.LOL", "url": "https://catsthegoat.github.i
     );
 
     /* =====================================================================
+       Video effects: color filters + face stickers.
+       Only runs while an effect is picked. Output is 360p at 24fps, face
+       tracking runs ~15x/sec and backs off (or turns off) on slow devices.
+       ===================================================================== */
+
+    const COLOR_FILTERS = [
+      { id: 'none', label: 'None', css: 'none' },
+      { id: 'bw', label: 'B&W', css: 'grayscale(1) contrast(1.1)' },
+      { id: 'vintage', label: 'Vintage', css: 'sepia(.55) contrast(1.05) saturate(1.2) brightness(1.03)' },
+      { id: 'warm', label: 'Warm', css: 'sepia(.25) saturate(1.35) hue-rotate(-10deg)' },
+      { id: 'cool', label: 'Cool', css: 'saturate(1.1) hue-rotate(18deg) brightness(1.03)' },
+      { id: 'vivid', label: 'Vivid', css: 'saturate(1.7) contrast(1.1)' },
+      { id: 'noir', label: 'Noir', css: 'grayscale(1) contrast(1.6) brightness(.9)' },
+      { id: 'dreamy', label: 'Dreamy', css: 'blur(1.2px) brightness(1.1) saturate(1.3)' },
+    ];
+    const FACE_EFFECTS = [
+      { id: 'none', label: 'None', icon: '🚫' },
+      { id: 'cat', label: 'Cat', icon: '🐱' },
+      { id: 'dog', label: 'Dog', icon: '🐶' },
+      { id: 'shades', label: 'Shades', icon: '😎' },
+      { id: 'crown', label: 'Crown', icon: '👑' },
+      { id: 'clown', label: 'Clown', icon: '🤡' },
+      { id: 'stache', label: 'Stache', icon: '🥸' },
+    ];
+    const COLOR_CSS = Object.fromEntries(COLOR_FILTERS.map(f => [f.id, f.css]));
+    const CAN_COLOR = typeof CanvasRenderingContext2D !== 'undefined' && 'filter' in CanvasRenderingContext2D.prototype;
+    const effectsActive = (e) => !!e && ((e.color && e.color !== 'none') || (e.face && e.face !== 'none'));
+
+    const MP_BASE = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14';
+    const FACE_MODEL_URL = 'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task';
+    let faceLandmarkerPromise = null;
+    const loadFaceLandmarker = () => {
+      if (!faceLandmarkerPromise) {
+        // new Function keeps Babel from rewriting the dynamic import.
+        const dynImport = new Function('u', 'return import(u)');
+        faceLandmarkerPromise = (async () => {
+          const vision = await dynImport(`${MP_BASE}/vision_bundle.mjs`);
+          const fileset = await vision.FilesetResolver.forVisionTasks(`${MP_BASE}/wasm`);
+          const opts = (delegate) => ({
+            baseOptions: { modelAssetPath: FACE_MODEL_URL, delegate },
+            runningMode: 'VIDEO', numFaces: 1,
+            outputFaceBlendshapes: false, outputFacialTransformationMatrixes: false,
+          });
+          try { return await vision.FaceLandmarker.createFromOptions(fileset, opts('GPU')); }
+          catch (e) { return await vision.FaceLandmarker.createFromOptions(fileset, opts('CPU')); }
+        })().catch(e => { faceLandmarkerPromise = null; throw e; });
+      }
+      return faceLandmarkerPromise;
+    };
+
+    // Worker timers keep ticking when the tab is in the background (page timers get throttled).
+    let tickWorkerUrl = null;
+    const makeTicker = (fps, fn) => {
+      try {
+        if (!tickWorkerUrl) tickWorkerUrl = URL.createObjectURL(new Blob(['let t=null;onmessage=e=>{clearInterval(t);if(e.data>0)t=setInterval(()=>postMessage(0),e.data)}'], { type: 'text/javascript' }));
+        const w = new Worker(tickWorkerUrl);
+        w.onmessage = fn;
+        w.postMessage(Math.round(1000 / fps));
+        return () => { w.postMessage(0); w.terminate(); };
+      } catch (e) {
+        const t = setInterval(fn, Math.round(1000 / fps));
+        return () => clearInterval(t);
+      }
+    };
+
+    const FACE_KEYS = [0, 1, 2, 10, 33, 133, 234, 263, 362, 454];
+    const mid = (a, b) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
+    const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+
+    function drawSticker(ctx, face, p) {
+      const eyeL = mid(p[33], p[133]), eyeR = mid(p[362], p[263]);
+      const ang = Math.atan2(eyeR.y - eyeL.y, eyeR.x - eyeL.x);
+      const fw = dist(p[234], p[454]);
+      const ed = dist(eyeL, eyeR);
+      const at = (pt, fn) => { ctx.save(); ctx.translate(pt.x, pt.y); ctx.rotate(ang); fn(); ctx.restore(); };
+      const rrect = (x, y, w, h, r) => { ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(x, y, w, h, r); else ctx.rect(x, y, w, h); };
+      const tri = (a, b, c, fill) => { ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.lineTo(c[0], c[1]); ctx.closePath(); ctx.fillStyle = fill; ctx.fill(); };
+
+      if (face === 'cat') {
+        at(p[10], () => {
+          for (const s of [-1, 1]) {
+            tri([s * 0.1 * fw, -0.02 * fw], [s * 0.46 * fw, 0.04 * fw], [s * 0.36 * fw, -0.5 * fw], '#2a2a33');
+            tri([s * 0.18 * fw, -0.05 * fw], [s * 0.39 * fw, -0.01 * fw], [s * 0.34 * fw, -0.37 * fw], '#ff9ec4');
+          }
+        });
+        at(p[1], () => {
+          tri([-0.05 * fw, -0.03 * fw], [0.05 * fw, -0.03 * fw], [0, 0.03 * fw], '#ff7fb0');
+          ctx.strokeStyle = 'rgba(255,255,255,.85)'; ctx.lineWidth = Math.max(1, 0.008 * fw); ctx.lineCap = 'round';
+          for (const s of [-1, 1]) for (const dy of [-0.03, 0.02, 0.07]) {
+            ctx.beginPath(); ctx.moveTo(s * 0.1 * fw, dy * fw); ctx.lineTo(s * 0.38 * fw, (dy * 1.8 - 0.01) * fw); ctx.stroke();
+          }
+        });
+      } else if (face === 'dog') {
+        at(p[10], () => {
+          for (const s of [-1, 1]) {
+            ctx.save(); ctx.translate(s * 0.5 * fw, -0.28 * fw); ctx.rotate(s * 0.28);
+            ctx.beginPath(); ctx.ellipse(0, 0.2 * fw, 0.13 * fw, 0.3 * fw, 0, 0, Math.PI * 2); ctx.fillStyle = '#7a4a2a'; ctx.fill();
+            ctx.beginPath(); ctx.ellipse(0, 0.24 * fw, 0.08 * fw, 0.22 * fw, 0, 0, Math.PI * 2); ctx.fillStyle = '#5c371f'; ctx.fill();
+            ctx.restore();
+          }
+        });
+        at(p[1], () => {
+          ctx.beginPath(); ctx.ellipse(0, 0, 0.13 * fw, 0.085 * fw, 0, 0, Math.PI * 2); ctx.fillStyle = '#141414'; ctx.fill();
+          ctx.beginPath(); ctx.ellipse(-0.04 * fw, -0.03 * fw, 0.035 * fw, 0.02 * fw, 0, 0, Math.PI * 2); ctx.fillStyle = 'rgba(255,255,255,.45)'; ctx.fill();
+        });
+      } else if (face === 'shades') {
+        at(mid(eyeL, eyeR), () => {
+          const lw = ed * 0.66, lh = ed * 0.44;
+          ctx.lineWidth = lh * 0.12; ctx.strokeStyle = '#0b0b0b';
+          ctx.beginPath(); ctx.moveTo(-ed / 2 + lw / 2, -lh * 0.15); ctx.quadraticCurveTo(0, -lh * 0.45, ed / 2 - lw / 2, -lh * 0.15); ctx.stroke();
+          for (const s of [-1, 1]) {
+            ctx.beginPath(); ctx.moveTo(s * (ed / 2 + lw / 2), -lh * 0.25); ctx.lineTo(s * 0.5 * fw, -lh * 0.35); ctx.stroke();
+            const g = ctx.createLinearGradient(0, -lh / 2, 0, lh / 2);
+            g.addColorStop(0, '#2b2b36'); g.addColorStop(1, '#050507');
+            rrect(s * ed / 2 - lw / 2, -lh / 2, lw, lh, lh * 0.38); ctx.fillStyle = g; ctx.fill(); ctx.stroke();
+            ctx.save(); ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = lh * 0.07;
+            ctx.beginPath(); ctx.moveTo(s * ed / 2 - lw * 0.25, -lh * 0.1); ctx.lineTo(s * ed / 2 - lw * 0.05, -lh * 0.3); ctx.stroke();
+            ctx.restore();
+          }
+        });
+      } else if (face === 'crown') {
+        at(p[10], () => {
+          ctx.font = `${Math.round(0.62 * fw)}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`;
+          ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+          ctx.fillText('👑', 0, -0.04 * fw);
+        });
+      } else if (face === 'clown') {
+        at(p[1], () => {
+          const r = 0.1 * fw;
+          const g = ctx.createRadialGradient(-r * 0.35, -r * 0.35, r * 0.1, 0, 0, r);
+          g.addColorStop(0, '#ff8a8a'); g.addColorStop(0.45, '#ee1c24'); g.addColorStop(1, '#9b0d12');
+          ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.fillStyle = g; ctx.fill();
+        });
+      } else if (face === 'stache') {
+        at(mid(p[2], p[0]), () => {
+          const W = 0.34 * fw, H = 0.09 * fw;
+          ctx.fillStyle = '#2b1a10';
+          for (const s of [1, -1]) {
+            ctx.save(); ctx.scale(s, 1);
+            ctx.beginPath();
+            ctx.moveTo(0, -H * 0.35);
+            ctx.bezierCurveTo(W * 0.25, -H * 1.1, W * 0.55, -H * 0.7, W * 0.66, -H * 0.1);
+            ctx.bezierCurveTo(W * 0.78, H * 0.35, W * 0.95, H * 0.15, W, -H * 0.45);
+            ctx.bezierCurveTo(W * 0.98, H * 1.1, W * 0.5, H * 1.25, 0, H * 0.35);
+            ctx.closePath(); ctx.fill();
+            ctx.restore();
+          }
+        });
+      }
+    }
+
+    function createEffectsProcessor({ onTooSlow }) {
+      const video = document.createElement('video');
+      video.muted = true; video.playsInline = true; video.autoplay = true;
+      const canvas = document.createElement('canvas');
+      canvas.width = 640; canvas.height = 360;
+      const ctx = canvas.getContext('2d', { alpha: false, desynchronized: true });
+      const track = canvas.captureStream(24).getVideoTracks()[0];
+      let color = 'none', face = 'none', landmarker = null, pts = null, missed = 0;
+      let lastDetect = 0, gap = 66, avg = 0, slowStreak = 0, warmup = 6, stopTick = null;
+
+      const detect = (w, h) => {
+        const now = performance.now();
+        if (now - lastDetect < gap) return;
+        lastDetect = now;
+        let res = null;
+        const t0 = performance.now();
+        try { res = landmarker.detectForVideo(video, now); } catch (e) { return; }
+        const dt = performance.now() - t0;
+        // The first few runs include model/GPU warm-up, so don't judge speed on them.
+        if (warmup > 0) warmup--;
+        else avg = avg ? avg * 0.8 + dt * 0.2 : dt;
+        gap = avg > 45 ? 125 : avg > 25 ? 90 : 66;
+        slowStreak = avg > 90 ? slowStreak + 1 : 0;
+        if (slowStreak > 12) { slowStreak = 0; face = 'none'; pts = null; onTooSlow && onTooSlow(); return; }
+        const lm = res && res.faceLandmarks && res.faceLandmarks[0];
+        if (lm) {
+          missed = 0;
+          const next = {};
+          FACE_KEYS.forEach(k => { next[k] = { x: lm[k].x * w, y: lm[k].y * h }; });
+          if (pts) FACE_KEYS.forEach(k => { next[k] = { x: pts[k].x + (next[k].x - pts[k].x) * 0.7, y: pts[k].y + (next[k].y - pts[k].y) * 0.7 }; });
+          pts = next;
+        } else if (++missed > 5) pts = null;
+      };
+
+      const frame = () => {
+        if (video.readyState < 2 || !video.videoWidth) return;
+        const s = Math.min(1, 640 / video.videoWidth);
+        const w = Math.round(video.videoWidth * s), h = Math.round(video.videoHeight * s);
+        if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
+        ctx.filter = CAN_COLOR ? (COLOR_CSS[color] || 'none') : 'none';
+        ctx.drawImage(video, 0, 0, w, h);
+        ctx.filter = 'none';
+        if (face !== 'none' && landmarker) {
+          detect(w, h);
+          if (pts) drawSticker(ctx, face, pts);
+        }
+      };
+
+      return {
+        track,
+        start() { if (!stopTick) stopTick = makeTicker(24, frame); },
+        setSource(t) {
+          video.srcObject = t ? new MediaStream([t]) : null;
+          if (t) video.play().catch(() => {});
+          pts = null;
+        },
+        setColor(c) { color = c || 'none'; },
+        async setFace(f) {
+          face = f || 'none';
+          pts = null; avg = 0; slowStreak = 0; warmup = 6;
+          if (face !== 'none' && !landmarker) landmarker = await loadFaceLandmarker();
+        },
+        stop() {
+          if (stopTick) { stopTick(); stopTick = null; }
+          track.stop();
+          video.srcObject = null;
+        },
+      };
+    }
+
+    /* =====================================================================
        Call engine: mesh WebRTC over Firebase signaling.
        One code path for room calls and direct (1:1) calls. Uses the
        "perfect negotiation" pattern so glare and ICE restarts are safe.
@@ -1753,6 +1986,10 @@ const PIONEER_GAMES = [{"label": "1v1.LOL", "url": "https://catsthegoat.github.i
       const [incoming, setIncoming] = useState(null);
       const [facing, setFacing] = useState('user');
       const [devices, setDevices] = useState({ mic: '', cam: '', speaker: '' });
+      const [effects, setEffectsState] = useState(() => store.get('pr_effects') || { color: 'none', face: 'none' });
+      const [effectsLoading, setEffectsLoading] = useState(false);
+      const effectsRef = useRef(effects);
+      const procRef = useRef(null);
 
       const me = useRef(username);
       useEffect(() => { me.current = username; }, [username]);
@@ -1832,21 +2069,63 @@ const PIONEER_GAMES = [{"label": "1v1.LOL", "url": "https://catsthegoat.github.i
         }
       };
 
+      const camOut = () => (camTrackRef.current && procRef.current) ? procRef.current.track : camTrackRef.current;
+
       const publishLocal = () => {
         const tracks = [];
         const a = streamRef.current && streamRef.current.getAudioTracks()[0];
         if (a) tracks.push(a);
-        if (camTrackRef.current) tracks.push(camTrackRef.current);
+        const v = camOut();
+        if (v) tracks.push(v);
         streamRef.current = new MediaStream(tracks);
         setLocalStream(streamRef.current);
         watchLevel(me.current, streamRef.current);
       };
 
-      const outgoingVideoTrack = () => screenTrackRef.current || camTrackRef.current || null;
+      const outgoingVideoTrack = () => screenTrackRef.current || camOut() || null;
 
       const forEachPeer = (fn) => Object.values(peersRef.current).forEach(fn);
       const setVideoSenders = (track) => forEachPeer(st => { if (st.videoTx) st.videoTx.sender.replaceTrack(track).catch(() => {}); });
       const setAudioSenders = (track) => forEachPeer(st => { if (st.audioTx) st.audioTx.sender.replaceTrack(track).catch(() => {}); });
+
+      const applyEffects = async (next) => {
+        effectsRef.current = next;
+        setEffectsState(next);
+        store.set('pr_effects', next);
+        if (!effectsActive(next)) {
+          if (procRef.current) { const old = procRef.current; procRef.current = null; if (!screenTrackRef.current) setVideoSenders(camOut()); publishLocal(); old.stop(); }
+          return;
+        }
+        if (!procRef.current) {
+          procRef.current = createEffectsProcessor({
+            onTooSlow: () => {
+              notify('Face effects were too slow on this device, so they were turned off', 'error');
+              applyEffects({ ...effectsRef.current, face: 'none' });
+            },
+          });
+          procRef.current.start();
+          procRef.current.setSource(camTrackRef.current);
+          if (!screenTrackRef.current) setVideoSenders(camOut());
+          publishLocal();
+        }
+        const proc = procRef.current;
+        proc.setColor(next.color);
+        if (next.face !== 'none') {
+          setEffectsLoading(true);
+          try { await proc.setFace(next.face); }
+          catch (e) {
+            notify("Couldn't load face effects. Check your connection.", 'error');
+            effectsRef.current = { ...effectsRef.current, face: 'none' };
+            setEffectsState(effectsRef.current);
+            proc.setFace('none');
+          } finally { setEffectsLoading(false); }
+        } else proc.setFace('none');
+      };
+
+      const setEffects = (next) => {
+        if (!camTrackRef.current && effectsActive(next)) notify('Turn your camera on to see effects', 'info');
+        applyEffects(next);
+      };
 
       // Lower per-peer bitrate as the mesh grows so bigger calls stay smooth.
       const tuneBitrates = () => {
@@ -1991,6 +2270,7 @@ const PIONEER_GAMES = [{"label": "1v1.LOL", "url": "https://catsthegoat.github.i
         [streamRef.current, screenTrackRef.current && new MediaStream([screenTrackRef.current])].forEach(s => s && s.getTracks().forEach(t => t.stop()));
         if (camTrackRef.current) camTrackRef.current.stop();
         streamRef.current = null; camTrackRef.current = null; screenTrackRef.current = null;
+        if (procRef.current) { procRef.current.stop(); procRef.current = null; }
         hadOthersRef.current = false;
         const myRef = callBase.child(`participants/${me.current}`);
         myRef.onDisconnect().cancel();
@@ -2024,6 +2304,7 @@ const PIONEER_GAMES = [{"label": "1v1.LOL", "url": "https://catsthegoat.github.i
 
         camTrackRef.current = stream.getVideoTracks()[0] || null;
         streamRef.current = stream;
+        if (camTrackRef.current && effectsActive(effectsRef.current)) applyEffects(effectsRef.current);
         publishLocal();
         const hasAudio = stream.getAudioTracks().length > 0;
         setMuted(!hasAudio);
@@ -2156,7 +2437,8 @@ const PIONEER_GAMES = [{"label": "1v1.LOL", "url": "https://catsthegoat.github.i
           const t = s.getVideoTracks()[0];
           if (camTrackRef.current) camTrackRef.current.stop();
           camTrackRef.current = t;
-          if (!screenTrackRef.current) setVideoSenders(t);
+          if (procRef.current) procRef.current.setSource(t);
+          if (!screenTrackRef.current) setVideoSenders(camOut());
           publishLocal();
           setVideoOff(false);
           updateMe({ videoOff: false });
@@ -2172,6 +2454,7 @@ const PIONEER_GAMES = [{"label": "1v1.LOL", "url": "https://catsthegoat.github.i
           // Fully stop the camera so the hardware light turns off.
           camTrackRef.current.stop();
           camTrackRef.current = null;
+          if (procRef.current) procRef.current.setSource(null);
           if (!screenTrackRef.current) setVideoSenders(null);
           publishLocal();
           setVideoOff(true);
@@ -2196,7 +2479,7 @@ const PIONEER_GAMES = [{"label": "1v1.LOL", "url": "https://catsthegoat.github.i
         t.onended = null;
         t.stop();
         screenTrackRef.current = null;
-        setVideoSenders(camTrackRef.current);
+        setVideoSenders(camOut());
         setSharing(false);
         updateMe({ screen: false });
         tuneBitrates();
@@ -2282,7 +2565,7 @@ const PIONEER_GAMES = [{"label": "1v1.LOL", "url": "https://catsthegoat.github.i
 
       return {
         call, phase, participants, remoteStreams, peerStates, localStream, muted, videoOff, sharing, hand,
-        speaking, connectedAt, reactions, chat, incoming, devices, facing,
+        speaking, connectedAt, reactions, chat, incoming, devices, facing, effects, effectsLoading, setEffects,
         joinRoomCall, callUser, acceptIncoming, declineIncoming, leave,
         toggleMute, toggleVideo, toggleShare, toggleHand, flipCamera, sendReaction, sendChat, selectDevice,
       };
@@ -2375,6 +2658,38 @@ const PIONEER_GAMES = [{"label": "1v1.LOL", "url": "https://catsthegoat.github.i
           {row('mic', 'Microphone')}
           {row('cam', 'Camera')}
           {canSink && row('speaker', 'Speaker')}
+        </div>
+      );
+    };
+
+    const EffectsMenu = ({ engine, onClose }) => {
+      const fx = engine.effects;
+      return (
+        <div className="pr-popover pr-effects-menu" onClick={e => e.stopPropagation()}>
+          <div className="pr-popover-title">
+            <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>Effects {engine.effectsLoading && <span className="pr-spinner" style={{ width: 14, height: 14 }} />}</span>
+            <button className="pr-icon-btn" onClick={onClose}>{I.x}</button>
+          </div>
+          <div className="pr-fx-label">Face</div>
+          <div className="pr-fx-grid">
+            {FACE_EFFECTS.map(f => (
+              <button key={f.id} className={'pr-fx' + (fx.face === f.id ? ' on' : '')} onClick={() => engine.setEffects({ ...fx, face: f.id })}>
+                <span className="pr-fx-icon">{f.icon}</span><small>{f.label}</small>
+              </button>
+            ))}
+          </div>
+          {CAN_COLOR && <>
+            <div className="pr-fx-label">Color</div>
+            <div className="pr-fx-grid">
+              {COLOR_FILTERS.map(f => (
+                <button key={f.id} className={'pr-fx' + (fx.color === f.id ? ' on' : '')} onClick={() => engine.setEffects({ ...fx, color: f.id })}>
+                  <i className="pr-fx-swatch" style={{ filter: f.css }} /><small>{f.label}</small>
+                </button>
+              ))}
+            </div>
+          </>}
+          {engine.effectsLoading && <div className="pr-fx-note">Loading face tracking (first time only)…</div>}
+          {engine.videoOff && <div className="pr-fx-note">Turn your camera on to see effects.</div>}
         </div>
       );
     };
@@ -2552,6 +2867,12 @@ const PIONEER_GAMES = [{"label": "1v1.LOL", "url": "https://catsthegoat.github.i
               {/Android|iPhone|iPad/i.test(navigator.userAgent) && (
                 <button className="pr-ctl" onClick={engine.flipCamera} title="Flip camera">{I.flip}<span>Flip</span></button>
               )}
+              <div className="pr-ctl-wrap">
+                <button className={'pr-ctl' + (menu === 'effects' || effectsActive(engine.effects) ? ' on' : '')} onClick={() => setMenu(m => m === 'effects' ? null : 'effects')} title="Effects">
+                  {I.sparkle}<span>Effects</span>
+                </button>
+                {menu === 'effects' && <EffectsMenu engine={engine} onClose={() => setMenu(null)} />}
+              </div>
               <div className="pr-ctl-wrap">
                 <button className={'pr-ctl' + (menu === 'react' ? ' on' : '')} onClick={() => setMenu(m => m === 'react' ? null : 'react')} title="React">
                   {I.smile}<span>React</span>
