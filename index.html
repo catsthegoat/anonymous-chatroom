@@ -1560,19 +1560,64 @@ window.addEventListener('load', function startConstellation(){
       mid: { width: 1280, height: 720, fps: 30, cap: 2_200_000, fx: 720 },
       high: { width: 1280, height: 720, fps: 30, cap: 3_000_000, fx: 960 },
     };
+    // H265 is only ever offered by browsers that can do it in hardware, so it's free quality
+    // where available. VP9 looks better per kbps but its encoder is CPU-only in many places,
+    // so it's used only if this machine says it can encode it smoothly, and only in small calls.
+    let vp9Smooth = null;
+    (async () => {
+      const video = { contentType: 'video/VP9', width: 1280, height: 720, framerate: 30, bitrate: 1_200_000 };
+      for (const type of ['webrtc', 'transmission']) {
+        try {
+          const r = await navigator.mediaCapabilities.encodingInfo({ type, video });
+          if (r && r.supported) { vp9Smooth = !!(r.smooth || r.powerEfficient); return; }
+        } catch (e) {}
+      }
+      vp9Smooth = false;
+    })();
+
     const CODEC_ORDER = {
-      low: ['video/H264', 'video/VP8', 'video/VP9'],
-      mid: ['video/VP8', 'video/H264', 'video/VP9'],
-      high: ['video/VP9', 'video/VP8', 'video/H264'],
+      low: ['video/H265', 'video/H264', 'video/VP8', 'video/VP9'],
+      mid: ['video/H265', 'video/VP8', 'video/H264', 'video/VP9'],
+      high: ['video/H265', 'video/VP8', 'video/H264', 'video/VP9'],
     };
-    const videoCodecPreferences = () => {
+    const videoCodecPreferences = (peers = 1) => {
       try {
-        const caps = RTCRtpSender.getCapabilities && RTCRtpSender.getCapabilities('video');
+        const caps = RTCRtpReceiver.getCapabilities && RTCRtpReceiver.getCapabilities('video');
         if (!caps || !caps.codecs) return null;
-        const order = CODEC_ORDER[codecDowngraded ? 'low' : deviceTier()];
+        const tier = codecDowngraded ? 'low' : deviceTier();
+        const order = [...CODEC_ORDER[tier]];
+        if (vp9Smooth && tier !== 'low' && peers <= 3) order.splice(1, 0, order.splice(order.indexOf('video/VP9'), 1)[0]);
         const rank = (c) => { const i = order.indexOf(c.mimeType); return i === -1 ? order.length : i; };
-        return [...caps.codecs].sort((a, b) => rank(a) - rank(b));
+        // Keep rtx/red/ulpfec in the list — removing them disables retransmission and FEC.
+        return [...caps.codecs].sort((a, b) => rank(a.mimeType) - rank(b.mimeType));
       } catch (e) { return null; }
+    };
+
+    // Opus defaults to 32kbps mono with no error correction. Raising the bitrate and turning
+    // on in-band FEC is the single most audible quality win available. The encoder is configured
+    // by the *remote* description, so both descriptions get the same parameters.
+    const OPUS_PARAMS = { maxaveragebitrate: 64000, maxplaybackrate: 48000, useinbandfec: 1, usedtx: 0, stereo: 0 };
+    const mungeOpus = (sdp) => {
+      try {
+        const pt = (sdp.match(/a=rtpmap:(\d+) opus\/48000\/2/i) || [])[1];
+        if (!pt) return sdp;
+        const lines = sdp.split(/\r\n|\n/);
+        const prefix = `a=fmtp:${pt} `;
+        const idx = lines.findIndex(l => l.startsWith(prefix));
+        const map = new Map();
+        if (idx !== -1) lines[idx].slice(prefix.length).split(';').forEach(kv => {
+          const [k, v] = kv.trim().split('='); if (k) map.set(k, v);
+        });
+        Object.entries(OPUS_PARAMS).forEach(([k, v]) => map.set(k, String(v)));
+        const line = prefix + [...map].map(([k, v]) => v === undefined ? k : `${k}=${v}`).join(';');
+        if (idx !== -1) lines[idx] = line;
+        else {
+          const at = lines.findIndex(l => l.startsWith(`a=rtpmap:${pt} `));
+          if (at === -1) return sdp;
+          lines.splice(at + 1, 0, line);
+        }
+        return lines.join('\r\n');
+      } catch (e) { return sdp; }
     };
 
     const fetchIceServers = (() => {
@@ -1975,7 +2020,7 @@ window.addEventListener('load', function startConstellation(){
       if ('contentHint' in track) track.contentHint = 'motion';
       let colorGL = null;
       let color = 'none', face = 'none', tracker = null;
-      let target = null, shown = null, missed = 0, busy = false;
+      let target = null, prevTarget = null, shown = null, missed = 0, busy = false;
       let lastSend = 0, gap = 66, avg = 0, slowStreak = 0, warmup = 4, stopTick = null, alive = true;
 
       const sendFrame = (w, h) => {
@@ -1983,6 +2028,7 @@ window.addEventListener('load', function startConstellation(){
         if (busy || now - lastSend < gap || !window.createImageBitmap) return;
         busy = true; lastSend = now;
         const sent = now;
+        const capturedAt = now;
         createImageBitmap(video, { resizeWidth: 320, resizeHeight: Math.round(320 * video.videoHeight / video.videoWidth), resizeQuality: 'low' })
           .then(bmp => {
             if (!alive || face === 'none') { bmp.close(); busy = false; return; }
@@ -1992,7 +2038,8 @@ window.addEventListener('load', function startConstellation(){
               if (warmup > 0) warmup--;
               else {
                 avg = avg ? avg * 0.8 + rtt * 0.2 : rtt;
-                gap = avg > 120 ? 150 : avg > 70 ? 100 : 66;
+                // Track as often as the worker can keep up; slower machines back off on their own.
+                gap = Math.max(0, Math.min(140, Math.round(avg * 0.6)));
                 slowStreak = avg > 300 ? slowStreak + 1 : 0;
                 if (slowStreak > 10) { slowStreak = 0; face = 'none'; target = shown = null; onTooSlow && onTooSlow(); return; }
               }
@@ -2000,8 +2047,9 @@ window.addEventListener('load', function startConstellation(){
                 missed = 0;
                 const next = {};
                 FACE_KEYS.forEach((k, i) => { next[k] = { x: m.pts[i][0], y: m.pts[i][1] }; });
-                target = next;
-              } else if (++missed > 4) { target = null; shown = null; }
+                prevTarget = target;
+                target = { pts: next, at: capturedAt };
+              } else if (++missed > 4) { target = prevTarget = null; shown = null; }
             });
           })
           .catch(() => { busy = false; });
@@ -2018,11 +2066,21 @@ window.addEventListener('load', function startConstellation(){
         if (face !== 'none' && tracker) {
           sendFrame(w, h);
           if (target) {
-            // Glide toward the latest tracked position so motion looks smooth between updates.
+            // Landmarks describe a frame that is already a little old, so project them forward
+            // using how the face was moving. Without this the sticker visibly trails the face
+            // on slow machines, where finding the face takes longer.
+            const nowMs = performance.now();
+            const stale = Math.min(200, nowMs - target.at);
+            const span = prevTarget ? target.at - prevTarget.at : 0;
+            const k = span > 15 ? Math.min(1.6, stale / span) : 0;
             if (!shown) shown = {};
-            FACE_KEYS.forEach(k => {
-              const t = target[k], c = shown[k];
-              shown[k] = c ? { x: c.x + (t.x - c.x) * 0.55, y: c.y + (t.y - c.y) * 0.55 } : { x: t.x, y: t.y };
+            FACE_KEYS.forEach(key => {
+              const t = target.pts[key];
+              const p = prevTarget && prevTarget.pts[key];
+              const px = p ? t.x + (t.x - p.x) * k : t.x;
+              const py = p ? t.y + (t.y - p.y) * k : t.y;
+              const c = shown[key];
+              shown[key] = c ? { x: c.x + (px - c.x) * 0.72, y: c.y + (py - c.y) * 0.72 } : { x: px, y: py };
             });
             const px = {};
             FACE_KEYS.forEach(k => { px[k] = { x: shown[k].x * w, y: shown[k].y * h }; });
@@ -2037,7 +2095,7 @@ window.addEventListener('load', function startConstellation(){
         setSource(t) {
           video.srcObject = t ? new MediaStream([t]) : null;
           if (t) video.play().catch(() => {});
-          target = shown = null;
+          target = prevTarget = shown = null;
         },
         setColor(c) {
           color = c || 'none';
@@ -2045,7 +2103,7 @@ window.addEventListener('load', function startConstellation(){
         },
         async setFace(f) {
           const want = f || 'none';
-          target = shown = null; avg = 0; slowStreak = 0; warmup = 4;
+          target = prevTarget = shown = null; avg = 0; slowStreak = 0; warmup = 4;
           if (want === 'none') { face = 'none'; return; }
           const t = getFaceTracker();
           await t.ready;
@@ -2227,21 +2285,53 @@ window.addEventListener('load', function startConstellation(){
         applyEffects(next);
       };
 
+      // Firefox truncates scaled dimensions and its VP9 encoder stalls on odd sizes,
+      // so only use scales that land on even numbers.
+      const evenScale = (w, h, wanted) => {
+        for (let sc = wanted; sc <= wanted + 0.5; sc += 0.01) {
+          if (Math.floor(w / sc) % 2 === 0 && Math.floor(h / sc) % 2 === 0) return Math.round(sc * 100) / 100;
+        }
+        return Math.round(wanted);
+      };
+
+      const encodingFor = (n) => {
+        const tier = TIER_VIDEO[deviceTier()];
+        const sharing = !!screenTrackRef.current;
+        const cap = Math.min(tier.cap, sharing ? 2_500_000 : n <= 1 ? 2_000_000 : n <= 2 ? 1_200_000 : n <= 4 ? 600_000 : 350_000);
+        const wanted = sharing || n <= 2 ? 1 : n <= 4 ? 1.5 : 2;
+        return {
+          maxBitrate: cap,
+          maxFramerate: n > 4 && !sharing ? 24 : 30,
+          scale: evenScale(tier.width, tier.height, wanted),
+          target: { maxWidth: Math.round(tier.width / wanted / 2) * 2, maxHeight: Math.round(tier.height / wanted / 2) * 2 },
+        };
+      };
+
       // Lower per-peer bitrate as the mesh grows so bigger calls stay smooth.
+      const tuneAudio = () => forEachPeer(st => {
+        const sender = st.audioTx && st.audioTx.sender;
+        if (!sender || !sender.getParameters) return;
+        const p = sender.getParameters();
+        if (!p.encodings || !p.encodings.length) p.encodings = [{}];
+        p.encodings[0].maxBitrate = 64000;
+        p.encodings[0].priority = 'high';
+        p.encodings[0].networkPriority = 'high';
+        sender.setParameters(p).catch(() => {});
+      });
+
       const tuneBitrates = () => {
         const n = Object.keys(peersRef.current).length;
         const sharing = !!screenTrackRef.current;
-        const tierCap = TIER_VIDEO[deviceTier()].cap;
-        const cap = Math.min(tierCap, sharing ? 2_500_000 : n <= 1 ? 3_000_000 : n <= 3 ? 1_500_000 : n <= 5 ? 800_000 : 450_000);
-        const scale = sharing || n <= 2 ? 1 : n <= 4 ? 1.5 : 2;
+        const want = encodingFor(n);
         forEachPeer(st => {
           const sender = st.videoTx && st.videoTx.sender;
           if (!sender || !sender.getParameters) return;
           const p = sender.getParameters();
           if (!p.encodings || !p.encodings.length) return;
-          p.encodings[0].maxBitrate = cap;
-          p.encodings[0].scaleResolutionDownBy = scale;
-          p.encodings[0].maxFramerate = n > 4 && !sharing ? 24 : 30;
+          p.encodings[0].maxBitrate = want.maxBitrate;
+          p.encodings[0].maxFramerate = want.maxFramerate;
+          if ('scaleResolutionDownTo' in p.encodings[0]) p.encodings[0].scaleResolutionDownTo = want.target;
+          else p.encodings[0].scaleResolutionDownBy = want.scale;
           // Keep motion smooth; drop sharpness first when bandwidth is tight.
           p.degradationPreference = sharing ? 'maintain-resolution' : 'maintain-framerate';
           sender.setParameters(p).catch(() => {});
@@ -2267,7 +2357,7 @@ window.addEventListener('load', function startConstellation(){
             tx.sender.replaceTrack((streamRef.current && streamRef.current.getAudioTracks()[0]) || null).catch(() => {});
           } else if (kind === 'video' && !st.videoTx) {
             st.videoTx = tx; tx.direction = 'sendrecv';
-            const prefs = videoCodecPreferences();
+            const prefs = videoCodecPreferences(Object.keys(peersRef.current).length || 1);
             if (prefs && tx.setCodecPreferences) { try { tx.setCodecPreferences(prefs); } catch (e) {} }
             tx.sender.replaceTrack(outgoingVideoTrack()).catch(() => {});
           }
@@ -2302,21 +2392,41 @@ window.addEventListener('load', function startConstellation(){
           const s = streamRef.current;
           const sync = [callRef.current.sync];
           st.audioTx = pc.addTransceiver((s && s.getAudioTracks()[0]) || 'audio', { direction: 'sendrecv', streams: sync });
-          st.videoTx = pc.addTransceiver(outgoingVideoTrack() || 'video', { direction: 'sendrecv', streams: sync });
-          const prefs = videoCodecPreferences();
+          // Bitrate set here, not after connecting: otherwise every new peer probes toward
+          // ~1.8 Mbps at once and collapses a school uplink the moment a call starts.
+          const want = encodingFor(Object.keys(peersRef.current).length || 1);
+          const enc = { maxBitrate: want.maxBitrate, maxFramerate: want.maxFramerate, scaleResolutionDownBy: want.scale, networkPriority: 'medium' };
+          try { enc.scalabilityMode = 'L1T2'; } catch (e) {}
+          let vtx;
+          try { vtx = pc.addTransceiver(outgoingVideoTrack() || 'video', { direction: 'sendrecv', streams: sync, sendEncodings: [enc] }); }
+          catch (e) {
+            delete enc.scalabilityMode;
+            vtx = pc.addTransceiver(outgoingVideoTrack() || 'video', { direction: 'sendrecv', streams: sync, sendEncodings: [enc] });
+          }
+          st.videoTx = vtx;
+          const prefs = videoCodecPreferences(Object.keys(peersRef.current).length || 1);
           if (prefs && st.videoTx.setCodecPreferences) { try { st.videoTx.setCodecPreferences(prefs); } catch (e) {} }
         }
 
         pc.onnegotiationneeded = async () => {
           try {
             st.makingOffer = true;
-            await pc.setLocalDescription();
+            const offer = await pc.createOffer();
+            offer.sdp = mungeOpus(offer.sdp);
+            await pc.setLocalDescription(offer);
             sendSignal(peer, { type: 'sdp', description: pc.localDescription.toJSON() });
           } catch (e) { console.warn('[call] negotiation', e); }
           finally { st.makingOffer = false; }
         };
         pc.onicecandidate = ({ candidate }) => { if (candidate) sendSignal(peer, { type: 'ice', candidate: candidate.toJSON() }); };
-        pc.ontrack = ({ track }) => {
+        pc.ontrack = (ev) => {
+          const track = ev.track;
+          // Give the jitter buffer room so a late packet arrives in time instead of freezing.
+          try {
+            const r = ev.receiver;
+            if (r && 'jitterBufferTarget' in r) r.jitterBufferTarget = st.slowRoute ? 400 : 200;
+            else if (r && 'playoutDelayHint' in r) r.playoutDelayHint = st.slowRoute ? 0.4 : 0.2;
+          } catch (e) {}
           const keep = st.remote.getTracks().filter(t => t.kind !== track.kind);
           st.remote = new MediaStream([...keep, track]);
           setRemoteStreams(p => ({ ...p, [peer]: st.remote }));
@@ -2327,7 +2437,7 @@ window.addEventListener('load', function startConstellation(){
           const s = pc.connectionState;
           setPeerStates(p => ({ ...p, [peer]: s }));
           clearTimeout(st.discTimer);
-          if (s === 'connected') { st.fails = 0; tuneBitrates(); }
+          if (s === 'connected') { st.fails = 0; tuneBitrates(); tuneAudio(); }
           if (s === 'failed') {
             st.fails++;
             if (st.fails >= 2 && !st.relay) {
@@ -2357,14 +2467,16 @@ window.addEventListener('load', function startConstellation(){
         st.queue = st.queue.then(async () => {
           if (pc.signalingState === 'closed') return;
           if (msg.type === 'sdp') {
-            const desc = msg.description;
+            const desc = { type: msg.description.type, sdp: mungeOpus(msg.description.sdp) };
             const collision = desc.type === 'offer' && (st.makingOffer || pc.signalingState !== 'stable');
             st.ignoreOffer = !st.polite && collision;
             if (st.ignoreOffer) return;
             await pc.setRemoteDescription(desc);
             if (desc.type === 'offer') {
               attachLocalTracks(st);
-              await pc.setLocalDescription();
+              const answer = await pc.createAnswer();
+              answer.sdp = mungeOpus(answer.sdp);
+              await pc.setLocalDescription(answer);
               sendSignal(from, { type: 'sdp', description: pc.localDescription.toJSON() });
             }
             for (const c of st.pendingIce.splice(0)) { try { await pc.addIceCandidate(c); } catch (e) {} }
@@ -2405,9 +2517,11 @@ window.addEventListener('load', function startConstellation(){
         if (procRef.current) { procRef.current.stop(); procRef.current = null; }
         hadOthersRef.current = false;
         const myRef = callBase.child(`participants/${me.current}`);
+        // Remove first, cancel the onDisconnect safety net only after: if this page dies
+        // mid-way, onDisconnect still cleans us up instead of leaving a frozen tile.
+        await Promise.all([myRef.remove(), callBase.child(`sig/${me.current}`).remove()]).catch(() => {});
         myRef.onDisconnect().cancel();
         callBase.child(`sig/${me.current}`).onDisconnect().cancel();
-        await Promise.all([myRef.remove(), callBase.child(`sig/${me.current}`).remove()]).catch(() => {});
         if (c.target) db.ref(`rings/${c.target}/${me.current}`).remove().catch(() => {});
         // Last one out cleans up the whole call node.
         callBase.child('participants').once('value').then(s => { if (!s.exists()) callBase.remove(); }).catch(() => {});
@@ -2449,15 +2563,30 @@ window.addEventListener('load', function startConstellation(){
         const myRef = b.child(`participants/${me.current}`);
         myRef.onDisconnect().remove();
         myInbox.onDisconnect().remove();
-        await myRef.set({ joined: firebase.database.ServerValue.TIMESTAMP, muted: !hasAudio, videoOff: !camTrackRef.current, screen: false, hand: false });
+        await myRef.set({ joined: firebase.database.ServerValue.TIMESTAMP, alive: firebase.database.ServerValue.TIMESTAMP, muted: !hasAudio, videoOff: !camTrackRef.current, screen: false, hand: false });
         if (callRef.current !== info) return;
+
+        const beat = setInterval(() => {
+          if (callRef.current === info) myRef.child('alive').set(firebase.database.ServerValue.TIMESTAMP);
+        }, 10000);
+        listenersRef.current.push(() => clearInterval(beat));
+        myRef.child('alive').set(firebase.database.ServerValue.TIMESTAMP);
 
         listen(b.child('participants'), 'value', snap => {
           if (callRef.current !== info) return;
           const all = snap.val() || {};
+          // Drop anyone whose heartbeat stopped (tab closed hard, laptop shut, lost network).
+          Object.entries(all).forEach(([u, p]) => {
+            if (u === me.current || !p) return;
+            const last = p.alive || p.joined || 0;
+            if (last && Date.now() - last > 45000) {
+              delete all[u];
+              b.child(`participants/${u}`).remove().catch(() => {});
+            }
+          });
           if (!all[me.current]) {
             // We got removed (e.g. a network blip fired onDisconnect). Put ourselves back.
-            myRef.set({ joined: firebase.database.ServerValue.TIMESTAMP, muted: stateRef.current.muted, videoOff: stateRef.current.videoOff, screen: stateRef.current.sharing, hand: stateRef.current.hand });
+            myRef.set({ joined: firebase.database.ServerValue.TIMESTAMP, alive: firebase.database.ServerValue.TIMESTAMP, muted: stateRef.current.muted, videoOff: stateRef.current.videoOff, screen: stateRef.current.sharing, hand: stateRef.current.hand });
             return;
           }
           setParticipants(all);
@@ -2663,6 +2792,35 @@ window.addEventListener('load', function startConstellation(){
               });
             } catch (e) {}
           }
+          // A TCP/TLS relay stalls on any loss: ask for less and buffer more.
+          for (const [peer, st] of Object.entries(peersRef.current)) {
+            try {
+              const rep2 = await st.pc.getStats();
+              let pair = null; const cands = {};
+              rep2.forEach(r => {
+                if (r.type === 'candidate-pair' && r.nominated && r.state === 'succeeded') pair = r;
+                else if (r.type === 'local-candidate') cands[r.id] = r;
+              });
+              const local = pair && cands[pair.localCandidateId];
+              const slow = !!(local && local.relayProtocol && local.relayProtocol !== 'udp');
+              if (slow !== !!st.slowRoute) {
+                st.slowRoute = slow;
+                st.pc.getReceivers().forEach(r => {
+                  try { if ('jitterBufferTarget' in r) r.jitterBufferTarget = slow ? 400 : 200; } catch (e) {}
+                  try { if ('playoutDelayHint' in r) r.playoutDelayHint = slow ? 0.4 : 0.2; } catch (e) {}
+                });
+                const sender = st.videoTx && st.videoTx.sender;
+                if (sender && sender.getParameters) {
+                  const pp = sender.getParameters();
+                  if (pp.encodings && pp.encodings.length) {
+                    if (slow) { pp.encodings[0].maxBitrate = 250_000; pp.encodings[0].maxFramerate = 15; }
+                    sender.setParameters(pp).catch(() => {});
+                  }
+                }
+                if (!slow) tuneBitrates();
+              }
+            } catch (e) {}
+          }
           if (senders && limited === senders) cpuStrikesRef.current++; else cpuStrikesRef.current = 0;
           if (cpuStrikesRef.current >= 3 && !easedRef.current) {
             // This device can't encode what we're asking for: halve the picture size and
@@ -2769,9 +2927,18 @@ window.addEventListener('load', function startConstellation(){
         return () => clearTimeout(t);
       }, [incoming]);
 
-      // Leave cleanly if the tab closes mid-call.
+      // Leave cleanly if the tab closes mid-call. A closing page can't finish normal Firebase
+      // writes, so send keepalive DELETEs that the browser completes after we're gone.
       useEffect(() => {
-        const fn = () => { if (callRef.current) leave({ silent: true }); };
+        const fn = () => {
+          const c = callRef.current;
+          if (!c) return;
+          const base = `${firebaseConfig.databaseURL}/${CALL_ROOT}/${c.id}`;
+          const gone = [`${base}/participants/${me.current}.json`, `${base}/sig/${me.current}.json`];
+          if (c.target) gone.push(`${firebaseConfig.databaseURL}/rings/${c.target}/${me.current}.json`);
+          gone.forEach(u => { try { fetch(u, { method: 'DELETE', keepalive: true }); } catch (e) {} });
+          leave({ silent: true });
+        };
         window.addEventListener('pagehide', fn);
         return () => window.removeEventListener('pagehide', fn);
       }, []);
