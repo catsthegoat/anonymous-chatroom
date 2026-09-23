@@ -1543,6 +1543,38 @@ window.addEventListener('load', function startConstellation(){
       return { ...srv, urls };
     });
 
+    // Match video settings to the machine. School laptops (e.g. Lenovo 300e: 4-core Celeron,
+    // 4GB RAM) choke on VP9, whose encoder is pure CPU — they do far better on H264, which
+    // those chips encode in hardware. Strong machines get VP9 for a sharper picture per kbps.
+    let codecDowngraded = false;
+    const deviceTier = () => {
+      const cores = navigator.hardwareConcurrency || 4;
+      const mem = navigator.deviceMemory || 4;
+      const mobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
+      if (cores <= 4 || mem <= 4) return 'low';
+      if (!mobile && cores >= 8 && mem >= 8 && !codecDowngraded) return 'high';
+      return 'mid';
+    };
+    const TIER_VIDEO = {
+      low: { width: 640, height: 360, fps: 30, cap: 1_000_000, fx: 512 },
+      mid: { width: 1280, height: 720, fps: 30, cap: 2_200_000, fx: 720 },
+      high: { width: 1280, height: 720, fps: 30, cap: 3_000_000, fx: 960 },
+    };
+    const CODEC_ORDER = {
+      low: ['video/H264', 'video/VP8', 'video/VP9'],
+      mid: ['video/VP8', 'video/H264', 'video/VP9'],
+      high: ['video/VP9', 'video/VP8', 'video/H264'],
+    };
+    const videoCodecPreferences = () => {
+      try {
+        const caps = RTCRtpSender.getCapabilities && RTCRtpSender.getCapabilities('video');
+        if (!caps || !caps.codecs) return null;
+        const order = CODEC_ORDER[codecDowngraded ? 'low' : deviceTier()];
+        const rank = (c) => { const i = order.indexOf(c.mimeType); return i === -1 ? order.length : i; };
+        return [...caps.codecs].sort((a, b) => rank(a) - rank(b));
+      } catch (e) { return null; }
+    };
+
     const fetchIceServers = (() => {
       let cache = null, at = 0;
       const stun = [{ urls: ['stun:stun.cloudflare.com:3478', 'stun:stun.l.google.com:19302'] }];
@@ -1977,7 +2009,7 @@ window.addEventListener('load', function startConstellation(){
 
       const frame = () => {
         if (video.readyState < 2 || !video.videoWidth) return;
-        const s = Math.min(1, 960 / video.videoWidth);
+        const s = Math.min(1, (TIER_VIDEO[deviceTier()].fx || 640) / video.videoWidth);
         const w = Math.round(video.videoWidth * s), h = Math.round(video.videoHeight * s);
         if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
         const g = COLOR_GRADES[color];
@@ -2118,7 +2150,8 @@ window.addEventListener('load', function startConstellation(){
         ...(devicesRef.current.mic ? { deviceId: { exact: devicesRef.current.mic } } : {}),
       });
       const videoConstraints = (facingMode) => ({
-        width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30, max: 30 },
+        width: { ideal: TIER_VIDEO[deviceTier()].width }, height: { ideal: TIER_VIDEO[deviceTier()].height },
+        frameRate: { ideal: TIER_VIDEO[deviceTier()].fps, max: 30 },
         ...(devicesRef.current.cam && !facingMode ? { deviceId: { exact: devicesRef.current.cam } } : { facingMode: facingMode || stateRef.current.facing }),
       });
 
@@ -2198,7 +2231,8 @@ window.addEventListener('load', function startConstellation(){
       const tuneBitrates = () => {
         const n = Object.keys(peersRef.current).length;
         const sharing = !!screenTrackRef.current;
-        const cap = sharing ? 2_500_000 : n <= 1 ? 2_500_000 : n <= 3 ? 1_200_000 : n <= 5 ? 700_000 : 400_000;
+        const tierCap = TIER_VIDEO[deviceTier()].cap;
+        const cap = Math.min(tierCap, sharing ? 2_500_000 : n <= 1 ? 3_000_000 : n <= 3 ? 1_500_000 : n <= 5 ? 800_000 : 450_000);
         const scale = sharing || n <= 2 ? 1 : n <= 4 ? 1.5 : 2;
         forEachPeer(st => {
           const sender = st.videoTx && st.videoTx.sender;
@@ -2233,6 +2267,8 @@ window.addEventListener('load', function startConstellation(){
             tx.sender.replaceTrack((streamRef.current && streamRef.current.getAudioTracks()[0]) || null).catch(() => {});
           } else if (kind === 'video' && !st.videoTx) {
             st.videoTx = tx; tx.direction = 'sendrecv';
+            const prefs = videoCodecPreferences();
+            if (prefs && tx.setCodecPreferences) { try { tx.setCodecPreferences(prefs); } catch (e) {} }
             tx.sender.replaceTrack(outgoingVideoTrack()).catch(() => {});
           }
         });
@@ -2267,6 +2303,8 @@ window.addEventListener('load', function startConstellation(){
           const sync = [callRef.current.sync];
           st.audioTx = pc.addTransceiver((s && s.getAudioTracks()[0]) || 'audio', { direction: 'sendrecv', streams: sync });
           st.videoTx = pc.addTransceiver(outgoingVideoTrack() || 'video', { direction: 'sendrecv', streams: sync });
+          const prefs = videoCodecPreferences();
+          if (prefs && st.videoTx.setCodecPreferences) { try { st.videoTx.setCodecPreferences(prefs); } catch (e) {} }
         }
 
         pc.onnegotiationneeded = async () => {
@@ -2608,6 +2646,45 @@ window.addEventListener('load', function startConstellation(){
         if (t && callRef.current) base().child('chat').push({ from: me.current, text: t.slice(0, 1000), ts: firebase.database.ServerValue.TIMESTAMP });
       };
 
+      const cpuStrikesRef = useRef(0);
+      const easedRef = useRef(false);
+      useEffect(() => {
+        if (!call) return;
+        const iv = setInterval(async () => {
+          let limited = 0, senders = 0;
+          for (const st of Object.values(peersRef.current)) {
+            try {
+              const rep = await st.pc.getStats();
+              rep.forEach(r => {
+                if (r.type === 'outbound-rtp' && r.kind === 'video' && r.framesSent) {
+                  senders++;
+                  if (r.qualityLimitationReason === 'cpu') limited++;
+                }
+              });
+            } catch (e) {}
+          }
+          if (senders && limited === senders) cpuStrikesRef.current++; else cpuStrikesRef.current = 0;
+          if (cpuStrikesRef.current >= 3 && !easedRef.current) {
+            // This device can't encode what we're asking for: halve the picture size and
+            // stay on the lighter codec for any future connections.
+            easedRef.current = true;
+            codecDowngraded = true;
+            cpuStrikesRef.current = 0;
+            forEachPeer(st => {
+              const sender = st.videoTx && st.videoTx.sender;
+              if (!sender || !sender.getParameters) return;
+              const p = sender.getParameters();
+              if (!p.encodings || !p.encodings.length) return;
+              p.encodings[0].scaleResolutionDownBy = Math.max(2, p.encodings[0].scaleResolutionDownBy || 1);
+              p.encodings[0].maxFramerate = 24;
+              sender.setParameters(p).catch(() => {});
+            });
+            addDebugLogGlobal('Eased video settings: this device was CPU-limited', 'warning');
+          }
+        }, 4000);
+        return () => clearInterval(iv);
+      }, [call]);
+
       const statsPrevRef = useRef({});
       const readStats = async () => {
         const rows = [];
@@ -2781,9 +2858,17 @@ window.addEventListener('load', function startConstellation(){
       if (!rows.length) return null;
       const quality = (r) => r.route === 'relay' && r.protocol && r.protocol !== 'UDP' ? 'poor route (TCP relay)'
         : r.rtt != null && r.rtt > 250 ? 'high ping' : r.route === 'relay' ? 'relayed' : 'direct';
+      const tier = deviceTier();
+      const tierLabel = { low: 'basic (light settings)', mid: 'normal', high: 'strong (best quality)' }[tier];
       return (
         <div className="pr-conn">
           <div className="pr-fx-label">Connection</div>
+          <div className="pr-conn-row">
+            <div className="pr-conn-grid">
+              <span>This device</span><b>{tierLabel}</b>
+              <span>Cores / RAM</span><b>{navigator.hardwareConcurrency || '?'} / {navigator.deviceMemory ? navigator.deviceMemory + ' GB' : '?'}</b>
+            </div>
+          </div>
           {rows.map(r => (
             <div key={r.peer} className="pr-conn-row">
               <div className="pr-conn-head">
