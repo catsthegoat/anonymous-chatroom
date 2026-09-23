@@ -1036,7 +1036,15 @@ button.nxc-mini-pill:hover { color: #fff; background: rgba(255,255,255,.08); }
 .pr-fx-icon { font-size: 24px; line-height: 1; }
 .pr-fx-swatch { width: 26px; height: 26px; border-radius: 50%; background: conic-gradient(from 200deg, #ff6b6b, #ffd166, #06d6a0, #4cc9f0, #9b5de5, #ff6b6b); box-shadow: inset 0 0 0 2px rgba(255,255,255,.25); }
 .pr-fx-note { font-size: 12px; color: rgba(255,255,255,.55); text-align: center; padding-top: 2px; }
-.pr-device-menu { width: 300px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.pr-conn { display: flex; flex-direction: column; gap: 6px; }
+.pr-conn-row { padding: 8px 10px; border-radius: 12px; background: rgba(255,255,255,.05); }
+.pr-conn-head { display: flex; align-items: center; justify-content: space-between; font-size: 13px; margin-bottom: 4px; }
+.pr-conn-tag { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; padding: 2px 7px; border-radius: 99px; background: rgba(74,222,128,.15); color: #86efac; }
+.pr-conn-tag.warn { background: rgba(255,77,94,.15); color: #ff9aa5; }
+.pr-conn-grid { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; font-size: 11.5px; }
+.pr-conn-grid span { color: rgba(255,255,255,.5); }
+.pr-conn-grid b { font-weight: 600; font-variant-numeric: tabular-nums; }
+.pr-device-menu { width: 320px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
 .pr-popover-title { display: flex; align-items: center; justify-content: space-between; font-weight: 700; font-size: 14px; }
 .pr-device-row { display: flex; flex-direction: column; gap: 5px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: rgba(255,255,255,.5); }
 .pr-device-row select { width: 100%; padding: 9px 10px; border-radius: 10px; background: rgba(255,255,255,.06); border: 1px solid var(--pr-line-2); color: #fff; font-family: inherit; font-size: 13px; text-transform: none; letter-spacing: 0; outline: none; }
@@ -1524,10 +1532,13 @@ window.addEventListener('load', function startConstellation(){
     // 443 (TLS) and 80 (TCP). Same credentials; Cloudflare's default list only has 3478/5349.
     const withFirewallPorts = (servers) => servers.map(srv => {
       if (!srv.username) return srv;
-      const urls = (Array.isArray(srv.urls) ? srv.urls : [srv.urls]).filter(u => !/:53\?/.test(u));
+      const urls = Array.isArray(srv.urls) ? [...srv.urls] : [srv.urls];
       if (urls.some(u => u.includes('turn.cloudflare.com'))) {
-        ['turns:turn.cloudflare.com:443?transport=tcp', 'turn:turn.cloudflare.com:80?transport=tcp']
-          .forEach(u => { if (!urls.includes(u)) urls.push(u); });
+        // Cloudflare's documented endpoints. 80/tcp and 443/tls are the ones that get through
+        // locked-down school Wi-Fi. Port 53 is deliberately NOT used: browsers block it and the
+        // candidate just times out (per Cloudflare's own docs).
+        ['turn:turn.cloudflare.com:80?transport=tcp',
+         'turns:turn.cloudflare.com:443?transport=tcp'].forEach(u => { if (!urls.includes(u)) urls.push(u); });
       }
       return { ...srv, urls };
     });
@@ -1928,7 +1939,8 @@ window.addEventListener('load', function startConstellation(){
       const canvas = document.createElement('canvas');
       canvas.width = 640; canvas.height = 360;
       const ctx = canvas.getContext('2d', { alpha: false, desynchronized: true });
-      const track = canvas.captureStream(24).getVideoTracks()[0];
+      const track = canvas.captureStream(30).getVideoTracks()[0];
+      if ('contentHint' in track) track.contentHint = 'motion';
       let colorGL = null;
       let color = 'none', face = 'none', tracker = null;
       let target = null, shown = null, missed = 0, busy = false;
@@ -1965,7 +1977,7 @@ window.addEventListener('load', function startConstellation(){
 
       const frame = () => {
         if (video.readyState < 2 || !video.videoWidth) return;
-        const s = Math.min(1, 640 / video.videoWidth);
+        const s = Math.min(1, 960 / video.videoWidth);
         const w = Math.round(video.videoWidth * s), h = Math.round(video.videoHeight * s);
         if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
         const g = COLOR_GRADES[color];
@@ -1989,7 +2001,7 @@ window.addEventListener('load', function startConstellation(){
 
       return {
         track,
-        start() { if (!stopTick) stopTick = makeTicker(24, frame); },
+        start() { if (!stopTick) stopTick = makeTicker(30, frame); },
         setSource(t) {
           video.srcObject = t ? new MediaStream([t]) : null;
           if (t) video.play().catch(() => {});
@@ -2106,7 +2118,7 @@ window.addEventListener('load', function startConstellation(){
         ...(devicesRef.current.mic ? { deviceId: { exact: devicesRef.current.mic } } : {}),
       });
       const videoConstraints = (facingMode) => ({
-        width: { ideal: 960 }, height: { ideal: 540 }, frameRate: { ideal: 30, max: 30 },
+        width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30, max: 30 },
         ...(devicesRef.current.cam && !facingMode ? { deviceId: { exact: devicesRef.current.cam } } : { facingMode: facingMode || stateRef.current.facing }),
       });
 
@@ -2186,7 +2198,7 @@ window.addEventListener('load', function startConstellation(){
       const tuneBitrates = () => {
         const n = Object.keys(peersRef.current).length;
         const sharing = !!screenTrackRef.current;
-        const cap = sharing ? 1_500_000 : n <= 1 ? 1_200_000 : n <= 3 ? 700_000 : n <= 5 ? 400_000 : 250_000;
+        const cap = sharing ? 2_500_000 : n <= 1 ? 2_500_000 : n <= 3 ? 1_200_000 : n <= 5 ? 700_000 : 400_000;
         const scale = sharing || n <= 2 ? 1 : n <= 4 ? 1.5 : 2;
         forEachPeer(st => {
           const sender = st.videoTx && st.videoTx.sender;
@@ -2195,7 +2207,9 @@ window.addEventListener('load', function startConstellation(){
           if (!p.encodings || !p.encodings.length) return;
           p.encodings[0].maxBitrate = cap;
           p.encodings[0].scaleResolutionDownBy = scale;
-          p.encodings[0].maxFramerate = n > 4 && !sharing ? 20 : 30;
+          p.encodings[0].maxFramerate = n > 4 && !sharing ? 24 : 30;
+          // Keep motion smooth; drop sharpness first when bandwidth is tight.
+          p.degradationPreference = sharing ? 'maintain-resolution' : 'maintain-framerate';
           sender.setParameters(p).catch(() => {});
         });
       };
@@ -2237,9 +2251,13 @@ window.addEventListener('load', function startConstellation(){
         tuneBitrates();
       };
 
-      const createPeer = (peer, joined) => {
-        const pc = new RTCPeerConnection({ iceServers: callRef.current.ice, bundlePolicy: 'max-bundle' });
-        const st = { pc, joined, polite: me.current > peer, makingOffer: false, ignoreOffer: false, pendingIce: [], queue: Promise.resolve(), remote: new MediaStream(), discTimer: null };
+      const createPeer = (peer, joined, forceRelay) => {
+        const pc = new RTCPeerConnection({
+          iceServers: callRef.current.ice,
+          bundlePolicy: 'max-bundle',
+          ...(forceRelay ? { iceTransportPolicy: 'relay' } : {}),
+        });
+        const st = { pc, joined, polite: me.current > peer, makingOffer: false, ignoreOffer: false, pendingIce: [], queue: Promise.resolve(), remote: new MediaStream(), discTimer: null, fails: (peersRef.current[peer] && peersRef.current[peer].fails) || 0, relay: !!forceRelay };
         peersRef.current[peer] = st;
         setPeerStates(p => ({ ...p, [peer]: 'connecting' }));
 
@@ -2271,9 +2289,25 @@ window.addEventListener('load', function startConstellation(){
           const s = pc.connectionState;
           setPeerStates(p => ({ ...p, [peer]: s }));
           clearTimeout(st.discTimer);
-          if (s === 'connected') tuneBitrates();
-          if (s === 'failed') { if (!st.polite) pc.restartIce(); }
-          if (s === 'disconnected') st.discTimer = setTimeout(() => { if (pc.connectionState === 'disconnected' && !st.polite) pc.restartIce(); }, 4000);
+          if (s === 'connected') { st.fails = 0; tuneBitrates(); }
+          if (s === 'failed') {
+            st.fails++;
+            if (st.fails >= 2 && !st.relay) {
+              // Direct paths keep failing on this network: rebuild the connection forced through
+              // the relay, which Cloudflare says is the more reliable route.
+              addDebugLogGlobal(`Retrying ${peer} over the relay`, 'warning');
+              const fails = st.fails;
+              sendSignal(peer, { type: 'rebuild' });
+              closePeer(peer);
+              const fresh = createPeer(peer, joined, true);
+              fresh.fails = fails;
+            } else if (!st.polite) pc.restartIce();
+            else setTimeout(() => { if (pc.connectionState === 'failed') pc.restartIce(); }, 1500);
+          }
+          if (s === 'disconnected') st.discTimer = setTimeout(() => {
+            if (pc.connectionState !== 'disconnected') return;
+            if (!st.polite) pc.restartIce(); else setTimeout(() => { if (pc.connectionState === 'disconnected') pc.restartIce(); }, 1500);
+          }, 4000);
         };
         return st;
       };
@@ -2296,6 +2330,11 @@ window.addEventListener('load', function startConstellation(){
               sendSignal(from, { type: 'sdp', description: pc.localDescription.toJSON() });
             }
             for (const c of st.pendingIce.splice(0)) { try { await pc.addIceCandidate(c); } catch (e) {} }
+          } else if (msg.type === 'rebuild') {
+            // Peer couldn't reach us directly; rebuild both ends forced through the relay.
+            const joined = st.joined;
+            closePeer(from);
+            createPeer(from, joined, true);
           } else if (msg.type === 'ice') {
             if (!pc.remoteDescription) { st.pendingIce.push(msg.candidate); return; }
             try { await pc.addIceCandidate(msg.candidate); } catch (e) { if (!st.ignoreOffer) console.warn('[call] ice', e); }
@@ -2358,6 +2397,7 @@ window.addEventListener('load', function startConstellation(){
         info.ice = await ice;
 
         camTrackRef.current = stream.getVideoTracks()[0] || null;
+        if (camTrackRef.current && 'contentHint' in camTrackRef.current) camTrackRef.current.contentHint = 'motion';
         streamRef.current = stream;
         if (camTrackRef.current && effectsActive(effectsRef.current)) applyEffects(effectsRef.current);
         publishLocal();
@@ -2490,6 +2530,7 @@ window.addEventListener('load', function startConstellation(){
         try {
           const s = await navigator.mediaDevices.getUserMedia({ video: videoConstraints(facingMode) });
           const t = s.getVideoTracks()[0];
+          if ('contentHint' in t) t.contentHint = 'motion';
           if (camTrackRef.current) camTrackRef.current.stop();
           camTrackRef.current = t;
           if (procRef.current) procRef.current.setSource(t);
@@ -2567,6 +2608,46 @@ window.addEventListener('load', function startConstellation(){
         if (t && callRef.current) base().child('chat').push({ from: me.current, text: t.slice(0, 1000), ts: firebase.database.ServerValue.TIMESTAMP });
       };
 
+      const statsPrevRef = useRef({});
+      const readStats = async () => {
+        const rows = [];
+        for (const peer of Object.keys(peersRef.current)) {
+          const st = peersRef.current[peer];
+          try {
+            const rep = await st.pc.getStats();
+            let pair = null, inV = null, outV = null, remoteIn = null;
+            const cands = {};
+            rep.forEach(r => {
+              if (r.type === 'candidate-pair' && r.nominated && r.state === 'succeeded') pair = r;
+              else if (r.type === 'inbound-rtp' && r.kind === 'video') inV = r;
+              else if (r.type === 'outbound-rtp' && r.kind === 'video') outV = r;
+              else if (r.type === 'remote-inbound-rtp' && r.kind === 'video') remoteIn = r;
+              else if (r.type === 'local-candidate' || r.type === 'remote-candidate') cands[r.id] = r;
+            });
+            const local = pair && cands[pair.localCandidateId];
+            const now = performance.now();
+            const prev = statsPrevRef.current[peer];
+            const rate = (cur, key) => (prev && prev[key] != null && cur != null && now > prev.t)
+              ? Math.round((cur - prev[key]) * 8 / ((now - prev.t) / 1000) / 1000) : null;
+            rows.push({
+              peer,
+              route: local ? (local.candidateType === 'relay' ? 'relay' : 'direct') : '—',
+              protocol: local ? (local.relayProtocol || local.protocol || '').toUpperCase() : '',
+              rtt: pair && pair.currentRoundTripTime != null ? Math.round(pair.currentRoundTripTime * 1000)
+                : (remoteIn && remoteIn.roundTripTime != null ? Math.round(remoteIn.roundTripTime * 1000) : null),
+              up: rate(outV && outV.bytesSent, 'sent'),
+              down: rate(inV && inV.bytesReceived, 'recv'),
+              sending: outV && outV.frameWidth ? `${outV.frameWidth}×${outV.frameHeight} ${Math.round(outV.framesPerSecond || 0)}fps` : '—',
+              receiving: inV && inV.frameWidth ? `${inV.frameWidth}×${inV.frameHeight} ${Math.round(inV.framesPerSecond || 0)}fps` : '—',
+              limited: outV ? outV.qualityLimitationReason : null,
+              codec: outV && outV.codecId && rep.get(outV.codecId) ? (rep.get(outV.codecId).mimeType || '').split('/')[1] : null,
+            });
+            statsPrevRef.current[peer] = { t: now, sent: outV && outV.bytesSent, recv: inV && inV.bytesReceived };
+          } catch (e) {}
+        }
+        return rows;
+      };
+
       const selectDevice = async (kind, deviceId) => {
         setDevices(d => ({ ...d, [kind]: deviceId }));
         devicesRef.current = { ...devicesRef.current, [kind]: deviceId };
@@ -2621,7 +2702,7 @@ window.addEventListener('load', function startConstellation(){
       return {
         call, phase, participants, remoteStreams, peerStates, localStream, muted, videoOff, sharing, hand,
         speaking, connectedAt, reactions, chat, incoming, devices, facing, effects, effectsLoading, setEffects,
-        joinRoomCall, callUser, acceptIncoming, declineIncoming, leave,
+        joinRoomCall, callUser, acceptIncoming, declineIncoming, leave, readStats,
         toggleMute, toggleVideo, toggleShare, toggleHand, flipCamera, sendReaction, sendChat, selectDevice,
       };
     }
@@ -2688,6 +2769,40 @@ window.addEventListener('load', function startConstellation(){
       );
     };
 
+    const ConnectionInfo = ({ engine }) => {
+      const [rows, setRows] = useState([]);
+      useEffect(() => {
+        let on = true;
+        const tick = () => engine.readStats().then(r => { if (on) setRows(r); });
+        tick();
+        const iv = setInterval(tick, 1500);
+        return () => { on = false; clearInterval(iv); };
+      }, []);
+      if (!rows.length) return null;
+      const quality = (r) => r.route === 'relay' && r.protocol && r.protocol !== 'UDP' ? 'poor route (TCP relay)'
+        : r.rtt != null && r.rtt > 250 ? 'high ping' : r.route === 'relay' ? 'relayed' : 'direct';
+      return (
+        <div className="pr-conn">
+          <div className="pr-fx-label">Connection</div>
+          {rows.map(r => (
+            <div key={r.peer} className="pr-conn-row">
+              <div className="pr-conn-head">
+                <b>{r.peer}</b>
+                <span className={'pr-conn-tag' + (quality(r).startsWith('poor') || quality(r) === 'high ping' ? ' warn' : '')}>{quality(r)}</span>
+              </div>
+              <div className="pr-conn-grid">
+                <span>Ping</span><b>{r.rtt != null ? r.rtt + ' ms' : '—'}</b>
+                <span>Route</span><b>{r.route}{r.protocol ? ' · ' + r.protocol : ''}</b>
+                <span>Sending</span><b>{r.sending}{r.up != null ? ` · ${r.up} kbps` : ''}</b>
+                <span>Receiving</span><b>{r.receiving}{r.down != null ? ` · ${r.down} kbps` : ''}</b>
+                {r.codec && <><span>Codec</span><b>{r.codec}{r.limited && r.limited !== 'none' ? ` · limited by ${r.limited}` : ''}</b></>}
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+    };
+
     const DeviceMenu = ({ engine, onClose }) => {
       const [list, setList] = useState({ mic: [], cam: [], speaker: [] });
       useEffect(() => {
@@ -2709,7 +2824,8 @@ window.addEventListener('load', function startConstellation(){
       );
       return (
         <div className="pr-popover pr-device-menu" onClick={e => e.stopPropagation()}>
-          <div className="pr-popover-title">Devices <button className="pr-icon-btn" onClick={onClose}>{I.x}</button></div>
+          <div className="pr-popover-title">Devices & connection <button className="pr-icon-btn" onClick={onClose}>{I.x}</button></div>
+          <ConnectionInfo engine={engine} />
           {row('mic', 'Microphone')}
           {row('cam', 'Camera')}
           {canSink && row('speaker', 'Speaker')}
