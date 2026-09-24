@@ -2294,6 +2294,12 @@ window.addEventListener('load', function startConstellation(){
         return Math.round(wanted);
       };
 
+      // Every connection starts at this cap and earns more bitrate only while ping stays low.
+      // Sending more than a slow link can carry piles up in queues and turns 40ms of ping
+      // into 1000ms for audio, video and everything else.
+      const START_CAP = 500_000;
+      const peerCap = (st, want) => Math.min(want.maxBitrate, st.latCap || START_CAP, st.slowRoute ? 250_000 : Infinity);
+
       const encodingFor = (n) => {
         const tier = TIER_VIDEO[deviceTier()];
         const sharing = !!screenTrackRef.current;
@@ -2328,8 +2334,8 @@ window.addEventListener('load', function startConstellation(){
           if (!sender || !sender.getParameters) return;
           const p = sender.getParameters();
           if (!p.encodings || !p.encodings.length) return;
-          p.encodings[0].maxBitrate = want.maxBitrate;
-          p.encodings[0].maxFramerate = want.maxFramerate;
+          p.encodings[0].maxBitrate = peerCap(st, want);
+          p.encodings[0].maxFramerate = st.highPing ? 15 : want.maxFramerate;
           if ('scaleResolutionDownTo' in p.encodings[0]) p.encodings[0].scaleResolutionDownTo = want.target;
           else p.encodings[0].scaleResolutionDownBy = want.scale;
           // Keep motion smooth; drop sharpness first when bandwidth is tight.
@@ -2395,7 +2401,7 @@ window.addEventListener('load', function startConstellation(){
           // Bitrate set here, not after connecting: otherwise every new peer probes toward
           // ~1.8 Mbps at once and collapses a school uplink the moment a call starts.
           const want = encodingFor(Object.keys(peersRef.current).length || 1);
-          const enc = { maxBitrate: want.maxBitrate, maxFramerate: want.maxFramerate, scaleResolutionDownBy: want.scale, networkPriority: 'medium' };
+          const enc = { maxBitrate: Math.min(want.maxBitrate, START_CAP), maxFramerate: want.maxFramerate, scaleResolutionDownBy: want.scale, networkPriority: 'medium' };
           try { enc.scalabilityMode = 'L1T2'; } catch (e) {}
           let vtx;
           try { vtx = pc.addTransceiver(outgoingVideoTrack() || 'video', { direction: 'sendrecv', streams: sync, sendEncodings: [enc] }); }
@@ -2424,8 +2430,11 @@ window.addEventListener('load', function startConstellation(){
           // Give the jitter buffer room so a late packet arrives in time instead of freezing.
           try {
             const r = ev.receiver;
-            if (r && 'jitterBufferTarget' in r) r.jitterBufferTarget = st.slowRoute ? 400 : 200;
-            else if (r && 'playoutDelayHint' in r) r.playoutDelayHint = st.slowRoute ? 0.4 : 0.2;
+            // Video only. Buffering audio delays every word, which is worse than a video hiccup.
+            if (track.kind === 'video') {
+              if (r && 'jitterBufferTarget' in r) r.jitterBufferTarget = st.slowRoute ? 300 : 150;
+              else if (r && 'playoutDelayHint' in r) r.playoutDelayHint = st.slowRoute ? 0.3 : 0.15;
+            }
           } catch (e) {}
           const keep = st.remote.getTracks().filter(t => t.kind !== track.kind);
           st.remote = new MediaStream([...keep, track]);
@@ -2802,18 +2811,41 @@ window.addEventListener('load', function startConstellation(){
                 else if (r.type === 'local-candidate') cands[r.id] = r;
               });
               const local = pair && cands[pair.localCandidateId];
+              const rtt = pair && pair.currentRoundTripTime != null ? pair.currentRoundTripTime * 1000 : null;
+              if (rtt != null) {
+                const want = encodingFor(Object.keys(peersRef.current).length);
+                let cap = st.latCap || START_CAP;
+                if (rtt > 350) cap = Math.max(150_000, Math.round(cap * 0.5));          // cut hard
+                else if (rtt < 150) cap = Math.min(want.maxBitrate, Math.round(cap * 1.4)); // earn more
+                const highPing = rtt > 600;
+                if (cap !== st.latCap || highPing !== !!st.highPing) {
+                  st.latCap = cap; st.highPing = highPing;
+                  const sender = st.videoTx && st.videoTx.sender;
+                  if (sender && sender.getParameters) {
+                    const pp = sender.getParameters();
+                    if (pp.encodings && pp.encodings.length) {
+                      pp.encodings[0].maxBitrate = peerCap(st, want);
+                      pp.encodings[0].maxFramerate = highPing ? 15 : want.maxFramerate;
+                      sender.setParameters(pp).catch(() => {});
+                    }
+                  }
+                  addDebugLogGlobal(`${peer}: ping ${Math.round(rtt)}ms → cap ${Math.round(peerCap(st, want) / 1000)} kbps`, 'info');
+                }
+              }
               const slow = !!(local && local.relayProtocol && local.relayProtocol !== 'udp');
               if (slow !== !!st.slowRoute) {
                 st.slowRoute = slow;
                 st.pc.getReceivers().forEach(r => {
-                  try { if ('jitterBufferTarget' in r) r.jitterBufferTarget = slow ? 400 : 200; } catch (e) {}
-                  try { if ('playoutDelayHint' in r) r.playoutDelayHint = slow ? 0.4 : 0.2; } catch (e) {}
+                  if (!r.track || r.track.kind !== 'video') return;
+                  try { if ('jitterBufferTarget' in r) r.jitterBufferTarget = slow ? 300 : 150; } catch (e) {}
+                  try { if ('playoutDelayHint' in r) r.playoutDelayHint = slow ? 0.3 : 0.15; } catch (e) {}
                 });
                 const sender = st.videoTx && st.videoTx.sender;
                 if (sender && sender.getParameters) {
                   const pp = sender.getParameters();
                   if (pp.encodings && pp.encodings.length) {
-                    if (slow) { pp.encodings[0].maxBitrate = 250_000; pp.encodings[0].maxFramerate = 15; }
+                    pp.encodings[0].maxBitrate = peerCap(st, encodingFor(Object.keys(peersRef.current).length));
+                    if (slow) pp.encodings[0].maxFramerate = 15;
                     sender.setParameters(pp).catch(() => {});
                   }
                 }
@@ -3025,6 +3057,7 @@ window.addEventListener('load', function startConstellation(){
       if (!rows.length) return null;
       const quality = (r) => r.route === 'relay' && r.protocol && r.protocol !== 'UDP' ? 'poor route (TCP relay)'
         : r.rtt != null && r.rtt > 250 ? 'high ping' : r.route === 'relay' ? 'relayed' : 'direct';
+      const anyHighPing = rows.some(r => r.rtt != null && r.rtt > 400);
       const tier = deviceTier();
       const tierLabel = { low: 'basic (light settings)', mid: 'normal', high: 'strong (best quality)' }[tier];
       return (
@@ -3036,6 +3069,11 @@ window.addEventListener('load', function startConstellation(){
               <span>Cores / RAM</span><b>{navigator.hardwareConcurrency || '?'} / {navigator.deviceMemory ? navigator.deviceMemory + ' GB' : '?'}</b>
             </div>
           </div>
+          {anyHighPing && (
+            <div className="pr-fx-note" style={{ textAlign: 'left', padding: '2px 4px 6px' }}>
+              High ping is network delay, not this app. Video is being cut back automatically. If it stays high with cameras off, try a different Wi-Fi or a hotspot.
+            </div>
+          )}
           {rows.map(r => (
             <div key={r.peer} className="pr-conn-row">
               <div className="pr-conn-head">
