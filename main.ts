@@ -44,6 +44,32 @@ const handler = async (req: Request): Promise<Response> => {
     }
   }
 
+  // Media server (Cloudflare Realtime SFU) proxy. The app secret stays here; the browser
+  // only ever talks to this endpoint. Set CF_SFU_APP_ID and CF_SFU_APP_SECRET in Deno env.
+  if (url.pathname.startsWith("/api/sfu/")) {
+    const origin = req.headers.get("Origin") || "";
+    const allowed = !origin || TURN_ORIGINS.some((re) => re.test(origin)) || origin === url.origin;
+    const headers = { ...CORS, "Access-Control-Allow-Origin": origin || "*", "Content-Type": "application/json", "Cache-Control": "no-store" };
+    const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers });
+    if (!allowed) return json({ error: "origin not allowed" }, 403);
+    const appId = Deno.env.get("CF_SFU_APP_ID");
+    const secret = Deno.env.get("CF_SFU_APP_SECRET");
+    if (!appId || !secret) return json({ error: "SFU not configured" }, 503);
+    const sub = url.pathname.slice("/api/sfu/".length);
+    const okPath = /^sessions\/new$/.test(sub) || /^sessions\/[A-Za-z0-9_-]+\/(tracks\/(new|close|update)|renegotiate)$/.test(sub);
+    if (!okPath || !["POST", "PUT"].includes(req.method)) return json({ error: "bad request" }, 400);
+    try {
+      const upstream = await fetch(`https://rtc.live.cloudflare.com/v1/apps/${appId}/${sub}`, {
+        method: req.method,
+        headers: { Authorization: `Bearer ${secret}`, "Content-Type": "application/json" },
+        body: await req.text(),
+      });
+      return new Response(await upstream.text(), { status: upstream.status, headers });
+    } catch (e) {
+      return json({ error: `SFU error: ${e}` }, 502);
+    }
+  }
+
   // Serve index.html for everything else
   try {
     return await serveFile(req, INDEX_PATH);
